@@ -136,3 +136,21 @@ LOGIN_REDIRECT_URL = 'home'
 
 # Where to send users after they log out
 LOGOUT_REDIRECT_URL = 'login'
+
+# Tell Django to check our custom Email backend first, then fallback to normal usernames
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# EMAIL CONFIGURATION
+# For local development, this prints emails to the terminal instead of actually sending them.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# When deploying to production, swap to SMTP settings like this:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com' # Or SendGrid, Mailgun, etc.
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')

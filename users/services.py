@@ -50,3 +50,14 @@ def toggle_shelf_record(user, record):
         
     user.shelf.add(record)
     return True # Indicates added
+
+def toggle_wishlist_record(user, record):
+    """Adds or removes a record from the user's wishlist."""
+    # If it's already in the wishlist, remove it
+    if user.wishlist.filter(id=record.id).exists():
+        user.wishlist.remove(record)
+        return False # Indicates removed
+    
+    # Otherwise, add it
+    user.wishlist.add(record)
+    return True # Indicates added
