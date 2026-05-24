@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <meta name="referrer" content="no-referrer">
-    
     <title>recordstore.io</title>
     
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
@@ -25,7 +23,7 @@
         </a>
         
         <div class="flex items-center space-x-6 text-sm font-medium">
-            <a href="#" class="text-zinc-400 hover:text-white transition-colors">Search</a>
+            <a href="{% url 'search' %}" class="text-zinc-400 hover:text-white transition-colors">Search</a>
             
             {% if user.is_authenticated %}
                 <a href="{% url 'profile' user.username %}" class="text-zinc-400 hover:text-white transition-colors">My Profile</a>

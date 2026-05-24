@@ -23,10 +23,11 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('users.urls')),
-    # This is the home page route, which can be a simple template view for now
+    path('collection/', include('collection.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]
 
 # This allows Django to display uploaded profile pictures locally
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

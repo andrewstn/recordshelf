@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    
+    <div class="mb-12 text-center">
+        <h1 class="text-4xl font-black text-white mb-6">Find Your Grails</h1>
+        
+        <form method="GET" action="{% url 'search' %}" class="max-w-2xl mx-auto flex gap-4">
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ query }}" 
+                placeholder="Search by album, artist, or keyword..." 
+                class="w-full bg-zinc-900 border border-zinc-700 text-white px-6 py-4 rounded-full focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition text-lg"
+                required
+            >
+            <button type="submit" class="bg-brand text-zinc-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-white transition cursor-pointer">
+                Search
+            </button>
+        </form>
+    </div>
+
+    {% if query %}
+        <div class="flex justify-between items-end mb-6 border-b border-zinc-800 pb-4">
+            <h2 class="text-xl font-bold text-zinc-400">
+                Results for <span class="text-white">"{{ query }}"</span>
+            </h2>
+            {% if pagination.items %}
+                <p class="text-sm font-medium text-zinc-500">{{ pagination.items }} total matches</p>
+            {% endif %}
+        </div>
+
+        {% if results %}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for item in results %}
+                <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col hover:bg-zinc-800 transition">
+                    
+                    {% if item.cover_image and "spacer.gif" not in item.cover_image %}
+                        <img src="{{ item.cover_image }}" alt="{{ item.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg">
+                    {% else %}
+                        <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600">No Cover</div>
+                    {% endif %}
+                    
+                    <h3 class="text-md font-bold text-white leading-tight mb-1">{{ item.title }}</h3>
+                    <p class="text-sm text-zinc-400 mb-4">{{ item.year|default:"Unknown Year" }}</p>
+                    
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_record' %}" class="mt-auto">
+                            {% csrf_token %}
+                            <input type="hidden" name="discogs_id" value="{{ item.id }}">
+                            <button type="submit" class="w-full bg-zinc-800 hover:bg-brand hover:text-zinc-950 text-white font-semibold py-2 rounded-md transition cursor-pointer text-sm">
+                                + Add to Collection
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="mt-auto text-center w-full bg-zinc-800 text-zinc-400 font-semibold py-2 rounded-md transition text-sm">Log in to Add</a>
+                    {% endif %}
+                    
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if pagination.pages > 1 %}
+            <div class="mt-12 flex justify-center items-center gap-4">
+                {% if pagination.page > 1 %}
+                    <a href="?q={{ query }}&page={{ pagination.page|add:'-1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
+                        &larr; Previous
+                    </a>
+                {% endif %}
+                
+                <span class="text-zinc-500 font-medium">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+                
+                {% if pagination.page < pagination.pages %}
+                    <a href="?q={{ query }}&page={{ pagination.page|add:'1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
+                        Next &rarr;
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-12 text-zinc-500">
+                <p class="text-lg">No records found for that search. Try a different artist or album name.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}
