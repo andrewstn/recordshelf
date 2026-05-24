@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    
+    <!-- Profile Header -->
+    <div class="mb-12 border-b border-zinc-800 pb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-4xl font-black text-white mb-2">@{{ profile_user.username }}</h1>
+            <p class="text-zinc-400">
+                <span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers &middot; 
+                <span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following
+            </p>
+        </div>
+        
+        {% if request.user.is_authenticated and request.user != profile_user %}
+            <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition">
+                Follow
+            </button>
+        {% endif %}
+    </div>
+
+    <!-- Favorite Record Highlight -->
+    {% if favorite %}
+    <div class="mb-16">
+        <h2 class="text-xl font-bold mb-6 text-zinc-100 flex items-center">
+            <span class="text-brand mr-3 text-2xl">★</span> All-Time Favorite
+        </h2>
+        <div class="flex gap-6 bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 shadow-xl">
+            {% if favorite.cover_art_url %}
+                <img src="{{ favorite.cover_art_url }}" alt="{{ favorite.title }}" class="w-48 h-48 rounded-md shadow-2xl object-cover">
+            {% else %}
+                <div class="w-48 h-48 bg-zinc-800 rounded-md flex items-center justify-center text-zinc-600">No Cover</div>
+            {% endif %}
+            <div class="flex flex-col justify-center">
+                <h3 class="text-3xl font-black text-white mb-2">{{ favorite.title }}</h3>
+                <p class="text-xl text-zinc-400 mb-4">{{ favorite.artist.name }}</p>
+                <p class="text-sm text-zinc-500 font-medium tracking-wide uppercase">{{ favorite.release_year }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top 6 Horizontal Shelf -->
+    <div class="mb-12">
+        <h2 class="text-xl font-bold mb-6 text-zinc-100">The Shelf</h2>
+        
+        {% if shelf_records %}
+        <!-- Horizontal scrolling container with CSS snap points -->
+        <div class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbars">
+            {% for record in shelf_records %}
+            <div class="snap-start flex-none w-56 group relative cursor-pointer transition-transform duration-300 hover:-translate-y-4">
+                {% if record.cover_art_url %}
+                    <img src="{{ record.cover_art_url }}" alt="{{ record.title }}" class="w-56 h-56 rounded-md shadow-xl object-cover mb-4">
+                {% else %}
+                    <div class="w-56 h-56 bg-zinc-800 rounded-md mb-4 flex items-center justify-center shadow-xl text-zinc-600">No Cover</div>
+                {% endif %}
+                <h3 class="text-md font-bold text-white truncate">{{ record.title }}</h3>
+                <p class="text-sm text-zinc-400 truncate">{{ record.artist.name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl p-12 text-center text-zinc-500">
+            This shelf is currently empty.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Custom styling to hide the default browser scrollbar while keeping the swipe/scroll functionality -->
+<style>
+    .hide-scrollbars::-webkit-scrollbar { display: none; }
+    .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+{% endblock %}
