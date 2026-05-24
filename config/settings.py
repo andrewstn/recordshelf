@@ -130,3 +130,9 @@ STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 DISCOGS_API_TOKEN = os.getenv('DISCOGS_API_TOKEN')
+
+# Where to send users after they log in (TODO: build the 'home' URL later)
+LOGIN_REDIRECT_URL = 'home'
+
+# Where to send users after they log out
+LOGOUT_REDIRECT_URL = 'login'
