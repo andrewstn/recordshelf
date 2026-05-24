@@ -52,3 +52,23 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
+class Activity(models.Model):
+    ACTIVITY_TYPES = (
+        ('ADD', 'added to their collection'),
+        ('SHELF', 'placed on their shelf'),
+        ('FAVORITE', 'set as their Top Spin'),
+    )
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='activities')
+    activity_type = models.CharField(max_length=15, choices=ACTIVITY_TYPES)
+    # We use a string reference 'collection.Record' to avoid circular import errors
+    record = models.ForeignKey('collection.Record', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at'] # Always put the newest activity at the top
+        verbose_name_plural = "Activities"
+        
+    def __str__(self):
+        return f"{self.user.username} {self.get_activity_type_display()} {self.record.title}"
+    

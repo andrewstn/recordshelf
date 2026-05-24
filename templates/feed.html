@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load humanize %} <!-- Make sure 'django.contrib.humanize' is in your INSTALLED_APPS! -->
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-12">
+    <h1 class="text-3xl font-black text-white mb-8">Activity Feed</h1>
+
+    <div class="space-y-6">
+        {% for activity in activities %}
+            <div class="bg-zinc-900/50 border {% if activity.activity_type == 'FAVORITE' %}border-yellow-500/30{% else %}border-zinc-800{% endif %} p-5 rounded-xl flex items-start gap-4 transition hover:bg-zinc-800/80">
+                
+                <!-- User Avatar -->
+                <a href="{% url 'profile' activity.user.username %}" class="flex-shrink-0">
+                    {% if activity.user.profile_picture %}
+                        <img src="{{ activity.user.profile_picture.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-zinc-700">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-lg font-bold text-zinc-500 border-2 border-zinc-700">
+                            {{ activity.user.username|make_list|first|upper }}
+                        </div>
+                    {% endif %}
+                </a>
+
+                <!-- Activity Content -->
+                <div class="flex-grow">
+                    <p class="text-zinc-300 text-sm mb-2">
+                        <a href="{% url 'profile' activity.user.username %}" class="font-bold text-white hover:text-brand transition">@{{ activity.user.username }}</a>
+                        
+                        <!-- Color code the action -->
+                        <span class="text-zinc-500">
+                            {% if activity.activity_type == 'FAVORITE' %}
+                                <span class="text-yellow-500">set a new Top Spin</span>
+                            {% elif activity.activity_type == 'SHELF' %}
+                                <span class="text-brand">shelved a record</span>
+                            {% else %}
+                                added to their collection
+                            {% endif %}
+                        </span>
+                        
+                        <!-- Time ago -->
+                        <span class="text-zinc-600 text-xs ml-2">&middot; {{ activity.created_at|timesince }} ago</span>
+                    </p>
+
+                    <!-- The Record That Was Actioned -->
+                    <a href="{% url 'album_detail' activity.record.discogs_id %}" class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group cursor-pointer w-max max-w-full">
+                        {% if activity.record.cover_art_url %}
+                            <img src="{{ activity.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-14 h-14 rounded shadow object-cover flex-shrink-0 group-hover:scale-105 transition-transform">
+                        {% else %}
+                            <div class="w-14 h-14 rounded bg-zinc-800 flex items-center justify-center text-xs text-zinc-600 flex-shrink-0">No Cover</div>
+                        {% endif %}
+                        
+                        <div class="overflow-hidden">
+                            <h4 class="text-md font-bold text-white truncate leading-tight group-hover:text-brand transition">{{ activity.record.title }}</h4>
+                            <p class="text-sm text-zinc-400 truncate">{{ activity.record.artist.name }}</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Action Icon -->
+                <div class="text-2xl ml-auto flex-shrink-0 opacity-50">
+                    {% if activity.activity_type == 'FAVORITE' %}🌟{% elif activity.activity_type == 'SHELF' %}📚{% else %}➕{% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl p-16">
+                <p class="text-zinc-500 mb-4 text-lg">It's quiet in here...</p>
+                <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">Find Records to Add</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

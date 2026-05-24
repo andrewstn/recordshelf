@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import ProfileEditForm
 from django.contrib.auth import login
+from .models import Activity
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -86,3 +87,17 @@ def signup(request):
         form = CustomUserCreationForm()
         
     return render(request, 'registration/signup.html', {'form': form})
+
+@login_required
+def social_feed(request):
+    """Displays a chronological feed of activity from followed users."""
+    # Get users I follow, and add myself to the list
+    users_to_show = list(request.user.following.all())
+    users_to_show.append(request.user)
+    
+    # Fetch the latest 50 activities. select_related drastically speeds up database queries!
+    activities = Activity.objects.filter(user__in=users_to_show).select_related(
+        'user', 'record', 'record__artist'
+    )[:50]
+    
+    return render(request, 'feed.html', {'activities': activities})

@@ -8,6 +8,7 @@ from .forms import CollectionItemForm
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from users.models import Activity
 
 def search_page(request):
     """Handles user search queries, pagination, and hits the Discogs API."""
@@ -39,6 +40,7 @@ def add_record(request):
             item, created = add_record_to_collection(request.user, discogs_id)
             
             if created:
+                Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
                 messages.success(request, f"Added to your collection!")
             else:
                 messages.info(request, f"This record is already in your collection.")
@@ -117,8 +119,9 @@ def toggle_shelf(request, item_id):
     else:
         if request.user.shelf.count() >= 6:
             messages.error(request, "Your shelf is full! Remove one first.")
-        else:
+        else:  
             request.user.shelf.add(item.record)
+            Activity.objects.create(user=request.user, activity_type='SHELF', record=item.record)
             messages.success(request, f"Added {item.record.title} to shelf.")
             
     return redirect('profile', username=request.user.username)
@@ -135,6 +138,7 @@ def toggle_favorite(request, item_id):
             messages.info(request, "Removed Top Spin.")
         else:
             request.user.favorite_record = item.record
+            Activity.objects.create(user=request.user, activity_type='FAVORITE', record=item.record)
             messages.success(request, f"{item.record.title} is now your Top Spin!")
             
         request.user.save()
