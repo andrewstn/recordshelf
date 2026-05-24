@@ -174,3 +174,33 @@ def user_directory(request):
         'users': users,
         'query': query
     })
+
+def followers_list(request, username):
+    """Displays the list of users following a specific profile."""
+    profile_user = get_object_or_404(User, username=username)
+    
+    # Grab the followers and annotate them with their own follower counts
+    users = profile_user.followers.annotate(
+        follower_count=Count('followers')
+    ).select_related('favorite_record', 'favorite_record__artist')
+    
+    return render(request, 'user_list.html', {
+        'profile_user': profile_user,
+        'users': users,
+        'list_type': 'Followers'
+    })
+
+def following_list(request, username):
+    """Displays the list of users a specific profile is following."""
+    profile_user = get_object_or_404(User, username=username)
+    
+    # Grab the users they are following
+    users = profile_user.following.annotate(
+        follower_count=Count('followers')
+    ).select_related('favorite_record', 'favorite_record__artist')
+    
+    return render(request, 'user_list.html', {
+        'profile_user': profile_user,
+        'users': users,
+        'list_type': 'Following'
+    })

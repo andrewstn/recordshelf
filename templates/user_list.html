@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8">
+    
+    <div class="mb-10 border-b border-zinc-800 pb-6 flex items-center justify-between">
+        <div>
+            <a href="{% url 'profile' profile_user.username %}" class="text-sm font-medium text-zinc-500 hover:text-white transition-colors flex items-center gap-2 mb-4 w-max">
+                ← Back to @{{ profile_user.username }}
+            </a>
+            <h1 class="text-3xl font-black text-white">
+                {% if list_type == 'Followers' %}
+                    Followers
+                {% else %}
+                    Following
+                {% endif %}
+            </h1>
+            <p class="text-zinc-400 mt-2">
+                {% if list_type == 'Followers' %}
+                    Users who follow <span class="text-white font-bold">@{{ profile_user.username }}</span>.
+                {% else %}
+                    Users that <span class="text-white font-bold">@{{ profile_user.username }}</span> is following.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for u in users %}
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex flex-col hover:bg-zinc-800/80 transition group">
+            
+            <div class="flex items-start justify-between mb-4">
+                <a href="{% url 'profile' u.username %}" class="flex items-center gap-4 hover:opacity-80 transition">
+                    {% if u.profile_picture %}
+                        <img src="{{ u.profile_picture.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-700">
+                    {% else %}
+                        <div class="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center text-xl font-bold text-zinc-500 border-2 border-zinc-700">
+                            {{ u.username|make_list|first|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h3 class="text-lg font-bold text-white leading-tight">@{{ u.username }}</h3>
+                        <p class="text-xs text-zinc-400 font-medium">{{ u.follower_count }} Followers</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50 mb-6 flex-grow">
+                <p class="text-[10px] uppercase tracking-widest text-brand font-bold mb-1.5 flex items-center gap-1">
+                    <span>★</span> Top Spin
+                </p>
+                {% if u.favorite_record %}
+                    <div class="flex items-center gap-3">
+                        {% if u.favorite_record.cover_art_url %}
+                            <img src="{{ u.favorite_record.cover_art_url }}" class="w-10 h-10 rounded object-cover shadow-md">
+                        {% else %}
+                            <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-[10px]">No Art</div>
+                        {% endif %}
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-white truncate leading-tight">{{ u.favorite_record.title }}</p>
+                            <p class="text-xs text-zinc-400 truncate">{{ u.favorite_record.artist.name }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-xs text-zinc-500 italic">No favorite record set.</p>
+                {% endif %}
+            </div>
+
+            {% if request.user.is_authenticated and request.user != u %}
+                <form method="POST" action="{% url 'toggle_follow' u.username %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-2 rounded-lg font-bold transition text-sm cursor-pointer
+                        {% if u in request.user.following.all %}
+                            bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800
+                        {% else %}
+                            bg-white text-zinc-950 hover:bg-zinc-200
+                        {% endif %}">
+                        {% if u in request.user.following.all %}
+                            Unfollow
+                        {% else %}
+                            Follow
+                        {% endif %}
+                    </button>
+                </form>
+            {% elif request.user == u %}
+                <div class="w-full py-2 rounded-lg font-bold text-sm text-center bg-zinc-900 text-zinc-600 border border-zinc-800">
+                    This is you
+                </div>
+            {% endif %}
+            
+        </div>
+        {% empty %}
+        <div class="col-span-full py-16 text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
+            <p class="text-zinc-500">
+                {% if list_type == 'Followers' %}
+                    No one is following @{{ profile_user.username }} yet.
+                {% else %}
+                    @{{ profile_user.username }} isn't following anyone yet.
+                {% endif %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -13,4 +13,6 @@ urlpatterns = [
     path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
     path('feed/', views.social_feed, name='feed'),
     path('community/', views.user_directory, name='user_directory'),
+    path('profile/<str:username>/followers/', views.followers_list, name='followers_list'),
+    path('profile/<str:username>/following/', views.following_list, name='following_list'),
 ]

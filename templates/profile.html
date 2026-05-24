@@ -18,8 +18,8 @@
                 <h1 class="text-4xl font-black text-white mb-2">@{{ profile_user.username }}</h1>
                 <p class="text-zinc-400 text-sm md:text-base">
                     <span class="font-bold text-zinc-200">{{ total_records }}</span> Records &middot; 
-                    <a href="#" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers</a> &middot; 
-                    <a href="#" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following</a>
+<a href="{% url 'followers_list' profile_user.username %}" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers</a> &middot; 
+<a href="{% url 'following_list' profile_user.username %}" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following</a>
                 </p>
 
                 <p class="text-zinc-500 text-sm flex items-center gap-1.5">
