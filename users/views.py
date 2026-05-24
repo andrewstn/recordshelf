@@ -1,9 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from .forms import CustomUserCreationForm
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import ProfileEditForm
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -17,14 +19,31 @@ def user_profile(request, username):
     
     full_collection = profile_user.collection.all().select_related('record', 'record__artist').order_by('-date_added')
     
-    # NEW: Filter the user's collection items to only include the ones on their shelf
     shelf_items = profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
+    
+    # Look up the specific CollectionItem that matches the user's favorite record
+    favorite_item = None
+    if profile_user.favorite_record:
+        favorite_item = profile_user.collection.filter(record=profile_user.favorite_record).first()
     
     context = {
         'profile_user': profile_user,
-        'shelf_items': shelf_items, # Pass the new variable
-        'favorite': profile_user.favorite_record,
+        'shelf_items': shelf_items,
+        'favorite_item': favorite_item, # Swapped to pass the item instance
         'full_collection': full_collection,
         'total_records': full_collection.count(),
     }
     return render(request, 'profile.html', context)
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('profile', username=request.user.username)
+    else:
+        form = ProfileEditForm(instance=request.user)
+        
+    return render(request, 'edit_profile.html', {'form': form})

@@ -3,7 +3,8 @@
 {% block content %}
 <div class="max-w-5xl mx-auto">
     
-    <div class="mb-12 border-b border-zinc-800 pb-8 flex justify-between items-end">
+    <div class="mb-12 border-b border-zinc-800 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        
         <div class="flex items-center gap-6">
             {% if profile_user.profile_picture %}
                 <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-24 h-24 rounded-full object-cover border-4 border-zinc-800">
@@ -15,48 +16,68 @@
 
             <div>
                 <h1 class="text-4xl font-black text-white mb-2">@{{ profile_user.username }}</h1>
-                <p class="text-zinc-400">
+                <p class="text-zinc-400 text-sm md:text-base">
                     <span class="font-bold text-zinc-200">{{ total_records }}</span> Records &middot; 
-                    <span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers &middot; 
-                    <span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following
+                    <a href="#" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers</a> &middot; 
+                    <a href="#" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following</a>
                 </p>
+                
+                <div class="mt-4">
+                    {% if request.user == profile_user %}
+                        <a href="{% url 'edit_profile' %}" class="bg-zinc-800 text-white px-5 py-2 rounded-full font-semibold hover:bg-zinc-700 transition text-sm inline-block">
+                            Edit Profile
+                        </a>
+                    {% elif request.user.is_authenticated %}
+                        <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">
+                            Follow
+                        </button>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        
-        {% if request.user.is_authenticated and request.user != profile_user %}
-            <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition">Follow</button>
+
+        {% if favorite_item %}
+        <div class="flex items-center gap-4 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80 shadow-2xl max-w-md w-full md:w-auto hover:bg-zinc-800/50 transition">
+            {% if favorite_item.record.cover_art_url %}
+                <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="w-20 h-20 md:w-24 md:h-24 rounded shadow-md object-cover border border-zinc-700 flex-shrink-0">
+            {% else %}
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-xs flex-shrink-0">No Cover</div>
+            {% endif %}
+            <div class="overflow-hidden">
+                <p class="text-brand text-xs font-bold uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <span>★</span> Top Spin
+                </p>
+                <h3 class="text-lg md:text-xl font-black text-white leading-tight truncate">{{ favorite_item.record.title }}</h3>
+                <p class="text-sm text-zinc-400 truncate">{{ favorite_item.record.artist.name }}</p>
+                
+                {% if favorite_item.variant_description %}
+                    <p class="text-xs font-medium text-brand truncate mt-0.5">{{ favorite_item.variant_description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="flex items-center gap-4 bg-zinc-900/20 p-4 rounded-xl border border-zinc-800/50 border-dashed max-w-md w-full md:w-auto">
+            <div class="w-20 h-20 md:w-24 md:h-24 bg-zinc-800/50 rounded flex items-center justify-center text-zinc-600 text-2xl">★</div>
+            <div class="overflow-hidden text-zinc-500">
+                <p class="text-xs font-bold uppercase tracking-widest mb-1 flex items-center gap-1">Top Spin</p>
+                <h3 class="text-lg md:text-xl font-bold leading-tight">No Favorite Set</h3>
+                {% if request.user == profile_user %}
+                    <p class="text-xs mt-1">Select one from your collection below.</p>
+                {% endif %}
+            </div>
+        </div>
         {% endif %}
     </div>
 
-    {% if favorite %}
-    <div class="mb-16">
-        <h2 class="text-xl font-bold mb-6 text-zinc-100 flex items-center">
-            <span class="text-brand mr-3 text-2xl">★</span> All-Time Favorite
-        </h2>
-        <div class="flex gap-6 bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800 shadow-xl">
-            {% if favorite.cover_art_url %}
-                <img src="{{ favorite.cover_art_url }}" alt="{{ favorite.title }}" class="w-48 h-48 rounded-md shadow-2xl object-cover">
-            {% else %}
-                <div class="w-48 h-48 bg-zinc-800 rounded-md flex items-center justify-center text-zinc-600">No Cover</div>
-            {% endif %}
-            <div class="flex flex-col justify-center">
-                <h3 class="text-3xl font-black text-white mb-2">{{ favorite.title }}</h3>
-                <p class="text-xl text-zinc-400 mb-4">{{ favorite.artist.name }}</p>
-                <p class="text-sm text-zinc-500 font-medium tracking-wide uppercase">{{ favorite.release_year }}</p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <div class="mb-12">
-        <h2 class="text-xl font-bold mb-6 text-zinc-100">My Shelf</h2>
+        <h2 class="text-xl font-bold mb-6 text-zinc-100">The Shelf</h2>
         
         {% if shelf_items %}
         <div class="flex gap-6 overflow-x-auto py-6 px-2 -mx-2 snap-x snap-mandatory hide-scrollbars">
             {% for item in shelf_items %}
             <div class="snap-start flex-none w-56 group relative cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10">
                 {% if item.record.cover_art_url %}
-                    <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" class="w-56 h-56 rounded-md shadow-2xl object-cover mb-4">
+                    <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="w-56 h-56 rounded-md shadow-2xl object-cover mb-4">
                 {% else %}
                     <div class="w-56 h-56 bg-zinc-800 rounded-md mb-4 flex items-center justify-center shadow-xl text-zinc-600">No Cover</div>
                 {% endif %}
@@ -78,7 +99,7 @@
 
     <div class="mb-12 border-t border-zinc-800 pt-12">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-zinc-100">My Collection</h2>
+            <h2 class="text-xl font-bold text-zinc-100">Entire Collection</h2>
             
             <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                 <button onclick="setGrid()" id="btn-grid" class="px-4 py-1.5 rounded-md bg-zinc-800 text-white text-sm font-medium transition cursor-pointer">Grid</button>
@@ -90,7 +111,7 @@
             {% for item in full_collection %}
             <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
                 {% if item.record.cover_art_url %}
-                    <img src="{{ item.record.cover_art_url }}" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                    <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
                 {% else %}
                     <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
                 {% endif %}
@@ -113,30 +134,48 @@
                     </div>
 
                     {% if request.user == profile_user %}
-                        <a href="{% url 'edit_item' item.id %}" class="mt-3 text-center text-zinc-500 hover:text-white bg-zinc-900 hover:bg-zinc-700 py-1.5 rounded transition text-xs">
-                            Edit
-                        </a>
-                        
-                        <form method="POST" action="{% url 'toggle_shelf' item.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="mt-2 w-full text-center text-xs py-1.5 rounded transition 
-                                {% if item.record in request.user.shelf.all %}
-                                    bg-brand text-zinc-950 hover:bg-zinc-700 hover:text-white
-                                {% else %}
-                                    bg-zinc-800 text-zinc-400 hover:bg-zinc-700
-                                {% endif %}">
-                                {% if item.record in request.user.shelf.all %}
-                                    Remove from Shelf
-                                {% else %}
-                                    Add to Shelf
-                                {% endif %}
-                            </button>
-                        </form>
+                        <div class="mt-3 pt-2 border-t border-zinc-800/30 flex flex-col gap-2">
+                            <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 py-1.5 rounded transition text-xs font-medium border border-zinc-800">
+                                Edit Copy
+                            </a>
+                            
+                            <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium
+                                    {% if item.record in request.user.shelf.all %}
+                                        bg-brand text-zinc-950 hover:bg-white hover:text-zinc-950
+                                    {% else %}
+                                        bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800
+                                    {% endif %}">
+                                    {% if item.record in request.user.shelf.all %}
+                                        ✓ On Shelf
+                                    {% else %}
+                                        Add to Shelf
+                                    {% endif %}
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium border
+                                    {% if request.user.favorite_record == item.record %}
+                                        bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500 hover:text-zinc-950
+                                    {% else %}
+                                        bg-zinc-900 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
+                                    {% endif %}">
+                                    {% if request.user.favorite_record == item.record %}
+                                        ★ Top Spin
+                                    {% else %}
+                                        Make Top Spin
+                                    {% endif %}
+                                </button>
+                            </form>
+                        </div>
                     {% endif %}
                 </div>
             </div>
             {% empty %}
-            <p class="text-zinc-500 col-span-full">No records in collection yet.</p>
+            <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">No records in collection yet.</p>
             {% endfor %}
         </div>
     </div>

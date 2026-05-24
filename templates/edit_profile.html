@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-12">
+    <h1 class="text-3xl font-black text-white mb-8">Edit Profile</h1>
+    
+    <form method="POST" enctype="multipart/form-data" class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-xl">
+        {% csrf_token %}
+        
+        <div class="mb-8">
+            <label class="block text-sm font-bold text-zinc-400 mb-2">Profile Picture</label>
+            {{ form.profile_picture }}
+        </div>
+        
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'profile' user.username %}" class="px-6 py-3 text-zinc-400 hover:text-white transition font-medium">Cancel</a>
+            <button type="submit" class="bg-brand text-zinc-950 px-8 py-3 rounded-md font-bold hover:bg-white transition cursor-pointer">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

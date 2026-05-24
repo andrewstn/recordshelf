@@ -119,3 +119,21 @@ def toggle_shelf(request, item_id):
             messages.success(request, f"Added {item.record.title} to shelf.")
             
     return redirect('profile', username=request.user.username)
+
+@login_required
+def toggle_favorite(request, item_id):
+    """Sets or unsets a record as the user's all-time favorite."""
+    item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
+    
+    if request.method == 'POST':
+        # If it's already the favorite, unset it
+        if request.user.favorite_record == item.record:
+            request.user.favorite_record = None
+            messages.info(request, "Removed Top Spin.")
+        else:
+            request.user.favorite_record = item.record
+            messages.success(request, f"{item.record.title} is now your Top Spin!")
+            
+        request.user.save()
+            
+    return redirect('profile', username=request.user.username)

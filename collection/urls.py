@@ -8,4 +8,5 @@ urlpatterns = [
     path('item/<int:item_id>/edit/', views.edit_item, name='edit_item'),
     path('item/<int:item_id>/remove/', views.remove_item, name='remove_item'),
     path('item/<int:item_id>/toggle-shelf/', views.toggle_shelf, name='toggle_shelf'),
+    path('item/<int:item_id>/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
 ]
