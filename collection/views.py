@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+from collection.spotify import get_spotify_album_id
 from .discogs import search_discogs, fetch_discogs_master
 from .services import add_record_to_collection
 from .models import CollectionItem, Record
@@ -69,10 +71,20 @@ def album_detail(request, discogs_id):
             record__discogs_id=discogs_id
         ).exists()
         
+    title = album_data.get('title', '')
+    artist_name = ''
+    
+    # Discogs 'artists' is a list of dictionaries, so we grab the first one safely
+    if album_data.get('artists'):
+        artist_name = album_data['artists'][0].get('name', '')
+        
+    spotify_id = get_spotify_album_id(title, artist_name)
+        
     context = {
         'album': album_data,
         'in_collection': in_collection,
-        'discogs_id': discogs_id
+        'discogs_id': discogs_id,
+        'spotify_id': spotify_id  # NEW: Pass the ID to the HTML template
     }
     return render(request, 'album_detail.html', context)
 
