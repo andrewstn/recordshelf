@@ -1,0 +1,14 @@
+# Virtual Environment
+venv/
+env/
+
+# Django specific
+*.sqlite3
+db.sqlite3
+__pycache__/
+*.pyc
+media/
+static/
+
+# Environment variables (for secrets later)
+.env
