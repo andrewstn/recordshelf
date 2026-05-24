@@ -3,10 +3,8 @@
 {% block content %}
 <div class="max-w-5xl mx-auto">
     
-    <!-- Profile Header -->
     <div class="mb-12 border-b border-zinc-800 pb-8 flex justify-between items-end">
         <div class="flex items-center gap-6">
-            <!-- Profile Picture -->
             {% if profile_user.profile_picture %}
                 <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-24 h-24 rounded-full object-cover border-4 border-zinc-800">
             {% else %}
@@ -30,7 +28,6 @@
         {% endif %}
     </div>
 
-    <!-- Favorite Record Highlight -->
     {% if favorite %}
     <div class="mb-16">
         <h2 class="text-xl font-bold mb-6 text-zinc-100 flex items-center">
@@ -51,22 +48,24 @@
     </div>
     {% endif %}
 
-    <!-- Top 6 Horizontal Shelf -->
     <div class="mb-12">
         <h2 class="text-xl font-bold mb-6 text-zinc-100">The Shelf</h2>
         
-        {% if shelf_records %}
-        <!-- Horizontal scrolling container with CSS snap points -->
-        <div class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbars">
-            {% for record in shelf_records %}
-            <div class="snap-start flex-none w-56 group relative cursor-pointer transition-transform duration-300 hover:-translate-y-4">
-                {% if record.cover_art_url %}
-                    <img src="{{ record.cover_art_url }}" alt="{{ record.title }}" class="w-56 h-56 rounded-md shadow-xl object-cover mb-4">
+        {% if shelf_items %}
+        <div class="flex gap-6 overflow-x-auto py-6 px-2 -mx-2 snap-x snap-mandatory hide-scrollbars">
+            {% for item in shelf_items %}
+            <div class="snap-start flex-none w-56 group relative cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10">
+                {% if item.record.cover_art_url %}
+                    <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" class="w-56 h-56 rounded-md shadow-2xl object-cover mb-4">
                 {% else %}
                     <div class="w-56 h-56 bg-zinc-800 rounded-md mb-4 flex items-center justify-center shadow-xl text-zinc-600">No Cover</div>
                 {% endif %}
-                <h3 class="text-md font-bold text-white truncate">{{ record.title }}</h3>
-                <p class="text-sm text-zinc-400 truncate">{{ record.artist.name }}</p>
+                <h3 class="text-md font-bold text-white truncate">{{ item.record.title }}</h3>
+                <p class="text-sm text-zinc-400 truncate">{{ item.record.artist.name }}</p>
+                
+                {% if item.variant_description %}
+                    <p class="text-xs font-semibold text-brand mt-1 truncate">{{ item.variant_description }}</p>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -77,22 +76,18 @@
         {% endif %}
     </div>
 
-    <!-- Full Collection Section -->
     <div class="mb-12 border-t border-zinc-800 pt-12">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-zinc-100">Entire Collection</h2>
             
-            <!-- Toggle Controls -->
             <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                 <button onclick="setGrid()" id="btn-grid" class="px-4 py-1.5 rounded-md bg-zinc-800 text-white text-sm font-medium transition cursor-pointer">Grid</button>
                 <button onclick="setList()" id="btn-list" class="px-4 py-1.5 rounded-md text-zinc-400 hover:text-white text-sm font-medium transition cursor-pointer">List</button>
             </div>
         </div>
 
-        <!-- Collection Container -->
         <div id="collection-view" class="grid grid-cols-2 md:grid-cols-4 gap-6">
             {% for item in full_collection %}
-            <!-- Record Card -->
             <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
                 {% if item.record.cover_art_url %}
                     <img src="{{ item.record.cover_art_url }}" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
@@ -100,12 +95,11 @@
                     <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
                 {% endif %}
                 
-                <div class="card-text">
+                <div class="card-text flex flex-col flex-grow">
                     <h3 class="text-lg font-bold text-white leading-tight mb-1">{{ item.record.title }}</h3>
                     <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
                     
-                    <!-- Variant & Rating Info -->
-                    <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-2 border-t border-zinc-800/50">
+                    <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-3 border-t border-zinc-800/50">
                         {% if item.variant_description %}
                             <span class="text-brand">{{ item.variant_description }}</span>
                         {% endif %}
@@ -126,7 +120,6 @@
     </div>
 </div>
 
-<!-- JavaScript for Grid/List Toggle -->
 <script>
     function setGrid() {
         const container = document.getElementById('collection-view');
@@ -134,17 +127,17 @@
         const btnList = document.getElementById('btn-list');
         const cards = document.querySelectorAll('.record-card');
         const images = document.querySelectorAll('.card-img');
+        const textContainers = document.querySelectorAll('.card-text');
         
-        // Update buttons
         btnGrid.classList.add('bg-zinc-800', 'text-white');
         btnGrid.classList.remove('text-zinc-400');
         btnList.classList.remove('bg-zinc-800', 'text-white');
         btnList.classList.add('text-zinc-400');
 
-        // Update Layout
         container.className = "grid grid-cols-2 md:grid-cols-4 gap-6";
         cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col");
         images.forEach(img => img.className = "w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img");
+        textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow");
     }
 
     function setList() {
@@ -153,21 +146,20 @@
         const btnList = document.getElementById('btn-list');
         const cards = document.querySelectorAll('.record-card');
         const images = document.querySelectorAll('.card-img');
+        const textContainers = document.querySelectorAll('.card-text');
         
-        // Update buttons
         btnList.classList.add('bg-zinc-800', 'text-white');
         btnList.classList.remove('text-zinc-400');
         btnGrid.classList.remove('bg-zinc-800', 'text-white');
         btnGrid.classList.add('text-zinc-400');
 
-        // Update Layout
         container.className = "flex flex-col gap-4";
         cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-row items-center gap-6");
         images.forEach(img => img.className = "w-24 h-24 object-cover rounded-md shadow-lg card-img mb-0 flex-shrink-0");
+        textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow justify-center");
     }
 </script>
 
-<!-- CSS to hide default scrollbars -->
 <style>
     .hide-scrollbars::-webkit-scrollbar { display: none; }
     .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }

@@ -15,12 +15,14 @@ User = get_user_model()
 def user_profile(request, username):
     profile_user = get_object_or_404(User, username=username)
     
-    # Grab all collection items, optimizing the database query to include the record and artist data
     full_collection = profile_user.collection.all().select_related('record', 'record__artist').order_by('-date_added')
+    
+    # NEW: Filter the user's collection items to only include the ones on their shelf
+    shelf_items = profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
     
     context = {
         'profile_user': profile_user,
-        'shelf_records': profile_user.shelf.all(),
+        'shelf_items': shelf_items, # Pass the new variable
         'favorite': profile_user.favorite_record,
         'full_collection': full_collection,
         'total_records': full_collection.count(),
