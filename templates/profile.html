@@ -28,9 +28,21 @@
                             Edit Profile
                         </a>
                     {% elif request.user.is_authenticated %}
-                        <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">
-                            Follow
-                        </button>
+                        <form method="POST" action="{% url 'toggle_follow' profile_user.username %}" class="inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="px-6 py-2 rounded-full font-bold transition text-sm cursor-pointer
+                                {% if profile_user in request.user.following.all %}
+                                    bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800
+                                {% else %}
+                                    bg-white text-zinc-950 hover:bg-zinc-200
+                                {% endif %}">
+                                {% if profile_user in request.user.following.all %}
+                                    Unfollow
+                                {% else %}
+                                    Follow
+                                {% endif %}
+                            </button>
+                        </form>
                     {% endif %}
                 </div>
             </div>
@@ -241,6 +253,7 @@
     .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
+<!-- FIXED: Separated the external library import from the inline script -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

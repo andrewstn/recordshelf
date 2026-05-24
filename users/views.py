@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import ProfileEditForm
+from django.contrib.auth import login
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -51,3 +52,37 @@ def edit_profile(request):
         form = ProfileEditForm(instance=request.user)
         
     return render(request, 'edit_profile.html', {'form': form})
+
+@login_required
+def toggle_follow(request, username):
+    """Allows a user to follow or unfollow another user."""
+    user_to_toggle = get_object_or_404(User, username=username)
+    
+    # Prevent users from following themselves
+    if request.user == user_to_toggle:
+        messages.warning(request, "You cannot follow yourself.")
+        return redirect('profile', username=username)
+
+    if user_to_toggle in request.user.following.all():
+        request.user.following.remove(user_to_toggle)
+        messages.info(request, f"You unfollowed @{user_to_toggle.username}.")
+    else:
+        request.user.following.add(user_to_toggle)
+        messages.success(request, f"You are now following @{user_to_toggle.username}!")
+
+    return redirect('profile', username=username)
+
+def signup(request):
+    """Handles new user registration."""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Log the user in immediately after registering
+            login(request, user)
+            messages.success(request, f"Welcome to the club, {user.username}!")
+            return redirect('profile', username=user.username)
+    else:
+        form = CustomUserCreationForm()
+        
+    return render(request, 'registration/signup.html', {'form': form})

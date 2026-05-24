@@ -9,4 +9,6 @@ urlpatterns = [
     # Dynamic profile routing
     path('profile/<str:username>/', user_profile, name='profile'),
     path('edit/', views.edit_profile, name='edit_profile'),
+
+    path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
 ]

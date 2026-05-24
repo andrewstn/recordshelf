@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-16">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-black text-white mb-2">Join the Club</h1>
+        <p class="text-zinc-400">Start tracking your physical collection.</p>
+    </div>
+    
+    <form method="POST" class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-xl">
+        {% csrf_token %}
+        
+        <div class="space-y-5">
+            {% for field in form %}
+                <div>
+                    <label class="block text-sm font-bold text-zinc-400 mb-2">{{ field.label }}</label>
+                    <!-- We manually render the input to inject our Tailwind classes -->
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.html_name }}" {% if field.field.required %}required{% endif %} class="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition">
+                    
+                    {% if field.help_text %}
+                        <p class="text-xs text-zinc-500 mt-2">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    
+                    {% for error in field.errors %}
+                        <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <button type="submit" class="w-full bg-brand text-zinc-950 py-3 rounded-md font-bold hover:bg-white transition mt-8 cursor-pointer shadow-lg shadow-brand/20">
+            Create Account
+        </button>
+    </form>
+    
+    <p class="text-center text-zinc-500 mt-8">
+        Already have an account? 
+        <a href="{% url 'login' %}" class="text-white hover:text-brand font-medium transition">Log in</a>
+    </p>
+</div>
+{% endblock %}

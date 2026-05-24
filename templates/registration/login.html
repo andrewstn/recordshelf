@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-16">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-black text-white mb-2">Welcome Back</h1>
+        <p class="text-zinc-400">Log in to manage your collection.</p>
+    </div>
+    
+    <form method="POST" class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-xl">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="bg-red-950/50 border border-red-900 text-red-400 p-3 rounded mb-6 text-sm">
+                Your username and password didn't match. Please try again.
+            </div>
+        {% endif %}
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-zinc-400 mb-2">Username</label>
+                <input type="text" name="username" autofocus required class="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold text-zinc-400 mb-2">Password</label>
+                <input type="password" name="password" required class="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition">
+            </div>
+        </div>
+        
+        <button type="submit" class="w-full bg-brand text-zinc-950 py-3 rounded-md font-bold hover:bg-white transition mt-8 cursor-pointer shadow-lg shadow-brand/20">
+            Log In
+        </button>
+        
+        <!-- Hidden field Django uses to redirect you after logging in -->
+        <input type="hidden" name="next" value="{{ next|default:'/' }}">
+    </form>
+    
+    <p class="text-center text-zinc-500 mt-8">
+        Don't have an account? 
+        <a href="{% url 'signup' %}" class="text-white hover:text-brand font-medium transition">Sign up</a>
+    </p>
+</div>
+{% endblock %}
