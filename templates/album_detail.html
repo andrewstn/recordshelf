@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    
+    <a href="javascript:history.back()" class="text-zinc-500 hover:text-white transition flex items-center gap-2 mb-8 w-max">
+        &larr; Back to results
+    </a>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+        
+        <div class="md:col-span-4">
+            <div class="sticky top-8">
+                {% if album.images.0.resource_url %}
+                    <img src="{{ album.images.0.resource_url }}" alt="{{ album.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-xl shadow-2xl mb-6 border border-zinc-800">
+                {% else %}
+                    <div class="w-full aspect-square bg-zinc-800 rounded-xl mb-6 flex items-center justify-center text-zinc-600 border border-zinc-700">No Cover Available</div>
+                {% endif %}
+
+                <div class="space-y-3">
+                    {% if user.is_authenticated %}
+                        {% if in_collection %}
+                            <button disabled class="w-full bg-zinc-800 text-zinc-500 font-bold py-3 rounded-md cursor-not-allowed border border-zinc-700">
+                                ✓ In Your Collection
+                            </button>
+                        {% else %}
+                            <form method="POST" action="{% url 'add_record' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="discogs_id" value="{{ discogs_id }}">
+                                <button type="submit" class="w-full bg-brand text-zinc-950 hover:bg-white hover:text-zinc-900 font-bold py-3 rounded-md transition cursor-pointer shadow-lg shadow-brand/20">
+                                    + Add to Collection
+                                </button>
+                            </form>
+                        {% endif %}
+                        <button class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-md transition border border-zinc-700">
+                            ★ Add to Wishlist
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="block text-center w-full bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 rounded-md transition">
+                            Log in to Add Record
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-8">
+            
+            <div class="mb-10">
+                <h1 class="text-5xl font-black text-white mb-2 leading-tight">{{ album.title }}</h1>
+                <p class="text-2xl text-zinc-400 mb-6">
+                    {% for artist in album.artists %}
+                        {{ artist.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                
+                <div class="flex gap-4 text-sm font-medium">
+                    <span class="bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full">Released: {{ album.year|default:"Unknown" }}</span>
+                    {% if album.genres %}
+                        <span class="bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full">{{ album.genres.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-12 bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 flex items-center justify-between">
+                <div>
+                    <h3 class="text-white font-bold mb-1">Listen to this record</h3>
+                    <p class="text-sm text-zinc-500">Spotify streaming integration coming soon.</p>
+                </div>
+                <div class="flex gap-2">
+                    <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-600">▶</div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-6 border-b border-zinc-800 pb-4">Tracklist</h2>
+                
+                {% if album.tracklist %}
+                    <div class="flex flex-col gap-2">
+                        {% for track in album.tracklist %}
+                            <div class="flex items-center justify-between p-4 rounded-lg hover:bg-zinc-900/50 transition group border border-transparent hover:border-zinc-800">
+                                <div class="flex items-center gap-4">
+                                    <span class="text-zinc-600 font-medium w-6 text-right">{{ track.position }}</span>
+                                    <span class="text-zinc-200 font-medium group-hover:text-white transition">{{ track.title }}</span>
+                                </div>
+                                <span class="text-zinc-500 text-sm">{{ track.duration }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-zinc-500">No tracklist data available for this release.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

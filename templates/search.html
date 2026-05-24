@@ -37,12 +37,18 @@
                 <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col hover:bg-zinc-800 transition">
                     
                     {% if item.cover_image and "spacer.gif" not in item.cover_image %}
-                        <img src="{{ item.cover_image }}" alt="{{ item.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg">
+                        <a href="{% url 'album_detail' item.id %}" class="block mb-4">
+                            <img src="{{ item.cover_image }}" alt="{{ item.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md shadow-lg hover:opacity-80 transition">
+                        </a>
                     {% else %}
-                        <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600">No Cover</div>
+                        <a href="{% url 'album_detail' item.id %}" class="block mb-4">
+                            <div class="w-full aspect-square bg-zinc-800 rounded-md flex items-center justify-center text-zinc-600 hover:bg-zinc-700 transition">No Cover</div>
+                        </a>
                     {% endif %}
                     
-                    <h3 class="text-md font-bold text-white leading-tight mb-1">{{ item.title }}</h3>
+                    <a href="{% url 'album_detail' item.id %}" class="hover:text-brand transition cursor-pointer">
+                        <h3 class="text-md font-bold text-white leading-tight mb-1">{{ item.title }}</h3>
+                    </a>
                     <p class="text-sm text-zinc-400 mb-4">{{ item.year|default:"Unknown Year" }}</p>
                     
                     {% if user.is_authenticated %}
