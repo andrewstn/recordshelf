@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Artist(models.Model):
     name = models.CharField(max_length=255)
@@ -18,16 +19,31 @@ class Record(models.Model):
         return f"{self.title} by {self.artist.name}"
 
 class CollectionItem(models.Model):
-    # This links the specific record to a specific user
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='collection')
-    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name='collected_by')
-    
-    # User-specific data for their copy
+    record = models.ForeignKey('Record', on_delete=models.CASCADE, related_name='collected_by')
     date_added = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)
     
+    # Variant tracking
+    variant_description = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text="e.g., 180g Black, Pink Marble Splatter, 1973 Original Pressing"
+    )
+    
+    # Rating System (1 to 5 stars)
+    rating = models.IntegerField(
+        blank=True, 
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="1 to 5 star rating"
+    )
+    
+    # Review Text?
+    review = models.TextField(blank=True, null=True)
+    
     class Meta:
-        # Prevents a user from adding the exact same record twice (unless you want to allow multiples later!)
         unique_together = ('user', 'record')
 
     def __str__(self):
