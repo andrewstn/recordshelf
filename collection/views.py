@@ -5,6 +5,9 @@ from .discogs import search_discogs, fetch_discogs_master
 from .services import add_record_to_collection
 from .models import CollectionItem
 from .forms import CollectionItemForm
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 def search_page(request):
     """Handles user search queries, pagination, and hits the Discogs API."""
@@ -137,3 +140,15 @@ def toggle_favorite(request, item_id):
         request.user.save()
             
     return redirect('profile', username=request.user.username)
+
+@login_required
+@require_POST
+def update_shelf_order(request):
+    """Receives an AJAX POST from SortableJS and saves the new shelf order."""
+    try:
+        data = json.loads(request.body)
+        request.user.shelf_order = data.get('order', [])
+        request.user.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)

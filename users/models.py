@@ -31,6 +31,10 @@ class CustomUser(AbstractUser):
         related_name='shelved_by', 
         blank=True
     )
+    shelf_order = models.JSONField(
+        default=list,
+        blank=True
+        )  # To maintain the order of records on the shelf
 
     # Wishlist
     wishlist = models.ManyToManyField('collection.Record', related_name='wishlisted_by', blank=True)

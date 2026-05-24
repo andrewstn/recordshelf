@@ -73,9 +73,12 @@
         <h2 class="text-xl font-bold mb-6 text-zinc-100">The Shelf</h2>
         
         {% if shelf_items %}
-        <div class="flex gap-6 overflow-x-auto py-6 px-2 -mx-2 snap-x snap-mandatory hide-scrollbars">
+        <div id="shelf-container" 
+             data-is-owner="{% if request.user == profile_user %}true{% else %}false{% endif %}"
+             data-update-url="{% url 'update_shelf_order' %}"
+             class="flex gap-6 overflow-x-auto py-6 px-2 -mx-2 snap-x snap-mandatory hide-scrollbars">
             {% for item in shelf_items %}
-            <div class="snap-start flex-none w-56 group relative cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10">
+            <div data-id="{{ item.record.id }}" class="snap-start flex-none w-56 group relative cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10">
                 {% if item.record.cover_art_url %}
                     <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="w-56 h-56 rounded-md shadow-2xl object-cover mb-4">
                 {% else %}
@@ -225,4 +228,46 @@
     .hide-scrollbars::-webkit-scrollbar { display: none; }
     .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shelf = document.getElementById('shelf-container');
+        
+        // Only initialize Sortable if the container exists AND the user owns the profile
+        if (shelf && shelf.dataset.isOwner === 'true') {
+            
+            // Grab the CSRF token from one of the existing forms on the page
+            const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
+            const updateUrl = shelf.dataset.updateUrl;
+
+            Sortable.create(shelf, {
+                animation: 200, 
+                ghostClass: 'opacity-20', 
+                dragClass: 'scale-105', 
+                
+                onEnd: function (evt) {
+                    const newOrder = Array.from(shelf.children).map(row => parseInt(row.dataset.id));
+                    
+                    fetch(updateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ order: newOrder })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.status !== 'success') {
+                            console.error('Failed to save order:', data.message);
+                        }
+                    })
+                    .catch(error => console.error('Error saving shelf order:', error));
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

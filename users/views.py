@@ -19,9 +19,15 @@ def user_profile(request, username):
     
     full_collection = profile_user.collection.all().select_related('record', 'record__artist').order_by('-date_added')
     
-    shelf_items = profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
+    # list() wrapper around the entire query below
+    shelf_items = list(
+        profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
+    )
     
-    # Look up the specific CollectionItem that matches the user's favorite record
+    # Now that it's a true Python list, .sort() will work perfectly!
+    order_list = profile_user.shelf_order or []
+    shelf_items.sort(key=lambda x: order_list.index(x.record.id) if x.record.id in order_list else 999)
+    
     favorite_item = None
     if profile_user.favorite_record:
         favorite_item = profile_user.collection.filter(record=profile_user.favorite_record).first()
@@ -29,7 +35,7 @@ def user_profile(request, username):
     context = {
         'profile_user': profile_user,
         'shelf_items': shelf_items,
-        'favorite_item': favorite_item, # Swapped to pass the item instance
+        'favorite_item': favorite_item,
         'full_collection': full_collection,
         'total_records': full_collection.count(),
     }
