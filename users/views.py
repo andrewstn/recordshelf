@@ -23,8 +23,6 @@ def user_profile(request, username):
     shelf_items = list(
         profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
     )
-    
-    # Now that it's a true Python list, .sort() will work perfectly!
     order_list = profile_user.shelf_order or []
     shelf_items.sort(key=lambda x: order_list.index(x.record.id) if x.record.id in order_list else 999)
     

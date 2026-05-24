@@ -38,16 +38,20 @@
 
         {% if favorite_item %}
         <div class="flex items-center gap-4 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80 shadow-2xl max-w-md w-full md:w-auto hover:bg-zinc-800/50 transition">
-            {% if favorite_item.record.cover_art_url %}
-                <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="w-20 h-20 md:w-24 md:h-24 rounded shadow-md object-cover border border-zinc-700 flex-shrink-0">
-            {% else %}
-                <div class="w-20 h-20 md:w-24 md:h-24 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-xs flex-shrink-0">No Cover</div>
-            {% endif %}
+            <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="flex-shrink-0 block hover:opacity-80 transition cursor-pointer">
+                {% if favorite_item.record.cover_art_url %}
+                    <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="w-20 h-20 md:w-24 md:h-24 rounded shadow-md object-cover border border-zinc-700">
+                {% else %}
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-xs">No Cover</div>
+                {% endif %}
+            </a>
             <div class="overflow-hidden">
                 <p class="text-brand text-xs font-bold uppercase tracking-widest mb-1 flex items-center gap-1">
                     <span>★</span> Top Spin
                 </p>
-                <h3 class="text-lg md:text-xl font-black text-white leading-tight truncate">{{ favorite_item.record.title }}</h3>
+                <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="hover:text-brand transition cursor-pointer inline-block">
+                    <h3 class="text-lg md:text-xl font-black text-white leading-tight truncate">{{ favorite_item.record.title }}</h3>
+                </a>
                 <p class="text-sm text-zinc-400 truncate">{{ favorite_item.record.artist.name }}</p>
                 
                 {% if favorite_item.variant_description %}
@@ -78,13 +82,17 @@
              data-update-url="{% url 'update_shelf_order' %}"
              class="flex gap-6 overflow-x-auto py-6 px-2 -mx-2 snap-x snap-mandatory hide-scrollbars">
             {% for item in shelf_items %}
-            <div data-id="{{ item.record.id }}" class="snap-start flex-none w-56 group relative cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10">
-                {% if item.record.cover_art_url %}
-                    <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="w-56 h-56 rounded-md shadow-2xl object-cover mb-4">
-                {% else %}
-                    <div class="w-56 h-56 bg-zinc-800 rounded-md mb-4 flex items-center justify-center shadow-xl text-zinc-600">No Cover</div>
-                {% endif %}
-                <h3 class="text-md font-bold text-white truncate">{{ item.record.title }}</h3>
+            <div data-id="{{ item.record.id }}" class="snap-start flex-none w-56 group relative transition-all duration-300 hover:scale-105 hover:z-10">
+                <a href="{% url 'album_detail' item.record.discogs_id %}" class="block mb-4 hover:opacity-80 transition cursor-pointer">
+                    {% if item.record.cover_art_url %}
+                        <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="w-56 h-56 rounded-md shadow-2xl object-cover">
+                    {% else %}
+                        <div class="w-56 h-56 bg-zinc-800 rounded-md flex items-center justify-center shadow-xl text-zinc-600">No Cover</div>
+                    {% endif %}
+                </a>
+                <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-brand transition cursor-pointer block">
+                    <h3 class="text-md font-bold text-white truncate">{{ item.record.title }}</h3>
+                </a>
                 <p class="text-sm text-zinc-400 truncate">{{ item.record.artist.name }}</p>
                 
                 {% if item.variant_description %}
@@ -113,14 +121,18 @@
         <div id="collection-view" class="grid grid-cols-2 md:grid-cols-4 gap-6">
             {% for item in full_collection %}
             <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
-                {% if item.record.cover_art_url %}
-                    <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
-                {% else %}
-                    <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
-                {% endif %}
+                <a href="{% url 'album_detail' item.record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
+                    {% if item.record.cover_art_url %}
+                        <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                    {% else %}
+                        <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
+                    {% endif %}
+                </a>
                 
                 <div class="card-text flex flex-col flex-grow">
-                    <h3 class="text-lg font-bold text-white leading-tight mb-1">{{ item.record.title }}</h3>
+                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-brand transition cursor-pointer block w-max max-w-full">
+                        <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
+                    </a>
                     <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
                     
                     <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-3 border-t border-zinc-800/50">
