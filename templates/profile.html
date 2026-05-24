@@ -214,7 +214,7 @@
                         {% if request.user == profile_user %}
                             <div class="mt-3 pt-2 border-t border-zinc-800/30 flex flex-col gap-2">
                                 <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 py-1.5 rounded transition text-xs font-medium border border-zinc-800">
-                                    Edit Copy
+                                    Edit Variant/Rating
                                 </a>
                                 
                                 <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
