@@ -42,15 +42,16 @@ class CustomUser(AbstractUser):
         related_name='wishlisted_by',
         blank=True)
 
-    # Profile Themes
-    THEME_CHOICES = [
-        ('default', 'Default Dark'),
-        ('midnight', 'Midnight Blue'),
-        ('sunset', 'Sunset Orange'),
-        ('forest', 'Forest Green'),
-        ('berry', 'Berry Purple'),
-    ]
-    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='default')
+    # Theme preferences
+    THEME_CHOICES = (
+        ('dark', 'Dark (Default)'),
+        ('light', 'Light'),
+        ('system', 'System Default'),
+    )
+    theme = models.CharField(max_length=10, choices=THEME_CHOICES, default='dark')
+
+    # Track when the username was last changed
+    last_username_change = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.username

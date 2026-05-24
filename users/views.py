@@ -9,6 +9,9 @@ from .forms import ProfileEditForm
 from django.contrib.auth import login
 from .models import Activity
 from django.db.models import Count, Q
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.utils import timezone
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -53,15 +56,38 @@ def user_profile(request, username):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect('profile', username=request.user.username)
+        # Check which form was submitted based on the button's name attribute
+        if 'update_profile' in request.POST:
+            profile_form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
+            password_form = PasswordChangeForm(request.user) # Blank password form
+            
+            if profile_form.is_valid():
+                user = profile_form.save(commit=False)
+                # If the username changed, update the timestamp
+                if 'username' in profile_form.changed_data:
+                    user.last_username_change = timezone.now()
+                user.save()
+                messages.success(request, "Profile updated successfully!")
+                return redirect('edit_profile')
+                
+        elif 'update_password' in request.POST:
+            profile_form = ProfileEditForm(instance=request.user) # Blank profile form
+            password_form = PasswordChangeForm(request.user, request.POST)
+            
+            if password_form.is_valid():
+                user = password_form.save()
+                # Crucial: This prevents the user from being logged out after changing their password!
+                update_session_auth_hash(request, user)
+                messages.success(request, "Password updated securely!")
+                return redirect('edit_profile')
     else:
-        form = ProfileEditForm(instance=request.user)
+        profile_form = ProfileEditForm(instance=request.user)
+        password_form = PasswordChangeForm(request.user)
         
-    return render(request, 'edit_profile.html', {'form': form})
+    return render(request, 'edit_profile.html', {
+        'profile_form': profile_form,
+        'password_form': password_form
+    })
 
 @login_required
 def toggle_follow(request, username):
