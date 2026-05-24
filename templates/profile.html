@@ -5,18 +5,28 @@
     
     <!-- Profile Header -->
     <div class="mb-12 border-b border-zinc-800 pb-8 flex justify-between items-end">
-        <div>
-            <h1 class="text-4xl font-black text-white mb-2">@{{ profile_user.username }}</h1>
-            <p class="text-zinc-400">
-                <span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers &middot; 
-                <span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following
-            </p>
+        <div class="flex items-center gap-6">
+            <!-- Profile Picture -->
+            {% if profile_user.profile_picture %}
+                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-24 h-24 rounded-full object-cover border-4 border-zinc-800">
+            {% else %}
+                <div class="w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center text-3xl font-bold text-zinc-500 border-4 border-zinc-700">
+                    {{ profile_user.username|make_list|first|upper }}
+                </div>
+            {% endif %}
+
+            <div>
+                <h1 class="text-4xl font-black text-white mb-2">@{{ profile_user.username }}</h1>
+                <p class="text-zinc-400">
+                    <span class="font-bold text-zinc-200">{{ total_records }}</span> Records &middot; 
+                    <span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers &middot; 
+                    <span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following
+                </p>
+            </div>
         </div>
         
         {% if request.user.is_authenticated and request.user != profile_user %}
-            <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition">
-                Follow
-            </button>
+            <button class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition">Follow</button>
         {% endif %}
     </div>
 
@@ -66,9 +76,98 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- Full Collection Section -->
+    <div class="mb-12 border-t border-zinc-800 pt-12">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-zinc-100">Entire Collection</h2>
+            
+            <!-- Toggle Controls -->
+            <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+                <button onclick="setGrid()" id="btn-grid" class="px-4 py-1.5 rounded-md bg-zinc-800 text-white text-sm font-medium transition cursor-pointer">Grid</button>
+                <button onclick="setList()" id="btn-list" class="px-4 py-1.5 rounded-md text-zinc-400 hover:text-white text-sm font-medium transition cursor-pointer">List</button>
+            </div>
+        </div>
+
+        <!-- Collection Container -->
+        <div id="collection-view" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {% for item in full_collection %}
+            <!-- Record Card -->
+            <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
+                {% if item.record.cover_art_url %}
+                    <img src="{{ item.record.cover_art_url }}" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                {% else %}
+                    <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
+                {% endif %}
+                
+                <div class="card-text">
+                    <h3 class="text-lg font-bold text-white leading-tight mb-1">{{ item.record.title }}</h3>
+                    <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
+                    
+                    <!-- Variant & Rating Info -->
+                    <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-2 border-t border-zinc-800/50">
+                        {% if item.variant_description %}
+                            <span class="text-brand">{{ item.variant_description }}</span>
+                        {% endif %}
+                        {% if item.rating %}
+                            <span class="text-yellow-500 text-sm tracking-widest mt-1">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-zinc-500 col-span-full">No records in collection yet.</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
-<!-- Custom styling to hide the default browser scrollbar while keeping the swipe/scroll functionality -->
+<!-- JavaScript for Grid/List Toggle -->
+<script>
+    function setGrid() {
+        const container = document.getElementById('collection-view');
+        const btnGrid = document.getElementById('btn-grid');
+        const btnList = document.getElementById('btn-list');
+        const cards = document.querySelectorAll('.record-card');
+        const images = document.querySelectorAll('.card-img');
+        
+        // Update buttons
+        btnGrid.classList.add('bg-zinc-800', 'text-white');
+        btnGrid.classList.remove('text-zinc-400');
+        btnList.classList.remove('bg-zinc-800', 'text-white');
+        btnList.classList.add('text-zinc-400');
+
+        // Update Layout
+        container.className = "grid grid-cols-2 md:grid-cols-4 gap-6";
+        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col");
+        images.forEach(img => img.className = "w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img");
+    }
+
+    function setList() {
+        const container = document.getElementById('collection-view');
+        const btnGrid = document.getElementById('btn-grid');
+        const btnList = document.getElementById('btn-list');
+        const cards = document.querySelectorAll('.record-card');
+        const images = document.querySelectorAll('.card-img');
+        
+        // Update buttons
+        btnList.classList.add('bg-zinc-800', 'text-white');
+        btnList.classList.remove('text-zinc-400');
+        btnGrid.classList.remove('bg-zinc-800', 'text-white');
+        btnGrid.classList.add('text-zinc-400');
+
+        // Update Layout
+        container.className = "flex flex-col gap-4";
+        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-row items-center gap-6");
+        images.forEach(img => img.className = "w-24 h-24 object-cover rounded-md shadow-lg card-img mb-0 flex-shrink-0");
+    }
+</script>
+
+<!-- CSS to hide default scrollbars -->
 <style>
     .hide-scrollbars::-webkit-scrollbar { display: none; }
     .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
