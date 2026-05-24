@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center py-32 text-center">
+    <h1 class="text-5xl font-extrabold tracking-tight mb-4">
+        Showcase your <span class="text-brand">vinyl collection.</span>
+    </h1>
+    <p class="text-xl text-zinc-400 mb-8 max-w-2xl mx-auto">
+        A social platform for record collectors. Track your shelf, discover new pressings, and share your favorite spins.
+    </p>
+    
+    {% if not user.is_authenticated %}
+        <a href="{% url 'signup' %}" class="bg-brand text-zinc-950 px-8 py-3 rounded-full font-bold text-lg hover:bg-white hover:text-zinc-900 transition-all duration-200">
+            Start Your Collection
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

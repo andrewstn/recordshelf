@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 urlpatterns = [
 path('admin/', admin.site.urls),
 path('accounts/', include('users.urls')),
+# This empty string '' is what catches requests to http://127.0.0.1:8000/
+path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]
