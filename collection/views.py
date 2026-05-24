@@ -3,32 +3,37 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .discogs import search_discogs, fetch_discogs_master
 from .services import add_record_to_collection
-from .models import CollectionItem
+from .models import CollectionItem, Record
 from .forms import CollectionItemForm
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
+from django.db.models import Count
 
 def search_page(request):
-    """Handles user search queries, pagination, and hits the Discogs API."""
     query = request.GET.get('q', '')
-    
-    # Get the page number from the URL, defaulting to 1
     page = request.GET.get('page', 1)
     
     results = []
     pagination = {}
+    popular_records = []
     
     if query:
+        # If there's a query, hit the Discogs API (your existing logic)
         results, pagination = search_discogs(query, page)
+    else:
+        # If no query, grab the top 12 most collected records from our local DB
+        popular_records = Record.objects.annotate(
+            collection_count=Count('collected_by')
+        ).order_by('-collection_count')[:12]
         
-    context = {
-        'query': query, 
-        'results': results, 
-        'pagination': pagination
-    }
-    return render(request, 'search.html', context)
+    return render(request, 'search.html', {
+        'query': query,
+        'results': results,
+        'pagination': pagination,
+        'popular_records': popular_records
+    })
 
 @login_required
 def add_record(request):

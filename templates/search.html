@@ -6,16 +6,16 @@
     <div class="mb-12 text-center">
         <h1 class="text-4xl font-black text-white mb-6">Find Your Grails</h1>
         
-        <form method="GET" action="{% url 'search' %}" class="max-w-2xl mx-auto flex gap-4">
+        <form method="GET" action="{% url 'search' %}" class="max-w-2xl mx-auto relative">
             <input 
                 type="text" 
                 name="q" 
                 value="{{ query }}" 
                 placeholder="Search by album, artist, or keyword..." 
-                class="w-full bg-zinc-900 border border-zinc-700 text-white px-6 py-4 rounded-full focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition text-lg"
+                class="w-full bg-zinc-900/80 border border-zinc-700 rounded-full py-4 pl-6 pr-32 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition shadow-xl text-lg"
                 required
             >
-            <button type="submit" class="bg-brand text-zinc-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-white transition cursor-pointer">
+            <button type="submit" class="absolute right-2 top-2 bottom-2 bg-brand text-zinc-950 px-8 rounded-full font-bold hover:bg-white transition cursor-pointer">
                 Search
             </button>
         </form>
@@ -60,7 +60,7 @@
                             </button>
                         </form>
                     {% else %}
-                        <a href="{% url 'login' %}" class="mt-auto text-center w-full bg-zinc-800 text-zinc-400 font-semibold py-2 rounded-md transition text-sm">Log in to Add</a>
+                        <a href="{% url 'login' %}" class="mt-auto block text-center w-full bg-zinc-800 text-zinc-400 font-semibold py-2 rounded-md transition text-sm">Log in to Add</a>
                     {% endif %}
                     
                 </div>
@@ -88,6 +88,50 @@
         {% else %}
             <div class="text-center py-12 text-zinc-500">
                 <p class="text-lg">No records found for that search. Try a different artist or album name.</p>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="flex justify-between items-end mb-6 border-b border-zinc-800 pb-4 mt-8">
+            <h2 class="text-xl font-bold text-zinc-100">Popular in the Community</h2>
+        </div>
+
+        {% if popular_records %}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for record in popular_records %}
+                <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col hover:bg-zinc-800 transition">
+                    
+                    <a href="{% url 'album_detail' record.discogs_id %}" class="block mb-4">
+                        {% if record.cover_art_url %}
+                            <img src="{{ record.cover_art_url }}" alt="{{ record.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md shadow-lg hover:opacity-80 transition">
+                        {% else %}
+                            <div class="w-full aspect-square bg-zinc-800 rounded-md flex items-center justify-center text-zinc-600 hover:bg-zinc-700 transition">No Cover</div>
+                        {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-brand transition cursor-pointer">
+                        <h3 class="text-md font-bold text-white leading-tight mb-1">{{ record.title }}</h3>
+                    </a>
+                    <p class="text-sm text-zinc-400 mb-4">{{ record.artist.name }}</p>
+                    
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_record' %}" class="mt-auto">
+                            {% csrf_token %}
+                            <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
+                            <button type="submit" class="w-full bg-zinc-800 hover:bg-brand hover:text-zinc-950 text-white font-semibold py-2 rounded-md transition cursor-pointer text-sm">
+                                + Add to Collection
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="mt-auto block text-center w-full bg-zinc-800 text-zinc-400 font-semibold py-2 rounded-md transition text-sm">Log in to Add</a>
+                    {% endif %}
+                    
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-16 bg-zinc-900/30 border border-zinc-800 border-dashed rounded-xl">
+                <p class="text-zinc-500 text-lg">The community hasn't logged any records yet. Be the first!</p>
             </div>
         {% endif %}
     {% endif %}
