@@ -14,6 +14,7 @@ class Record(models.Model):
     release_year = models.IntegerField(blank=True, null=True)
     cover_art_url = models.URLField(max_length=500, blank=True, null=True)
     discogs_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    year = models.CharField(max_length=4, null=True, blank=True)
     
     def __str__(self):
         return f"{self.title} by {self.artist.name}"

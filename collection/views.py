@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
 from collection.spotify import get_spotify_album_id
 from .discogs import search_discogs, fetch_discogs_master
-from .services import add_record_to_collection
+from .services import add_record_to_collection, get_or_create_record
 from .models import CollectionItem, Record
 from .forms import CollectionItemForm
 import json
@@ -63,14 +62,20 @@ def album_detail(request, discogs_id):
         messages.error(request, "Could not retrieve album details from Discogs.")
         return redirect('search')
 
-    # Check if the logged-in user already has this in their collection
+    # Check if the logged-in user already has this in their collection/wishlist
     in_collection = False
+    in_wishlist = False
+
     if request.user.is_authenticated:
         in_collection = CollectionItem.objects.filter(
             user=request.user, 
             record__discogs_id=discogs_id
         ).exists()
-        
+    
+    in_wishlist = request.user.wishlist.filter(
+        discogs_id=discogs_id
+        ).exists()
+    
     title = album_data.get('title', '')
     artist_name = ''
     
@@ -84,7 +89,8 @@ def album_detail(request, discogs_id):
         'album': album_data,
         'in_collection': in_collection,
         'discogs_id': discogs_id,
-        'spotify_id': spotify_id  # NEW: Pass the ID to the HTML template
+        'spotify_id': spotify_id,
+        'in_wishlist': in_wishlist
     }
     return render(request, 'album_detail.html', context)
 
@@ -173,3 +179,28 @@ def update_shelf_order(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@login_required
+def toggle_wishlist(request):
+    if request.method == 'POST':
+        discogs_id = request.POST.get('discogs_id')
+        
+        # Ensures the record has a title and cover art
+        record = get_or_create_record(discogs_id)
+        
+        if not record:
+            messages.error(request, "Could not find this record to add to wishlist.")
+            return redirect(request.META.get('HTTP_REFERER', 'search'))
+            
+        # Toggle the relationship
+        if record in request.user.wishlist.all():
+            request.user.wishlist.remove(record)
+            messages.success(request, "Removed from your wishlist.")
+        else:
+            request.user.wishlist.add(record)
+            # Log the activity
+            Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
+            messages.success(request, "Added to your wishlist!")
+            
+    # Redirect back to exactly where they came from (the album page)
+    return redirect(request.META.get('HTTP_REFERER', 'search'))

@@ -37,7 +37,10 @@ class CustomUser(AbstractUser):
         )  # To maintain the order of records on the shelf
 
     # Wishlist
-    wishlist = models.ManyToManyField('collection.Record', related_name='wishlisted_by', blank=True)
+    wishlist = models.ManyToManyField(
+        'collection.Record',
+        related_name='wishlisted_by',
+        blank=True)
 
     # Profile Themes
     THEME_CHOICES = [
@@ -57,6 +60,7 @@ class Activity(models.Model):
         ('ADD', 'added to their collection'),
         ('SHELF', 'placed on their shelf'),
         ('FAVORITE', 'set as their Top Spin'),
+        ('WISHLIST', 'added to their wishlist'),
     )
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='activities')

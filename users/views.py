@@ -20,9 +20,15 @@ User = get_user_model()
 def user_profile(request, username):
     profile_user = get_object_or_404(User, username=username)
     
+    # Check which tab is active (default is 'collection')
+    current_tab = request.GET.get('tab', 'collection')
+    
+    # Fetch the standard Collection
     full_collection = profile_user.collection.all().select_related('record', 'record__artist').order_by('-date_added')
     
-    # list() wrapper around the entire query below
+    # Fetch the new Wishlist
+    wishlist_items = profile_user.wishlist.all().select_related('artist')
+
     shelf_items = list(
         profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
     )
@@ -38,7 +44,9 @@ def user_profile(request, username):
         'shelf_items': shelf_items,
         'favorite_item': favorite_item,
         'full_collection': full_collection,
+        'wishlist_items': wishlist_items,
         'total_records': full_collection.count(),
+        'current_tab': current_tab,
     }
     return render(request, 'profile.html', context)
 

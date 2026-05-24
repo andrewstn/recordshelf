@@ -1,44 +1,49 @@
-from .models import Artist, Record, CollectionItem
+from .models import Record, CollectionItem, Artist
 from .discogs import fetch_discogs_master
 
-def add_record_to_collection(user, discogs_id):
-    """
-    Checks if a record exists locally. If not, fetches from Discogs.
-    Then adds the record to the user's collection.
-    """
-    # Check if the Record already exists in the database
+def get_or_create_record(discogs_id):
+    """Safely fetches or creates a fully populated Record from Discogs."""
+    # Check if we already have it in the local database
     record = Record.objects.filter(discogs_id=discogs_id).first()
+    if record:
+        return record
+        
+    # If not, fetch the full details from Discogs
+    album_data = fetch_discogs_master(discogs_id)
+    if not album_data:
+        return None
+        
+    # Safely get the artist name
+    artist_name = "Unknown Artist"
+    if album_data.get('artists'):
+        artist_name = album_data['artists'][0].get('name', 'Unknown Artist')
+        
+    # 1. Get or Create the Artist
+    artist, _ = Artist.objects.get_or_create(name=artist_name)
+    
+    # 2. Create the fully populated Record
+    record = Record.objects.create(
+        discogs_id=discogs_id,
+        title=album_data.get('title', 'Unknown Title'),
+        artist=artist,
+        year=album_data.get('year'),
+        # Ensure your dictionary keys match what fetch_discogs_master returns!
+        cover_art_url=album_data.get('images', [{}])[0].get('resource_url', '')
+    )
+    
+    return record
+
+def add_record_to_collection(user, discogs_id):
+    """Adds a record to a user's collection, returning the item and a boolean."""
+    # NOW we use our new helper function!
+    record = get_or_create_record(discogs_id)
     
     if not record:
-        # If it doesn't exist, fetch the full data from Discogs
-        data = fetch_discogs_master(discogs_id)
-        if not data:
-            return None, False
-            
-        # Get or create the Artist
-        # Discogs data structure puts artists in a list
-        artist_name = data['artists'][0]['name']
-        artist, created = Artist.objects.get_or_create(name=artist_name)
+        return None, False
         
-        # Extract the best image (fallback to empty string if none exist)
-        cover_url = ""
-        if 'images' in data and len(data['images']) > 0:
-            cover_url = data['images'][0]['resource_url']
-            
-        # Create the Record in PostgreSQL
-        record = Record.objects.create(
-            title=data['title'],
-            artist=artist,
-            release_year=data.get('year'),
-            cover_art_url=cover_url,
-            discogs_id=discogs_id
-        )
-        
-    # Link the Record to the User's collection
-    # get_or_create prevents adding the exact same record twice to the same user
-    collection_item, created = CollectionItem.objects.get_or_create(
+    # Create the collection item
+    item, created = CollectionItem.objects.get_or_create(
         user=user,
         record=record
     )
-    
-    return collection_item, created
+    return item, created

@@ -121,89 +121,136 @@
     </div>
 
     <div class="mb-12 border-t border-zinc-800 pt-12">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-zinc-100">Entire Collection</h2>
+        
+        <div class="flex justify-between items-end mb-8">
+            <div class="flex gap-6 border-b border-zinc-800 pb-2">
+                <a href="?tab=collection" class="text-lg font-bold transition-colors border-b-2 px-1 relative top-[10px]
+                    {% if current_tab != 'wishlist' %}text-white border-brand{% else %}text-zinc-500 border-transparent hover:text-zinc-300{% endif %}">
+                    Collection
+                </a>
+                <a href="?tab=wishlist" class="text-lg font-bold transition-colors border-b-2 px-1 relative top-[10px]
+                    {% if current_tab == 'wishlist' %}text-white border-brand{% else %}text-zinc-500 border-transparent hover:text-zinc-300{% endif %}">
+                    Wishlist
+                </a>
+            </div>
             
-            <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+            <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800 mb-2">
                 <button onclick="setGrid()" id="btn-grid" class="px-4 py-1.5 rounded-md bg-zinc-800 text-white text-sm font-medium transition cursor-pointer">Grid</button>
                 <button onclick="setList()" id="btn-list" class="px-4 py-1.5 rounded-md text-zinc-400 hover:text-white text-sm font-medium transition cursor-pointer">List</button>
             </div>
         </div>
 
         <div id="collection-view" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {% for item in full_collection %}
-            <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
-                <a href="{% url 'album_detail' item.record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
-                    {% if item.record.cover_art_url %}
-                        <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
-                    {% else %}
-                        <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
-                    {% endif %}
-                </a>
-                
-                <div class="card-text flex flex-col flex-grow">
-                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-brand transition cursor-pointer block w-max max-w-full">
-                        <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
-                    </a>
-                    <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
-                    
-                    <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-3 border-t border-zinc-800/50">
-                        {% if item.variant_description %}
-                            <span class="text-brand">{{ item.variant_description }}</span>
+            
+            {% if current_tab == 'wishlist' %}
+                {% for record in wishlist_items %}
+                <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col group relative">
+                    <a href="{% url 'album_detail' record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
+                        {% if record.cover_art_url %}
+                            <img src="{{ record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                        {% else %}
+                            <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
                         {% endif %}
-                        {% if item.rating %}
-                            <span class="text-yellow-500 text-sm tracking-widest mt-1">
-                                {% for i in "12345"|make_list %}
-                                    {% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}
-                                {% endfor %}
-                            </span>
+                    </a>
+                    
+                    <div class="card-text flex flex-col flex-grow">
+                        <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-brand transition cursor-pointer block w-max max-w-full">
+                            <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ record.title }}</h3>
+                        </a>
+                        <p class="text-sm text-zinc-400 mb-3">{{ record.artist.name }}</p>
+                        
+                        {% if request.user == profile_user %}
+                            <div class="mt-auto pt-3 border-t border-zinc-800/30 flex flex-col gap-2">
+                                <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0 p-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
+                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-red-400 border border-zinc-800 hover:border-red-900/50">
+                                        Remove from Wishlist
+                                    </button>
+                                </form>
+                            </div>
                         {% endif %}
                     </div>
-
-                    {% if request.user == profile_user %}
-                        <div class="mt-3 pt-2 border-t border-zinc-800/30 flex flex-col gap-2">
-                            <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 py-1.5 rounded transition text-xs font-medium border border-zinc-800">
-                                Edit Copy
-                            </a>
-                            
-                            <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
-                                {% csrf_token %}
-                                <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium
-                                    {% if item.record in request.user.shelf.all %}
-                                        bg-brand text-zinc-950 hover:bg-white hover:text-zinc-950
-                                    {% else %}
-                                        bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800
-                                    {% endif %}">
-                                    {% if item.record in request.user.shelf.all %}
-                                        ✓ On Shelf
-                                    {% else %}
-                                        Add to Shelf
-                                    {% endif %}
-                                </button>
-                            </form>
-
-                            <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0">
-                                {% csrf_token %}
-                                <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium border
-                                    {% if request.user.favorite_record == item.record %}
-                                        bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500 hover:text-zinc-950
-                                    {% else %}
-                                        bg-zinc-900 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
-                                    {% endif %}">
-                                    {% if request.user.favorite_record == item.record %}
-                                        ★ Top Spin
-                                    {% else %}
-                                        Make Top Spin
-                                    {% endif %}
-                                </button>
-                            </form>
-                        </div>
-                    {% endif %}
                 </div>
-            </div>
-            {% empty %}
-            <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">No records in collection yet.</p>
-            {% endfor %}
+                {% empty %}
+                <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">This wishlist is empty.</p>
+                {% endfor %}
+
+            {% else %}
+                {% for item in full_collection %}
+                <div class="record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col">
+                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
+                        {% if item.record.cover_art_url %}
+                            <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                        {% else %}
+                            <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="card-text flex flex-col flex-grow">
+                        <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-brand transition cursor-pointer block w-max max-w-full">
+                            <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
+                        </a>
+                        <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
+                        
+                        <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-3 border-t border-zinc-800/50">
+                            {% if item.variant_description %}
+                                <span class="text-brand">{{ item.variant_description }}</span>
+                            {% endif %}
+                            {% if item.rating %}
+                                <span class="text-yellow-500 text-sm tracking-widest mt-1">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if request.user == profile_user %}
+                            <div class="mt-3 pt-2 border-t border-zinc-800/30 flex flex-col gap-2">
+                                <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 py-1.5 rounded transition text-xs font-medium border border-zinc-800">
+                                    Edit Copy
+                                </a>
+                                
+                                <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium
+                                        {% if item.record in request.user.shelf.all %}
+                                            bg-brand text-zinc-950 hover:bg-white hover:text-zinc-950
+                                        {% else %}
+                                            bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800
+                                        {% endif %}">
+                                        {% if item.record in request.user.shelf.all %}
+                                            ✓ On Shelf
+                                        {% else %}
+                                            Add to Shelf
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium border
+                                        {% if request.user.favorite_record == item.record %}
+                                            bg-yellow-500/10 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500 hover:text-zinc-950
+                                        {% else %}
+                                            bg-zinc-900 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
+                                        {% endif %}">
+                                        {% if request.user.favorite_record == item.record %}
+                                            ★ Top Spin
+                                        {% else %}
+                                            Make Top Spin
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">No records in collection yet.</p>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>
@@ -223,7 +270,7 @@
         btnList.classList.add('text-zinc-400');
 
         container.className = "grid grid-cols-2 md:grid-cols-4 gap-6";
-        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col");
+        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-col group relative");
         images.forEach(img => img.className = "w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img");
         textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow");
     }
@@ -242,7 +289,7 @@
         btnGrid.classList.add('text-zinc-400');
 
         container.className = "flex flex-col gap-4";
-        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-row items-center gap-6");
+        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 transition hover:bg-zinc-800 flex flex-row items-center gap-6 group relative");
         images.forEach(img => img.className = "w-24 h-24 object-cover rounded-md shadow-lg card-img mb-0 flex-shrink-0");
         textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow justify-center");
     }
@@ -253,16 +300,12 @@
     .hide-scrollbars { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<!-- FIXED: Separated the external library import from the inline script -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const shelf = document.getElementById('shelf-container');
         
-        // Only initialize Sortable if the container exists AND the user owns the profile
         if (shelf && shelf.dataset.isOwner === 'true') {
-            
-            // Grab the CSRF token from one of the existing forms on the page
             const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
             const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
             const updateUrl = shelf.dataset.updateUrl;
