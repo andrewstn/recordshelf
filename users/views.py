@@ -8,6 +8,7 @@ from django.contrib import messages
 from .forms import ProfileEditForm
 from django.contrib.auth import login
 from .models import Activity
+from django.db.models import Count, Q
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -112,4 +113,30 @@ def social_feed(request):
         'activities': activities,
         'feed_title': feed_title,
         'feed_subtitle': feed_subtitle
+    })
+
+
+def user_directory(request):
+    """Displays a searchable directory of users, ranked by followers."""
+    query = request.GET.get('q', '')
+    
+    # Base query: Annotate every user with their follower count
+    users = User.objects.annotate(
+        follower_count=Count('followers')
+    ).select_related('favorite_record', 'favorite_record__artist')
+    
+    # Exclude the current logged-in user FIRST (before any slicing)
+    if request.user.is_authenticated:
+        users = users.exclude(id=request.user.id)
+        
+    # Apply search filter if there is a query
+    if query:
+        users = users.filter(username__icontains=query)
+        
+    # 4. Finally, order the results and apply the slice at the very end!
+    users = users.order_by('-follower_count')[:50]
+        
+    return render(request, 'user_directory.html', {
+        'users': users,
+        'query': query
     })
