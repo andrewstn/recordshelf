@@ -88,16 +88,28 @@ def signup(request):
         
     return render(request, 'registration/signup.html', {'form': form})
 
-@login_required
 def social_feed(request):
-    """Displays a chronological feed of activity from followed users."""
-    # Get users I follow, and add myself to the list
-    users_to_show = list(request.user.following.all())
-    users_to_show.append(request.user)
+    """Displays a chronological feed. Personalized for users, global for guests."""
     
-    # Fetch the latest 50 activities. select_related drastically speeds up database queries!
-    activities = Activity.objects.filter(user__in=users_to_show).select_related(
-        'user', 'record', 'record__artist'
-    )[:50]
-    
-    return render(request, 'feed.html', {'activities': activities})
+    if request.user.is_authenticated:
+        # Personalized Feed
+        users_to_show = list(request.user.following.all())
+        users_to_show.append(request.user)
+        activities = Activity.objects.filter(user__in=users_to_show).select_related(
+            'user', 'record', 'record__artist'
+        )[:50]
+        feed_title = "Activity Feed"
+        feed_subtitle = "Latest updates from you and the people you follow."
+    else:
+        # Global Feed for Guests
+        activities = Activity.objects.all().select_related(
+            'user', 'record', 'record__artist'
+        )[:50]
+        feed_title = "Global Activity"
+        feed_subtitle = "See what the community is spinning right now."
+        
+    return render(request, 'feed.html', {
+        'activities': activities,
+        'feed_title': feed_title,
+        'feed_subtitle': feed_subtitle
+    })

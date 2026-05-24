@@ -24,10 +24,10 @@
         
         <div class="flex items-center space-x-6 text-sm font-medium">
             <a href="{% url 'search' %}" class="text-zinc-400 hover:text-white transition-colors">Search</a>
+            <a href="{% url 'feed' %}" class="text-zinc-400 hover:text-white font-medium transition"> Activity Feed</a>
             
             {% if user.is_authenticated %}
                 <a href="{% url 'profile' user.username %}" class="text-zinc-400 hover:text-white transition-colors">My Profile</a>
-                <a href="{% url 'feed' %}" class="text-zinc-400 hover:text-white font-medium transition"> Activity Feed</a>
                 
                 <form method="post" action="{% url 'logout' %}" class="inline m-0 p-0">
                     {% csrf_token %}
