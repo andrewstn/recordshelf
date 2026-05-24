@@ -27,3 +27,20 @@ def search_discogs(query):
     else:
         print(f"Error {response.status_code}: {response.text}")
         return None
+
+def fetch_discogs_master(master_id):
+    """Fetches detailed data for a specific master release from Discogs."""
+    url = f"https://api.discogs.com/masters/{master_id}"
+    
+    headers = {
+        'User-Agent': 'RecordStoreIO/1.0 +http://127.0.0.1:8000',
+        'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
+    }
+    
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error {response.status_code}: {response.text}")
+        return None
