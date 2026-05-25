@@ -56,39 +56,39 @@
             </div>
 
             {% if request.user == profile_user %}
-                <div class="mt-3 pt-3 border-t border-zinc-900/60 flex flex-col gap-1.5">
-                    <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-500 hover:text-white bg-zinc-950 py-1.5 rounded-md transition text-[11px] font-bold border border-zinc-900">
-                        Edit Variant
-                    </a>
-                    
-                    <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
+                <div class="mt-3 pt-3 border-t border-zinc-900/60 grid grid-cols-2 gap-1.5">
+                    <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[11px] py-1.5 rounded-md transition cursor-pointer font-bold
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold
                             {% if item.record in request.user.shelf.all %}
                                 bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 hover:bg-zinc-900
                             {% else %}
                                 bg-zinc-950 text-zinc-500 hover:bg-zinc-900 border border-zinc-900
                             {% endif %}">
-                            {% if item.record in request.user.shelf.all %}✓ Shelved{% else %}Mount to Shelf{% endif %}
+                            {% if item.record in request.user.shelf.all %}✓ Shelved{% else %}Shelf{% endif %}
                         </button>
                     </form>
 
-                    <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0">
+                    <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[11px] py-1.5 rounded-md transition cursor-pointer font-bold border
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold border
                             {% if request.user.favorite_record == item.record %}
                                 bg-emerald-500 text-black border-transparent hover:bg-emerald-400
                             {% else %}
                                 bg-zinc-950 border-zinc-900 text-zinc-600 hover:bg-zinc-900 hover:text-zinc-300
                             {% endif %}">
-                            {% if request.user.favorite_record == item.record %}★ Spinning{% else %}Set as Spinning{% endif %}
+                            {% if request.user.favorite_record == item.record %}★ Spinning{% else %}Spin{% endif %}
                         </button>
                     </form>
 
-                    <form method="POST" action="{% url 'remove_item' item.id %}" class="m-0 p-0" onsubmit="return confirm('Are you sure you want to remove this copy from your collection?');">
+                    <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-500 hover:text-white bg-zinc-950 py-1.5 rounded-md transition text-[10px] font-bold border border-zinc-900 col-span-1">
+                        Edit/Rate
+                    </a>
+                    
+                    <form method="POST" action="{% url 'remove_item' item.id %}" class="m-0 p-0 col-span-1" onsubmit="return confirm('Are you sure you want to remove this copy from your collection?');">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[11px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900 border-red-900/30">
-                            Remove Copy
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
+                            Remove
                         </button>
                     </form>
                 </div>
