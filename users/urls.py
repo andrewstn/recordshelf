@@ -10,6 +10,8 @@ urlpatterns = [
     path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
     path('feed/', views.social_feed, name='feed'),
     path('community/', views.user_directory, name='user_directory'),
+    path('share-image/', views.share_image_proxy, name='share_image_proxy'),
+    path('<str:username>/share.png', views.profile_share_image, name='profile_share_image'),
     
     # Dynamic profile routing
     # NOTE: These generic <str:username> routes must stay at the bottom of the list
