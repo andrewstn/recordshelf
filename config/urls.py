@@ -30,4 +30,9 @@ urlpatterns = [
 # This allows Django to display uploaded profile pictures locally
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Add explicit routes to test error pages during development
+    urlpatterns += [
+        path('404/', TemplateView.as_view(template_name='404.html')),
+        path('500/', TemplateView.as_view(template_name='500.html')),
+    ]
 

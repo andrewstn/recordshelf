@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-20 px-6 text-center">
+    
+    <div class="mb-8 relative inline-block">
+        <div class="absolute -inset-4 bg-emerald-500/20 blur-2xl rounded-full"></div>
+        <svg class="w-32 h-32 mx-auto text-emerald-500 relative z-10 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+        </svg>
+    </div>
+
+    <h1 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">404 - Skip or Scratch</h1>
+    <p class="text-lg md:text-xl text-zinc-400 mb-12 max-w-lg mx-auto">
+        We dug through the crates, but couldn't find the page you're looking for. It might have been removed, or the link is broken.
+    </p>
+    
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+        <a href="{% url 'home' %}" class="w-full sm:w-auto bg-white text-zinc-950 hover:bg-zinc-200 font-bold py-3.5 px-8 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2">
+            Back to Home
+        </a>
+        <a href="javascript:history.back()" class="w-full sm:w-auto bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 font-medium py-3.5 px-8 rounded-lg transition-colors border border-zinc-800">
+            Go Back
+        </a>
+    </div>
+
+</div>
+{% endblock %}

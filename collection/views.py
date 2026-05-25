@@ -51,11 +51,18 @@ def add_record(request):
             item, created = add_record_to_collection(request.user, discogs_id)
             
             if created:
+                if request.user.wishlist.filter(id=item.record.id).exists():
+                    request.user.wishlist.remove(item.record)
                 Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
                 messages.success(request, f"Added to your collection!")
             else:
                 messages.info(request, f"This record is already in your collection.")
                 
+    # Check if a 'next' url was provided
+    next_url = request.POST.get('next') or request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
+        
     # Redirect back to the user's profile to see their new addition
     return redirect('profile', username=request.user.username)
 

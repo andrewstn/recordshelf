@@ -47,12 +47,12 @@
                             <input type="hidden" name="discogs_id" value="{{ discogs_id }}">
                             <button type="submit" class="w-full font-medium py-3.5 rounded-lg transition-colors border flex items-center justify-center gap-2 group cursor-pointer
                                 {% if in_wishlist %}
-                                    bg-zinc-800 text-yellow-500 border-zinc-700 hover:bg-zinc-700
+                                    bg-zinc-800 text-emerald-500 border-zinc-700 hover:bg-zinc-700
                                 {% else %}
                                     bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-800
                                 {% endif %}">
                                 
-                                <span class="{% if not in_wishlist %}text-zinc-500 group-hover:text-yellow-500 transition-colors{% endif %}">
+                                <span class="{% if not in_wishlist %}text-zinc-500 group-hover:text-emerald-500 transition-colors{% endif %}">
                                     ★
                                 </span> 
                                 {% if in_wishlist %}
