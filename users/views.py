@@ -9,6 +9,7 @@ from .forms import ProfileEditForm
 from django.contrib.auth import login
 from .models import Activity
 from django.db.models import Count, Q
+from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.utils import timezone
@@ -25,12 +26,33 @@ def user_profile(request, username):
     
     # Check which tab is active (default is 'collection')
     current_tab = request.GET.get('tab', 'collection')
+    search_query = request.GET.get('q', '').strip()
     
     # Fetch the standard Collection
     full_collection = profile_user.collection.all().select_related('record', 'record__artist').order_by('-date_added')
     
     # Fetch the new Wishlist
     wishlist_items = profile_user.wishlist.all().select_related('artist')
+    
+    total_records = full_collection.count()
+
+    page_obj = None
+    if current_tab == 'wishlist':
+        if search_query:
+            wishlist_items = wishlist_items.filter(
+                Q(title__icontains=search_query) | Q(artist__name__icontains=search_query)
+            )
+        paginator = Paginator(wishlist_items, 16)
+        wishlist_items = paginator.get_page(request.GET.get('page'))
+        page_obj = wishlist_items
+    else:
+        if search_query:
+            full_collection = full_collection.filter(
+                Q(record__title__icontains=search_query) | Q(record__artist__name__icontains=search_query)
+            )
+        paginator = Paginator(full_collection, 16)
+        full_collection = paginator.get_page(request.GET.get('page'))
+        page_obj = full_collection
 
     shelf_items = list(
         profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
@@ -48,9 +70,15 @@ def user_profile(request, username):
         'favorite_item': favorite_item,
         'full_collection': full_collection,
         'wishlist_items': wishlist_items,
-        'total_records': full_collection.count(),
+        'total_records': total_records,
         'current_tab': current_tab,
+        'search_query': search_query,
+        'page_obj': page_obj,
     }
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'partials/profile_collection.html', context)
+        
     return render(request, 'profile.html', context)
 
 @login_required
