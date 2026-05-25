@@ -25,7 +25,7 @@ class CustomUser(AbstractUser):
         related_name='favorited_by'
     )
     
-    # Top 6 Display Shelf
+    # Top 6 Shelf
     shelf = models.ManyToManyField(
         'collection.Record', 
         related_name='shelved_by', 
