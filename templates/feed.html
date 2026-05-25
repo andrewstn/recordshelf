@@ -64,8 +64,14 @@
                         {% endif %}
                         
                         <div class="overflow-hidden pr-4">
-                            <h4 class="text-md font-bold text-white truncate leading-tight group-hover:text-brand transition">{{ activity.record.title }}</h4>
-                            <p class="text-sm text-zinc-400 truncate">{{ activity.record.artist.name }}</p>
+                            <a href="{% url 'album_detail' activity.record.discogs_id %}">
+                                <h4 class="text-md font-bold text-white truncate leading-tight group-hover:text-brand transition">{{ activity.record.title }}</h4>
+                            </a>
+                            {% if activity.record.artist.discogs_id %}
+                                <a href="{% url 'artist_detail' activity.record.artist.discogs_id %}" class="text-sm text-zinc-400 truncate hover:text-brand transition block">{{ activity.record.artist.name }}</a>
+                            {% else %}
+                                <a href="{% url 'sync_artist' activity.record.artist.id %}" class="text-sm text-zinc-400 truncate hover:text-brand transition block" title="Sync this artist from Discogs">{{ activity.record.artist.name }}</a>
+                            {% endif %}
                         </div>
                     </a>
                 </div>

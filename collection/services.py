@@ -13,13 +13,22 @@ def get_or_create_record(discogs_id):
     if not album_data:
         return None
         
-    # Safely get the artist name
+    # Safely get the artist metadata
     artist_name = "Unknown Artist"
+    artist_discogs_id = None
     if album_data.get('artists'):
-        artist_name = album_data['artists'][0].get('name', 'Unknown Artist')
+        artist_node = album_data['artists'][0]
+        artist_name = artist_node.get('name', 'Unknown Artist')
+        artist_discogs_id = artist_node.get('id')
         
     # 1. Get or Create the Artist
-    artist, _ = Artist.objects.get_or_create(name=artist_name)
+    artist, created = Artist.objects.get_or_create(name=artist_name)
+    if created and artist_discogs_id:
+        artist.discogs_id = artist_discogs_id
+        artist.save()
+    elif not created and not artist.discogs_id and artist_discogs_id:
+        artist.discogs_id = artist_discogs_id
+        artist.save()
     
     # 2. Create the fully populated Record
     record = Record.objects.create(

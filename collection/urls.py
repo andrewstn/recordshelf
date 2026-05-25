@@ -12,3 +12,9 @@ urlpatterns = [
     path('update-shelf-order/', views.update_shelf_order, name='update_shelf_order'),
     path('wishlist/toggle/', views.toggle_wishlist, name='toggle_wishlist'),
 ]
+
+# Artist profiles
+urlpatterns.append(path('artist/<int:artist_id>/', views.artist_detail, name='artist_detail'))
+
+# Artist profiles
+urlpatterns.append(path('artist/sync/<int:local_artist_id>/', views.sync_artist, name='sync_artist'))

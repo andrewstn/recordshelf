@@ -22,13 +22,31 @@
     </div>
 
     {% if query %}
-        <div class="flex justify-between items-end mb-6 border-b border-zinc-800 pb-4">
-            <h2 class="text-xl font-bold text-zinc-400">
-                Results for <span class="text-white">"{{ query }}"</span>
-            </h2>
-            {% if pagination.items %}
-                <p class="text-sm font-medium text-zinc-500">{{ pagination.items }} total matches</p>
-            {% endif %}
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6 border-b border-zinc-800 pb-4">
+            <div>
+                <h2 class="text-xl font-bold text-zinc-400">
+                    Results for <span class="text-white">"{{ query }}"</span>
+                </h2>
+                {% if pagination.items %}
+                    <p class="text-sm font-medium text-zinc-500 mt-1">{{ pagination.items }} total matches</p>
+                {% endif %}
+            </div>
+            
+            <form method="GET" action="{% url 'search' %}" class="flex items-center gap-2 m-0 mt-2 sm:mt-0 relative">
+                <input type="hidden" name="q" value="{{ query }}">
+                <label for="sort" class="text-xs font-bold text-zinc-500 uppercase tracking-wider hidden sm:block">Sort:</label>
+                <div class="relative inline-block">
+                    <select name="sort" id="sort" onchange="this.form.submit()" style="text-align-last: center;" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-md pl-3 pr-8 py-1.5 focus:border-brand focus:ring-1 focus:ring-brand outline-none cursor-pointer appearance-none w-full sm:w-auto">
+                        <option value="relevance" {% if current_sort == 'relevance' %}selected{% endif %}>Best Matches</option>
+                        <option value="popularity" {% if current_sort == 'popularity' %}selected{% endif %}>Most Collected</option>
+                        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Most Recent</option>
+                        <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </form>
         </div>
 
         {% if results %}
@@ -77,7 +95,7 @@
             {% if pagination.pages > 1 %}
             <div class="mt-12 flex justify-center items-center gap-4">
                 {% if pagination.page > 1 %}
-                    <a href="?q={{ query }}&page={{ pagination.page|add:'-1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
+                    <a href="?q={{ query }}&page={{ pagination.page|add:'-1' }}&sort={{ current_sort }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
                         &larr; Previous
                     </a>
                 {% endif %}
@@ -85,7 +103,7 @@
                 <span class="text-zinc-500 font-medium">Page {{ pagination.page }} of {{ pagination.pages }}</span>
                 
                 {% if pagination.page < pagination.pages %}
-                    <a href="?q={{ query }}&page={{ pagination.page|add:'1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
+                    <a href="?q={{ query }}&page={{ pagination.page|add:'1' }}&sort={{ current_sort }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-full text-white hover:bg-zinc-800 transition">
                         Next &rarr;
                     </a>
                 {% endif %}
@@ -119,7 +137,15 @@
                     <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-brand transition cursor-pointer">
                         <h3 class="text-md font-bold text-white leading-tight mb-1">{{ record.title }}</h3>
                     </a>
-                    <p class="text-sm text-zinc-400 mb-4">{{ record.artist.name }}</p>
+                    {% if record.artist.discogs_id %}
+                        <a href="{% url 'artist_detail' record.artist.discogs_id %}" class="hover:text-brand transition cursor-pointer block mb-4">
+                            <p class="text-sm text-zinc-400">{{ record.artist.name }}</p>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'sync_artist' record.artist.id %}" class="hover:text-brand transition cursor-pointer block mb-4" title="Sync this artist from Discogs">
+                            <p class="text-sm text-zinc-400">{{ record.artist.name }}</p>
+                        </a>
+                    {% endif %}
                     
                     {% if user.is_authenticated %}
                         {% if record.discogs_id|stringformat:"s" in user_collection_ids %}

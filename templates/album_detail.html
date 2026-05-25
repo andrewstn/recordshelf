@@ -76,9 +76,9 @@
             
             <div class="mb-10">
                 <h1 class="text-4xl md:text-5xl md:leading-tight font-black text-white mb-2 tracking-tight">{{ album.title }}</h1>
-                <p class="text-xl md:text-2xl text-zinc-400 font-medium mb-6">
+                <p class="text-xl md:text-2xl text-zinc-400 font-medium mb-6 flex flex-wrap gap-2 items-center">
                     {% for artist in album.artists %}
-                        {{ artist.name }}{% if not forloop.last %}, {% endif %}
+                        <a href="{% url 'artist_detail' artist.id %}" class="hover:text-brand transition">{{ artist.name }}</a>{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </p>
                 

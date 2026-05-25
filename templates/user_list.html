@@ -64,7 +64,11 @@
                         {% endif %}
                         <div class="overflow-hidden">
                             <p class="text-sm font-bold text-white truncate leading-tight">{{ u.favorite_record.title }}</p>
-                            <p class="text-xs text-zinc-400 truncate">{{ u.favorite_record.artist.name }}</p>
+                            {% if u.favorite_record.artist.discogs_id %}
+                                <a href="{% url 'artist_detail' u.favorite_record.artist.discogs_id %}" class="text-xs text-zinc-400 truncate hover:text-emerald-400 transition block">{{ u.favorite_record.artist.name }}</a>
+                            {% else %}
+                                <a href="{% url 'sync_artist' u.favorite_record.artist.id %}" class="text-xs text-zinc-400 truncate hover:text-emerald-400 transition block" title="Sync this artist from Discogs">{{ u.favorite_record.artist.name }}</a>
+                            {% endif %}
                         </div>
                     </div>
                 {% else %}

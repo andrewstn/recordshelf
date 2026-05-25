@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from collection.spotify import get_spotify_album_id
-from .discogs import search_discogs, fetch_discogs_master
+from .discogs import search_discogs, fetch_discogs_master, fetch_discogs_artist, fetch_discogs_artist_releases
 from .services import add_record_to_collection, get_or_create_record
 from .models import CollectionItem, Record
 from .forms import CollectionItemForm
@@ -15,6 +15,7 @@ from django.db.models import Count, Avg
 def search_page(request):
     query = request.GET.get('q', '')
     page = request.GET.get('page', 1)
+    sort_by = request.GET.get('sort', 'relevance')
     
     results = []
     pagination = {}
@@ -22,7 +23,7 @@ def search_page(request):
     
     if query:
         # If there's a query, hit the Discogs API (your existing logic)
-        results, pagination = search_discogs(query, page)
+        results, pagination = search_discogs(query, page, sort_by)
     else:
         # If no query, grab the top 12 most collected records from our local DB
         popular_records = Record.objects.annotate(
@@ -39,6 +40,7 @@ def search_page(request):
         'pagination': pagination,
         'popular_records': popular_records,
         'user_collection_ids': user_collection_ids,
+        'current_sort': sort_by,
     })
 
 @login_required
@@ -230,3 +232,87 @@ def toggle_wishlist(request):
             
     # Redirect back to exactly where they came from (the album page)
     return redirect(request.META.get('HTTP_REFERER', 'search'))
+
+from .models import Artist
+def artist_detail(request, artist_id):
+    # Get local artist if exists
+    artist = Artist.objects.filter(discogs_id=artist_id).first()
+    
+    # Needs to fetch artist data
+    discogs_artist = fetch_discogs_artist(artist_id)
+    if not discogs_artist:
+        messages.error(request, "Could not load artist data from Discogs.")
+        return redirect('search')
+        
+    if artist:
+        # Update text/image if we didn't have them
+        changed = False
+        if not artist.profile_text and discogs_artist.get('profile'):
+            artist.profile_text = discogs_artist.get('profile')
+            changed = True
+        
+        images = discogs_artist.get('images', [])
+        if not artist.image_url and images:
+            artist.image_url = images[0].get('resource_url') or images[0].get('uri')
+            changed = True
+            
+        if changed:
+            artist.save()
+    else:
+        # Create it mapping the discogs ID
+        images = discogs_artist.get('images', [])
+        image_url = images[0].get('resource_url') or images[0].get('uri') if images else None
+        
+        artist, created = Artist.objects.get_or_create(name=discogs_artist.get('name', 'Unknown Artist'))
+        artist.discogs_id = artist_id
+        artist.profile_text = discogs_artist.get('profile')
+        artist.image_url = image_url
+        artist.save()
+        
+    # Get releases (albums)
+    page = request.GET.get('page', 1)
+    releases_data, pagination = fetch_discogs_artist_releases(artist_id, page)
+    
+    # Filter only main masters
+    releases = [r for r in releases_data if r.get('type') == 'master' and r.get('role') == 'Main']
+        
+    # Count local collectors
+    collector_count = Record.objects.filter(artist=artist).aggregate(total=Count('collected_by'))['total'] or 0
+    
+    context = {
+        'artist': artist,
+        'discogs_artist': discogs_artist,
+        'releases': releases,
+        'pagination': pagination,
+        'collector_count': collector_count
+    }
+    return render(request, 'artist_detail.html', context)
+
+def sync_artist(request, local_artist_id):
+    from django.conf import settings
+    import requests
+    
+    artist = get_object_or_404(Artist, id=local_artist_id)
+    if artist.discogs_id:
+        return redirect('artist_detail', artist_id=artist.discogs_id)
+        
+    url = "https://api.discogs.com/database/search"
+    headers = {
+        'User-Agent': 'RecordStoreIO/1.0 +http://127.0.0.1:8000',
+        'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
+    }
+    
+    params = {'q': f'"{artist.name}"', 'type': 'artist', 'per_page': 1}
+    response = requests.get(url, headers=headers, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        results = data.get('results', [])
+        if results:
+            discogs_id = results[0].get('id')
+            artist.discogs_id = str(discogs_id)
+            artist.save()
+            return redirect('artist_detail', artist_id=discogs_id)
+            
+    messages.error(request, f"Could not map {artist.name} to a valid Discogs artist.")
+    return redirect(request.META.get('HTTP_REFERER', 'home'))

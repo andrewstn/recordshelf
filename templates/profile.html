@@ -67,7 +67,11 @@
                     <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="hover:text-emerald-400 transition text-sm font-bold text-white block truncate leading-tight">
                         {{ favorite_item.record.title }}
                     </a>
-                    <p class="text-xs text-zinc-500 truncate mt-0.5">{{ favorite_item.record.artist.name }}</p>
+                    {% if favorite_item.record.artist.discogs_id %}
+                        <a href="{% url 'artist_detail' favorite_item.record.artist.discogs_id %}" class="text-xs text-zinc-500 truncate mt-0.5 hover:text-emerald-400 transition block">{{ favorite_item.record.artist.name }}</a>
+                    {% else %}
+                        <a href="{% url 'sync_artist' favorite_item.record.artist.id %}" class="text-xs text-zinc-500 truncate mt-0.5 hover:text-emerald-400 transition block" title="Sync this artist from Discogs">{{ favorite_item.record.artist.name }}</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -122,6 +126,8 @@
                             data-cover="{{ item.record.cover_art_url|default:'' }}"
                             data-title="{{ item.record.title }}"
                             data-artist="{{ item.record.artist.name }}"
+                            data-artist-id="{{ item.record.artist.discogs_id|default:'' }}"
+                            data-local-artist-id="{{ item.record.artist.id }}"
                             data-variant="{{ item.variant_description|default:'' }}"
                             data-discogs="{{ item.record.discogs_id }}"
                             data-item-id="{{ item.id }}"
@@ -315,13 +321,23 @@
         // Populate Data
         const title = button.getAttribute('data-title');
         const artist = button.getAttribute('data-artist');
+        const artistId = button.getAttribute('data-artist-id');
+        const localArtistId = button.getAttribute('data-local-artist-id');
         const cover = button.getAttribute('data-cover');
         const variant = button.getAttribute('data-variant');
         const discogsId = button.getAttribute('data-discogs');
         const itemId = button.getAttribute('data-item-id');
 
         document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-artist').textContent = artist;
+        
+        const artistElement = document.getElementById('modal-artist');
+        if (artistId) {
+            artistElement.innerHTML = `<a href="/collection/artist/${artistId}/" class="hover:text-emerald-400 transition pointer-events-auto">${artist}</a>`;
+        } else if (localArtistId) {
+            artistElement.innerHTML = `<a href="/collection/artist/sync/${localArtistId}/" class="hover:text-emerald-400 transition pointer-events-auto" title="Sync this artist from Discogs">${artist}</a>`;
+        } else {
+            artistElement.textContent = artist;
+        }
         
         const variantElement = document.getElementById('modal-variant');
         if (variant) {

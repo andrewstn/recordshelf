@@ -4,6 +4,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Artist(models.Model):
     name = models.CharField(max_length=255)
+    discogs_id = models.CharField(max_length=50, blank=True, null=True, unique=True)
+    image_url = models.URLField(max_length=500, blank=True, null=True)
+    profile_text = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return self.name

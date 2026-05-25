@@ -12,7 +12,11 @@
             <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
                 <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ record.title }}</h3>
             </a>
-            <p class="text-xs text-zinc-500 truncate mb-4">{{ record.artist.name }}</p>
+            {% if record.artist.discogs_id %}
+                <a href="{% url 'artist_detail' record.artist.discogs_id %}" class="text-xs text-zinc-500 truncate hover:text-emerald-400 transition block mb-4">{{ record.artist.name }}</a>
+            {% else %}
+                <a href="{% url 'sync_artist' record.artist.id %}" class="text-xs text-zinc-500 truncate hover:text-emerald-400 transition block mb-4" title="Sync this artist from Discogs">{{ record.artist.name }}</a>
+            {% endif %}
             {% if request.user == profile_user %}
                 <div class="mt-auto pt-3 border-t border-zinc-900/60 grid grid-cols-2 gap-1.5">
                     <form method="POST" action="{% url 'add_record' %}" class="m-0 p-0 col-span-1">
@@ -53,7 +57,11 @@
             <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
                 <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
             </a>
-            <p class="text-xs text-zinc-500 truncate mb-3">{{ item.record.artist.name }}</p>
+            {% if item.record.artist.discogs_id %}
+                <a href="{% url 'artist_detail' item.record.artist.discogs_id %}" class="text-xs text-zinc-500 truncate hover:text-emerald-400 transition block mb-3">{{ item.record.artist.name }}</a>
+            {% else %}
+                <a href="{% url 'sync_artist' item.record.artist.id %}" class="text-xs text-zinc-500 truncate hover:text-emerald-400 transition block mb-3" title="Sync this artist from Discogs">{{ item.record.artist.name }}</a>
+            {% endif %}
             
             <div class="flex items-center justify-between text-[11px] font-bold mt-auto pt-3 border-t border-zinc-900/60">
                 <span class="text-zinc-400 truncate max-w-[120px]">{{ item.variant_description|default:"" }}</span>
