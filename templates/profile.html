@@ -1,158 +1,170 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto py-8">
-    
-    <div class="mb-12 border-b border-zinc-800/80 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+<div class="py-8 px-4 sm:px-6">
+
+    <div class="max-w-5xl mx-auto mb-16 border-b border-zinc-900 pb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-6 md:gap-8">
             {% if profile_user.profile_picture %}
-                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-24 h-24 rounded-full object-cover border-4 border-zinc-900 shadow-xl">
+                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-zinc-800 shadow-xl flex-shrink-0">
             {% else %}
-                <div class="w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center text-3xl font-bold text-zinc-500 border-4 border-zinc-900 shadow-xl">
+                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-zinc-900 flex items-center justify-center text-2xl font-black text-zinc-600 border-2 border-zinc-800 shadow-xl flex-shrink-0">
                     {{ profile_user.username|make_list|first|upper }}
                 </div>
             {% endif %}
 
             <div>
-                <h1 class="text-4xl font-black text-white mb-2 tracking-tight">@{{ profile_user.username }}</h1>
-
+                <h1 class="text-3xl md:text-4xl font-black text-white mb-1.5 tracking-tight">@{{ profile_user.username }}</h1>
+                
                 {% if profile_user.tagline %}
-                    <p class="text-zinc-300 text-base md:text-lg mb-3">{{ profile_user.tagline }}</p>
+                    <p class="text-zinc-400 text-sm md:text-base mb-4 max-w-xl leading-relaxed">{{ profile_user.tagline }}</p>
                 {% else %}
-                    <div class="mb-3"></div> 
+                    <div class="mb-3"></div>
                 {% endif %}
                 
-                <p class="text-zinc-400 text-sm md:text-base mb-1.5">
-                    <span class="font-bold text-zinc-200">{{ total_records }}</span> Records &middot; 
-                    <a href="{% url 'followers_list' profile_user.username %}" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.followers.count }}</span> Followers</a> &middot; 
-                    <a href="{% url 'following_list' profile_user.username %}" class="hover:text-white transition"><span class="font-bold text-zinc-200">{{ profile_user.following.count }}</span> Following</a>
-                </p>
-                
-                <p class="text-zinc-500 text-sm flex items-center gap-1.5">
-                    <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    Joined {{ profile_user.date_joined|date:"F Y" }}
-                </p>
-                
-                <div class="mt-4">
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                    <div class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400">
+                        <span class="text-white font-bold">{{ total_records }}</span> Records
+                    </div>
+                    <a href="{% url 'followers_list' profile_user.username %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1">
+                        <span class="text-white font-bold">{{ profile_user.followers.count }}</span> Followers
+                    </a>
+                    <a href="{% url 'following_list' profile_user.username %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1">
+                        <span class="text-white font-bold">{{ profile_user.following.count }}</span> Following
+                    </a>
+                    
                     {% if request.user == profile_user %}
-                        <a href="{% url 'edit_profile' %}" class="bg-zinc-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-zinc-700 transition text-sm inline-block shadow-md">
-                            Edit Profile
-                        </a>
-                    {% elif request.user.is_authenticated %}
-                        <form method="POST" action="{% url 'toggle_follow' profile_user.username %}" class="inline-block">
-                            {% csrf_token %}
-                            {% if profile_user in request.user.following.all %}
-                                <button type="submit" class="bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 px-4 py-1.5 rounded-lg font-bold transition text-sm cursor-pointer">
-                                    Unfollow
-                                </button>
-                            {% else %}
-                                <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-black px-4 py-1.5 rounded-lg font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm cursor-pointer">
-                                    Follow
-                                </button>
-                            {% endif %}
-                        </form>
+                    <a href="{% url 'edit_profile' %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1.5 md:ml-4 shadow-sm group">
+                        <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Edit Profile
+                    </a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         {% if favorite_item %}
-        <div class="flex items-center gap-4 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80 shadow-2xl max-w-md w-full md:w-auto hover:bg-zinc-800/80 hover:border-emerald-500/30 transition-all group">
-            <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="flex-shrink-0 block relative">
-                <div class="absolute -inset-1 bg-emerald-500/0 group-hover:bg-emerald-500/20 blur-md rounded-full transition-all duration-500"></div>
-                {% if favorite_item.record.cover_art_url %}
-                    <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="relative w-20 h-20 md:w-24 md:h-24 rounded shadow-md object-cover border border-zinc-700">
-                {% else %}
-                    <div class="relative w-20 h-20 md:w-24 md:h-24 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-xs border border-zinc-700">No Cover</div>
-                {% endif %}
-            </a>
-            <div class="overflow-hidden">
-                <p class="text-emerald-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                    <span class="relative flex h-2.5 w-2.5 ml-1">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    Currently Spinning
-                </p>
-                <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="hover:text-emerald-400 transition cursor-pointer inline-block">
-                    <h3 class="text-lg md:text-xl font-black text-white leading-tight truncate">{{ favorite_item.record.title }}</h3>
+        <div class="relative group w-full md:w-auto">
+            <div class="absolute -inset-4 bg-emerald-500/5 blur-2xl rounded-full opacity-60 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
+            
+            <div class="relative flex items-center gap-4 bg-zinc-950/60 backdrop-blur-md p-4 rounded-xl border border-zinc-900 shadow-2xl w-full md:w-72 hover:border-emerald-500/30 transition-colors duration-300">
+                <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="flex-shrink-0 block relative">
+                    {% if favorite_item.record.cover_art_url %}
+                        <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="w-16 h-16 rounded shadow-md object-cover border border-zinc-800">
+                    {% else %}
+                        <div class="w-16 h-16 bg-zinc-900 rounded flex items-center justify-center text-zinc-700 text-xs border border-zinc-800">No Art</div>
+                    {% endif %}
                 </a>
-                <p class="text-sm text-zinc-400 truncate">{{ favorite_item.record.artist.name }}</p>
-            </div>
-        </div>
-        {% else %}
-        <div class="flex items-center gap-4 bg-zinc-900/20 p-4 rounded-xl border border-zinc-800/50 border-dashed max-w-md w-full md:w-auto">
-            <div class="w-20 h-20 md:w-24 md:h-24 bg-zinc-800/50 rounded flex items-center justify-center text-zinc-600 text-2xl">★</div>
-            <div class="overflow-hidden text-zinc-500">
-                <p class="text-xs font-bold uppercase tracking-widest mb-1 flex items-center gap-1">Current Spin</p>
-                <h3 class="text-lg md:text-xl font-bold leading-tight">No record spinning.</h3>
+                <div class="overflow-hidden">
+                    <p class="text-emerald-400 text-[10px] font-bold uppercase tracking-widest mb-1 flex items-center gap-2 select-none">
+                        <span class="relative flex h-2 w-2 ml-1">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Currently Spinning
+                    </p>
+                    <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="hover:text-emerald-400 transition text-sm font-bold text-white block truncate leading-tight">
+                        {{ favorite_item.record.title }}
+                    </a>
+                    <p class="text-xs text-zinc-500 truncate mt-0.5">{{ favorite_item.record.artist.name }}</p>
+                </div>
             </div>
         </div>
         {% endif %}
     </div>
 
-    <div class="mb-16 relative mt-12">
-        <div class="flex items-center justify-between mb-6 px-2">
-            <h2 class="text-2xl font-black text-white uppercase tracking-tight">My Record Shelf</h2>
-            {% if request.user == profile_user %}
-                <span class="text-xs font-medium text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">Drag to reorder</span>
-            {% endif %}
+
+    <div class="max-w-7xl mx-auto mb-24 relative group/shelf">
+        
+        <div class="flex items-end justify-between mb-4 px-4 md:px-8">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xs font-black uppercase tracking-[0.25em] text-zinc-500 select-none">My Record Shelf</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                {% if request.user == profile_user %}
+                    <span class="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Drag to sequence</span>
+                {% endif %}
+                {% if request.user.is_authenticated and request.user != profile_user %}
+                    <form method="POST" action="{% url 'toggle_follow' profile_user.username %}" class="m-0">
+                        {% csrf_token %}
+                        {% if profile_user in request.user.following.all %}
+                            <button type="submit" class="bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer">Unfollow</button>
+                        {% else %}
+                            <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-black px-3 py-1 rounded-md text-xs font-bold transition shadow-lg cursor-pointer">Follow User</button>
+                        {% endif %}
+                    </form>
+                {% endif %}
+            </div>
         </div>
         
-        <div class="relative bg-zinc-950/50 rounded-t-xl border-x border-t border-zinc-800/80 px-4 md:px-8 pt-8 pb-4 shadow-inner">
+        <div class="relative bg-zinc-950/40 rounded-t-2xl border border-zinc-900/60 pt-12 pb-2 px-6 md:px-12 shadow-2xl transition-all duration-500 group-hover/shelf:border-zinc-800/40">
+            
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.04),transparent_65%)] pointer-events-none z-0 transition-opacity duration-500 group-hover/shelf:opacity-140"></div>
+            
+            <div class="absolute inset-y-0 left-0 w-8 md:w-20 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-y-0 right-0 w-8 md:w-20 bg-gradient-to-l from-zinc-950 via-zinc-950/40 to-transparent z-20 pointer-events-none"></div>
+
             {% if shelf_items %}
             <div id="shelf-container" 
                  data-is-owner="{% if request.user == profile_user %}true{% else %}false{% endif %}"
                  data-update-url="{% url 'update_shelf_order' %}"
-                 class="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-8 md:gap-6 items-end relative z-10">
+                 class="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-8 items-end relative z-10 pb-1">
                 
                 {% for item in shelf_items %}
-                <div data-id="{{ item.record.id }}" class="group relative transition-all duration-300 hover:-translate-y-4 cursor-grab active:cursor-grabbing w-full">
-                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block relative w-full aspect-square">
-                        <div class="absolute -inset-2 bg-emerald-500/0 group-hover:bg-emerald-500/30 blur-xl rounded-full transition-all duration-500 z-0"></div>
+                <div data-id="{{ item.record.id }}" class="w-full relative z-10 cursor-grab active:cursor-grabbing group/card">
+                    
+                    <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-11/12 h-3 bg-black/90 blur-sm rounded-full group-hover/card:blur-md group-hover/card:bg-emerald-950/40 group-hover/card:w-5/6 transition-all duration-300 pointer-events-none z-0"></div>
+                    
+                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block relative w-full aspect-square z-10 rounded-sm bg-zinc-900 border-t border-l border-zinc-700/50 transition-all duration-300 group-hover/card:-translate-y-4 group-hover/card:-translate-x-1 shadow-[3px_0px_0px_#27272a,0px_10px_20px_rgba(0,0,0,0.8)] group-hover/card:shadow-[5px_0px_0px_#27272a,0px_15px_30px_rgba(16,185,129,0.2)]">
+                        
+                        <div class="absolute -inset-1 bg-emerald-500/0 group-hover/card:bg-emerald-500/10 blur-xl rounded-full transition-all duration-300 pointer-events-none z-0"></div>
                         
                         {% if item.record.cover_art_url %}
-                            <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full rounded-sm shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:shadow-[0_15px_30px_rgba(16,185,129,0.25)] object-cover z-10 border border-zinc-800 group-hover:border-emerald-500/60 transition-colors">
+                            <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full rounded-sm object-cover border border-zinc-900 group-hover/card:border-emerald-500/40 transition-colors duration-300">
                         {% else %}
-                            <div class="absolute inset-0 w-full h-full bg-zinc-800 rounded-sm flex items-center justify-center shadow-xl text-zinc-600 z-10 border border-zinc-700 group-hover:border-emerald-500/60">No Cover</div>
+                            <div class="absolute inset-0 w-full h-full bg-zinc-900 rounded-sm flex items-center justify-center text-zinc-700 text-xs border border-zinc-800 group-hover/card:border-emerald-500/40 transition-colors">No Art</div>
                         {% endif %}
                         
-                        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none rounded-sm"></div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
                     </a>
                 </div>
                 {% endfor %}
                 
             </div>
             {% else %}
-            <div class="py-16 text-center text-zinc-600 font-medium">
-                This shelf is currently empty.
+            <div class="py-12 text-center text-zinc-600 font-medium relative z-10 text-sm tracking-wide">
+                No records mounted on this shelf yet.
             </div>
             {% endif %}
         </div>
 
-        <div class="h-6 w-full bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 rounded-b-xl border-t border-emerald-500/40 shadow-[0_15px_30px_rgba(16,185,129,0.1)] relative z-20 flex flex-col justify-end overflow-hidden">
-            <div class="h-2 w-full bg-black/50"></div>
-            <div class="absolute top-0 left-0 w-full h-[1px] bg-emerald-400/50"></div>
+        <div class="h-5 md:h-6 w-full bg-gradient-to-b from-emerald-600 via-emerald-800 to-emerald-950 rounded-b-2xl border-t border-emerald-400 shadow-[0_25px_50px_-12px_rgba(16,185,129,0.4)] relative z-20 overflow-hidden">
+            <div class="w-full h-[1px] bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.9)]"></div>
+            <div class="absolute inset-x-0 top-1 h-[1px] bg-white/30"></div>
+            <div class="absolute inset-x-0 bottom-0 h-[1px] bg-emerald-950"></div>
         </div>
     </div>
 
-    <div class="mb-12 border-t border-zinc-800 pt-12">
-        <div class="flex justify-between items-end mb-8">
-            <div class="flex gap-6 border-b border-zinc-800 pb-2">
-                <a href="?tab=collection" class="text-lg font-bold transition-colors border-b-2 px-1 relative top-[10px]
-                    {% if current_tab != 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-500 border-transparent hover:text-zinc-300{% endif %}">
-                    Collection
+
+    <div class="max-w-5xl mx-auto">
+        
+        <div class="flex justify-between items-end mb-8 border-b border-zinc-900 pb-px">
+            <div class="flex gap-8">
+                <a href="?tab=collection" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-[2px]
+                    {% if current_tab != 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
+                    Entire Collection
                 </a>
-                <a href="?tab=wishlist" class="text-lg font-bold transition-colors border-b-2 px-1 relative top-[10px]
-                    {% if current_tab == 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-500 border-transparent hover:text-zinc-300{% endif %}">
-                    Wishlist
+                <a href="?tab=wishlist" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-[2px]
+                    {% if current_tab == 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
+                    Wishlist Space
                 </a>
             </div>
             
-            <div class="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800 mb-2">
-                <button onclick="setGrid()" id="btn-grid" class="px-4 py-1.5 rounded-md bg-zinc-800 text-white text-sm font-medium transition cursor-pointer">Grid</button>
-                <button onclick="setList()" id="btn-list" class="px-4 py-1.5 rounded-md text-zinc-400 hover:text-white text-sm font-medium transition cursor-pointer">List</button>
+            <div class="flex bg-zinc-950 rounded-lg p-1 border border-zinc-900 mb-2">
+                <button onclick="setGrid()" id="btn-grid" class="px-3 py-1 rounded-md bg-zinc-900 text-white text-xs font-bold transition cursor-pointer">Grid</button>
+                <button onclick="setList()" id="btn-list" class="px-3 py-1 rounded-md text-zinc-500 hover:text-white text-xs font-bold transition cursor-pointer">List</button>
             </div>
         </div>
 
@@ -160,26 +172,26 @@
             
             {% if current_tab == 'wishlist' %}
                 {% for record in wishlist_items %}
-                <div class="record-card bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-4 transition duration-300 hover:bg-zinc-900 hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] flex flex-col group relative">
-                    <a href="{% url 'album_detail' record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
+                <div class="record-card bg-zinc-950/40 border border-zinc-900/60 rounded-xl p-4 transition-all duration-300 hover:bg-zinc-900/40 hover:border-emerald-500/20 flex flex-col group">
+                    <a href="{% url 'album_detail' record.discogs_id %}" class="block mb-4 overflow-hidden rounded-lg">
                         {% if record.cover_art_url %}
-                            <img src="{{ record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                            <img src="{{ record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover shadow-md card-img group-hover:scale-102 transition duration-300">
                         {% else %}
-                            <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
+                            <div class="w-full aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 card-img border border-zinc-800">No Cover</div>
                         {% endif %}
                     </a>
                     <div class="card-text flex flex-col flex-grow">
-                        <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-emerald-400 transition cursor-pointer block w-max max-w-full">
-                            <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ record.title }}</h3>
+                        <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
+                            <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ record.title }}</h3>
                         </a>
-                        <p class="text-sm text-zinc-400 mb-3">{{ record.artist.name }}</p>
+                        <p class="text-xs text-zinc-500 truncate mb-4">{{ record.artist.name }}</p>
                         {% if request.user == profile_user %}
-                            <div class="mt-auto pt-3 border-t border-zinc-800/50 flex flex-col gap-2">
+                            <div class="mt-auto pt-3 border-t border-zinc-900/60">
                                 <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0 p-0">
                                     {% csrf_token %}
                                     <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
-                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-red-400 border border-zinc-800 hover:border-red-900/50">
-                                        Remove from Wishlist
+                                    <button type="submit" class="w-full text-center text-[11px] py-2 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-zinc-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900">
+                                        Remove Item
                                     </button>
                                 </form>
                             </div>
@@ -187,74 +199,62 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">This wishlist is empty.</p>
+                <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">No entries logged in this space.</p>
                 {% endfor %}
 
             {% else %}
                 {% for item in full_collection %}
-                <div class="record-card bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-4 transition duration-300 hover:bg-zinc-900 hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] flex flex-col group relative">
-                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block hover:opacity-80 transition cursor-pointer">
+                <div class="record-card bg-zinc-950/40 border border-zinc-900/60 rounded-xl p-4 transition-all duration-300 hover:bg-zinc-900/40 hover:border-emerald-500/20 flex flex-col group">
+                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block mb-4 overflow-hidden rounded-lg">
                         {% if item.record.cover_art_url %}
-                            <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img">
+                            <img src="{{ item.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover shadow-md card-img group-hover:scale-102 transition duration-300">
                         {% else %}
-                            <div class="w-full aspect-square bg-zinc-800 rounded-md mb-4 flex items-center justify-center text-zinc-600 card-img">No Cover</div>
+                            <div class="w-full aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 card-img border border-zinc-800">No Cover</div>
                         {% endif %}
                     </a>
                     
                     <div class="card-text flex flex-col flex-grow">
-                        <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-emerald-400 transition cursor-pointer block w-max max-w-full">
-                            <h3 class="text-lg font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
+                        <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
+                            <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
                         </a>
-                        <p class="text-sm text-zinc-400 mb-3">{{ item.record.artist.name }}</p>
+                        <p class="text-xs text-zinc-500 truncate mb-3">{{ item.record.artist.name }}</p>
                         
-                        <div class="flex flex-col gap-1 text-xs font-medium mt-auto pt-3 border-t border-zinc-800/50">
-                            {% if item.variant_description %}
-                                <span class="text-zinc-300">{{ item.variant_description }}</span>
-                            {% endif %}
+                        <div class="flex items-center justify-between text-[11px] font-bold mt-auto pt-3 border-t border-zinc-900/60">
+                            <span class="text-zinc-400 truncate max-w-[120px]">{{ item.variant_description|default:"" }}</span>
                             {% if item.rating %}
-                                <span class="text-emerald-500 text-sm tracking-widest mt-1">
-                                    {% for i in "12345"|make_list %}
-                                        {% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}
-                                    {% endfor %}
+                                <span class="text-emerald-400 tracking-wider">
+                                    {% for i in "12345"|make_list %}{% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}{% endfor %}
                                 </span>
                             {% endif %}
                         </div>
 
                         {% if request.user == profile_user %}
-                            <div class="mt-3 pt-2 border-t border-zinc-800/50 flex flex-col gap-2">
-                                <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 py-1.5 rounded transition text-xs font-medium border border-zinc-800">
-                                    Edit Copy
+                            <div class="mt-3 pt-3 border-t border-zinc-900/60 flex flex-col gap-1.5">
+                                <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-500 hover:text-white bg-zinc-950 py-1.5 rounded-md transition text-[11px] font-bold border border-zinc-900">
+                                    Edit Variant
                                 </a>
                                 
                                 <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0">
                                     {% csrf_token %}
-                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium
+                                    <button type="submit" class="w-full text-center text-[11px] py-1.5 rounded-md transition cursor-pointer font-bold
                                         {% if item.record in request.user.shelf.all %}
-                                            bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black
+                                            bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 hover:bg-zinc-900
                                         {% else %}
-                                            bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800
+                                            bg-zinc-950 text-zinc-500 hover:bg-zinc-900 border border-zinc-900
                                         {% endif %}">
-                                        {% if item.record in request.user.shelf.all %}
-                                            ✓ On Shelf
-                                        {% else %}
-                                            Add to Shelf
-                                        {% endif %}
+                                        {% if item.record in request.user.shelf.all %}✓ Shelved{% else %}Mount to Shelf{% endif %}
                                     </button>
                                 </form>
 
                                 <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0">
                                     {% csrf_token %}
-                                    <button type="submit" class="w-full text-center text-xs py-1.5 rounded transition cursor-pointer font-medium border
+                                    <button type="submit" class="w-full text-center text-[11px] py-1.5 rounded-md transition cursor-pointer font-bold border
                                         {% if request.user.favorite_record == item.record %}
-                                            bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500 hover:text-black
+                                            bg-emerald-500 text-black border-transparent hover:bg-emerald-400
                                         {% else %}
-                                            bg-zinc-900 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
+                                            bg-zinc-950 border-zinc-900 text-zinc-600 hover:bg-zinc-900 hover:text-zinc-300
                                         {% endif %}">
-                                        {% if request.user.favorite_record == item.record %}
-                                            ★ Currently Spinning
-                                        {% else %}
-                                            Set as Spinning
-                                        {% endif %}
+                                        {% if request.user.favorite_record == item.record %}★ Spinning{% else %}Set as Spinning{% endif %}
                                     </button>
                                 </form>
                             </div>
@@ -262,7 +262,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-zinc-500 col-span-full py-8 text-center border border-dashed border-zinc-800 rounded-xl">No records in collection yet.</p>
+                <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">No items loaded into this collection archive.</p>
                 {% endfor %}
             {% endif %}
         </div>
@@ -278,14 +278,12 @@
         const images = document.querySelectorAll('.card-img');
         const textContainers = document.querySelectorAll('.card-text');
         
-        btnGrid.classList.add('bg-zinc-800', 'text-white');
-        btnGrid.classList.remove('text-zinc-400');
-        btnList.classList.remove('bg-zinc-800', 'text-white');
-        btnList.classList.add('text-zinc-400');
+        btnGrid.className = "px-3 py-1 rounded-md bg-zinc-900 text-white text-xs font-bold transition cursor-pointer";
+        btnList.className = "px-3 py-1 rounded-md text-zinc-500 hover:text-white text-xs font-bold transition cursor-pointer";
 
         container.className = "grid grid-cols-2 md:grid-cols-4 gap-6";
-        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-4 transition duration-300 hover:bg-zinc-900 hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] flex flex-col group relative");
-        images.forEach(img => img.className = "w-full aspect-square object-cover rounded-md mb-4 shadow-lg card-img");
+        cards.forEach(card => card.className = "record-card bg-zinc-950/40 border border-zinc-900/60 rounded-xl p-4 transition-all duration-300 hover:bg-zinc-900/40 hover:border-emerald-500/20 flex flex-col group");
+        images.forEach(img => img.className = "w-full aspect-square object-cover shadow-md card-img group-hover:scale-102 transition duration-300 mb-4 block rounded-lg");
         textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow");
     }
 
@@ -297,14 +295,12 @@
         const images = document.querySelectorAll('.card-img');
         const textContainers = document.querySelectorAll('.card-text');
         
-        btnList.classList.add('bg-zinc-800', 'text-white');
-        btnList.classList.remove('text-zinc-400');
-        btnGrid.classList.remove('bg-zinc-800', 'text-white');
-        btnGrid.classList.add('text-zinc-400');
+        btnList.className = "px-3 py-1 rounded-md bg-zinc-900 text-white text-xs font-bold transition cursor-pointer";
+        btnGrid.className = "px-3 py-1 rounded-md text-zinc-500 hover:text-white text-xs font-bold transition cursor-pointer";
 
         container.className = "flex flex-col gap-4";
-        cards.forEach(card => card.className = "record-card bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-4 transition duration-300 hover:bg-zinc-900 hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] flex flex-row items-center gap-6 group relative");
-        images.forEach(img => img.className = "w-24 h-24 object-cover rounded-md shadow-lg card-img mb-0 flex-shrink-0");
+        cards.forEach(card => card.className = "record-card bg-zinc-950/40 border border-zinc-900/60 rounded-xl p-4 transition-all duration-300 hover:bg-zinc-900/40 hover:border-emerald-500/20 flex flex-row items-center gap-6 group");
+        images.forEach(img => img.className = "w-20 h-20 object-cover shadow-md card-img group-hover:scale-102 transition duration-300 mb-0 flex-shrink-0 rounded-lg");
         textContainers.forEach(container => container.className = "card-text flex flex-col flex-grow justify-center");
     }
 </script>
@@ -313,20 +309,19 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const shelf = document.getElementById('shelf-container');
-        
         if (shelf && shelf.dataset.isOwner === 'true') {
             const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
             const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
             const updateUrl = shelf.dataset.updateUrl;
 
             Sortable.create(shelf, {
-                animation: 200, 
-                ghostClass: 'opacity-20', 
+                animation: 250, 
+                ghostClass: 'opacity-0', // Custom transparent ghost class for cleaner dragging
                 dragClass: 'scale-105', 
-                
+                fallbackOnBody: true, // Crucial: prevents clipping under the gradient masks
+                forceFallback: true,
                 onEnd: function (evt) {
                     const newOrder = Array.from(shelf.children).map(row => parseInt(row.dataset.id));
-                    
                     fetch(updateUrl, {
                         method: 'POST',
                         headers: {
@@ -338,10 +333,10 @@
                     .then(response => response.json())
                     .then(data => {
                         if(data.status !== 'success') {
-                            console.error('Failed to save order:', data.message);
+                            console.error('Failed to preserve sequence:', data.message);
                         }
                     })
-                    .catch(error => console.error('Error saving shelf order:', error));
+                    .catch(error => console.error('Sequence logging connection drop:', error));
                 }
             });
         }
