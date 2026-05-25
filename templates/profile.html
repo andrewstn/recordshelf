@@ -16,6 +16,12 @@
 
             <div>
                 <h1 class="text-4xl font-black text-white mb-2 tracking-tight">@{{ profile_user.username }}</h1>
+
+                {% if profile_user.tagline %}
+                    <p class="text-zinc-300 text-base md:text-lg mb-3">{{ profile_user.tagline }}</p>
+                {% else %}
+                    <div class="mb-3"></div> 
+                {% endif %}
                 
                 <p class="text-zinc-400 text-sm md:text-base mb-1.5">
                     <span class="font-bold text-zinc-200">{{ total_records }}</span> Records &middot; 

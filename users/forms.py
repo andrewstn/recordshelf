@@ -25,9 +25,14 @@ User = get_user_model()
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['profile_picture', 'username', 'theme']
+        fields = ['profile_picture', 'username', 'tagline', 'theme']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition'}),
+            'tagline': forms.TextInput(attrs={
+                'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+                'placeholder': 'Vinyl enthusiast...',
+                'maxlength': '100'
+            }),
             'theme': forms.Select(attrs={'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-brand outline-none'}),
             'profile_picture': forms.FileInput(attrs={'class': 'w-full text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition cursor-pointer'}),
         }

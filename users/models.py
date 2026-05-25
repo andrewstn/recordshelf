@@ -50,6 +50,8 @@ class CustomUser(AbstractUser):
     )
     theme = models.CharField(max_length=10, choices=THEME_CHOICES, default='dark')
 
+    tagline = models.CharField(max_length=100, blank=True, null=True)
+
     # Track when the username was last changed
     last_username_change = models.DateTimeField(null=True, blank=True)
 
