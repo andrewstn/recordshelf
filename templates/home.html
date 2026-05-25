@@ -1,31 +1,71 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center justify-between gap-12">
+<div class="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-zinc-950">
     
-    <div class="md:w-1/2">
-        <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tight">
-            Showcase your <span class="text-brand">vinyl collection.</span>
-        </h1>
-        <p class="text-xl text-zinc-400 mb-8 max-w-lg">
-            A social platform for record collectors. Track your shelf, discover new pressings, and share your favorite spins.
-        </p>
-        <a href="{% url 'search' %}" class="inline-block bg-brand text-zinc-950 font-bold px-8 py-4 rounded-full text-lg hover:bg-white transition-all">
-            Start Exploring
-        </a>
-    </div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-900/20 via-zinc-950 to-black pointer-events-none z-0"></div>
+    <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-zinc-950 to-transparent z-0"></div>
 
-    <div class="md:w-1/3 flex justify-center">
-        <div class="relative group">
-            <div class="w-64 h-64 md:w-80 md:h-80 rounded-full bg-zinc-900 border-8 border-zinc-800 flex items-center justify-center shadow-2xl relative overflow-hidden">
-                <div class="w-56 h-56 md:w-72 md:h-72 rounded-full bg-black border-4 border-zinc-950 flex items-center justify-center animate-[spin_10s_linear_infinite] group-hover:animate-none transition-all">
-                    <div class="w-20 h-20 rounded-full bg-zinc-800 border-4 border-zinc-900 flex items-center justify-center">
-                        <div class="w-4 h-4 rounded-full bg-brand"></div>
+    <div class="max-w-7xl mx-auto px-6 w-full relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16 py-20">
+        
+        <div class="lg:w-1/2 text-center lg:text-left">
+            
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 leading-[1.1] tracking-tight">
+                Showcase your <br />
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">vinyl collection.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-zinc-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                A digital archive for record enthusiasts. Mount your grails on your shelf, discover new pressings, and connect with the community.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                <a href="{% url 'search' %}" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg px-8 py-4 rounded-xl transition-all shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] hover:-translate-y-1">
+                    Start Your Shelf
+                </a>
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'profile' request.user.username %}" class="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 hover:border-zinc-700 font-bold text-lg px-8 py-4 rounded-xl transition-all">
+                        Go to My Profile
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="lg:w-1/2 w-full max-w-2xl mt-12 lg:mt-0 group perspective-[1000px]">
+            <div class="relative transform transition-transform duration-700 group-hover:rotate-y-[-5deg] group-hover:rotate-x-[2deg]">
+                
+                <div class="flex justify-center items-end px-8 relative z-10 h-64 md:h-80">
+                    
+                    <div class="w-1/3 transform -rotate-6 translate-x-4 translate-y-2 hover:-translate-y-4 transition-all duration-500 z-10 shadow-[0_15px_30px_rgba(0,0,0,0.8)] border-t border-l border-zinc-700/50 rounded-sm bg-zinc-800 group-hover:border-emerald-500/30 cursor-pointer">
+                        <img src="https://i.discogs.com/VurGdqd_vsJCl1tB9JHDfKhu5pQmKbCWSkNYnuHCFZk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg5MzI1/MTQtMTc3MTczMzA2/NS01NjY2LmpwZWc.jpeg" class="w-full aspect-square object-cover rounded-sm opacity-60 group-hover:opacity-100 transition-opacity">
+                    </div>
+                    
+                    <div class="w-5/12 transform z-30 shadow-[0_25px_50px_rgba(0,0,0,0.9)] hover:-translate-y-6 transition-all duration-500 border-t border-l border-zinc-700/80 rounded-sm bg-zinc-900 hover:border-emerald-400 group-hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] cursor-pointer relative">
+                        <div class="absolute -inset-2 bg-emerald-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"></div>
+                        <img src="https://i.discogs.com/E6mlLk8pu-oK50jorDsQ8B_ilH_Sw3wuyZaHwPJO94Y/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI5NDA4/NzYtMTc2NjI1MTYx/OC04NjI0LmpwZWc.jpeg" class="w-full aspect-square object-cover rounded-sm relative z-10">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
+                    </div>
+                    
+                    <div class="w-1/3 transform rotate-6 -translate-x-4 translate-y-1 hover:-translate-y-3 transition-all duration-500 z-20 shadow-[0_15px_30px_rgba(0,0,0,0.8)] border-t border-l border-zinc-700/50 rounded-sm bg-zinc-800 group-hover:border-emerald-500/30 cursor-pointer">
+                        <img src="https://i.discogs.com/SJ9MMCOnD3X5mAam70CMg0QGv87m7g_WMxtiTMobDCQ/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIzODYw/NTgwLTE2NjAyMzgx/MTktMjUzMS5qcGVn.jpeg" class="w-full aspect-square object-cover rounded-sm opacity-60 group-hover:opacity-100 transition-opacity">
                     </div>
                 </div>
+
+                <div class="relative z-20 mx-4">
+                    <div class="h-6 w-full bg-gradient-to-b from-emerald-600 via-emerald-800 to-emerald-950 rounded-b-2xl border-t border-emerald-400 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.4)] overflow-hidden">
+                        <div class="w-full h-[1px] bg-emerald-300 shadow-[0_0_15px_rgba(52,211,153,0.9)]"></div>
+                        <div class="absolute inset-x-0 top-1 h-[1px] bg-white/30"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-[1px] bg-emerald-950"></div>
+                    </div>
+                    <div class="absolute inset-y-0 -left-1 w-12 bg-gradient-to-r from-zinc-950 to-transparent z-30 pointer-events-none"></div>
+                    <div class="absolute inset-y-0 -right-1 w-12 bg-gradient-to-l from-zinc-950 to-transparent z-30 pointer-events-none"></div>
+                </div>
+                
             </div>
-            <div class="absolute -top-4 -right-4 w-12 h-12 bg-brand/10 rounded-full blur-xl"></div>
         </div>
+        
     </div>
 </div>
+
+<div class="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent"></div>
 {% endblock %}
