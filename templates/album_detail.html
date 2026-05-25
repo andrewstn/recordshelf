@@ -91,6 +91,12 @@
                             {{ album.genres.0 }}
                         </span>
                     {% endif %}
+                    {% if average_rating %}
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/40 px-3 py-1 text-emerald-400 ring-1 ring-inset ring-emerald-800/50">
+                            <span>★ {{ average_rating|floatformat:1 }}</span>
+                            <span class="text-[10px] text-emerald-500/70 border-l border-emerald-800/50 pl-1.5 py-0.5">({{ rating_count }} rating{{ rating_count|pluralize }})</span>
+                        </span>
+                    {% endif %}
                 </div>
             </div>
 

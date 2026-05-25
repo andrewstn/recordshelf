@@ -10,7 +10,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
-from django.db.models import Count
+from django.db.models import Count, Avg
 
 def search_page(request):
     query = request.GET.get('q', '')
@@ -86,6 +86,16 @@ def album_detail(request, discogs_id):
         artist_name = album_data['artists'][0].get('name', '')
         
     spotify_id = get_spotify_album_id(title, artist_name)
+    
+    # Calculate average rating
+    average_rating = None
+    rating_count = 0
+    record = Record.objects.filter(discogs_id=discogs_id).first()
+    if record:
+        aggregation = record.collected_by.aggregate(avg_rating=Avg('rating'))
+        if aggregation['avg_rating'] is not None:
+            average_rating = round(aggregation['avg_rating'], 1)
+            rating_count = record.collected_by.filter(rating__isnull=False).count()
         
     context = {
         'album': album_data,
@@ -93,6 +103,8 @@ def album_detail(request, discogs_id):
         'in_wishlist': in_wishlist,
         'discogs_id': discogs_id,
         'spotify_id': spotify_id,
+        'average_rating': average_rating,
+        'rating_count': rating_count,
     }
     return render(request, 'album_detail.html', context)
 
