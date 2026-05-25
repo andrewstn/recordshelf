@@ -29,11 +29,16 @@ def search_page(request):
             collection_count=Count('collected_by')
         ).order_by('-collection_count')[:12]
         
+    user_collection_ids = []
+    if request.user.is_authenticated:
+        user_collection_ids = [str(did) for did in request.user.collection.values_list('record__discogs_id', flat=True) if did]
+        
     return render(request, 'search.html', {
         'query': query,
         'results': results,
         'pagination': pagination,
-        'popular_records': popular_records
+        'popular_records': popular_records,
+        'user_collection_ids': user_collection_ids,
     })
 
 @login_required
