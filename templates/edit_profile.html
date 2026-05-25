@@ -48,7 +48,7 @@
                 <div>
                     <label class="block text-sm font-medium text-zinc-400 mb-2">Profile Tagline</label>
                     {{ profile_form.tagline }}
-                    <p class="text-xs text-zinc-500 mt-2">Max 100 characters.</p>
+                    <p class="text-xs text-zinc-500 mt-2">Max 50 characters.</p>
                     {% if profile_form.tagline.errors %}
                         <p class="text-red-400 text-sm mt-1">{{ profile_form.tagline.errors.0 }}</p>
                     {% endif %}

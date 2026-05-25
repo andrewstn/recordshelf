@@ -62,24 +62,26 @@ def album_detail(request, discogs_id):
         messages.error(request, "Could not retrieve album details from Discogs.")
         return redirect('search')
 
-    # Check if the logged-in user already has this in their collection/wishlist
+    # 1. Initialize default state for guest users
     in_collection = False
     in_wishlist = False
-
+    
+    # 2. Safely check user-specific attributes only if authenticated
     if request.user.is_authenticated:
+        # Check Collection
         in_collection = CollectionItem.objects.filter(
             user=request.user, 
             record__discogs_id=discogs_id
         ).exists()
-    
-    in_wishlist = request.user.wishlist.filter(
-        discogs_id=discogs_id
+        
+        # Check Wishlist
+        in_wishlist = request.user.wishlist.filter(
+            discogs_id=discogs_id
         ).exists()
     
+    # 3. Fetch metadata for Spotify integration
     title = album_data.get('title', '')
     artist_name = ''
-    
-    # Discogs 'artists' is a list of dictionaries, so we grab the first one safely
     if album_data.get('artists'):
         artist_name = album_data['artists'][0].get('name', '')
         
@@ -88,9 +90,9 @@ def album_detail(request, discogs_id):
     context = {
         'album': album_data,
         'in_collection': in_collection,
+        'in_wishlist': in_wishlist,
         'discogs_id': discogs_id,
         'spotify_id': spotify_id,
-        'in_wishlist': in_wishlist
     }
     return render(request, 'album_detail.html', context)
 
@@ -145,7 +147,7 @@ def toggle_shelf(request, item_id):
         else:  
             request.user.shelf.add(item.record)
             Activity.objects.create(user=request.user, activity_type='SHELF', record=item.record)
-            messages.success(request, f"Added {item.record.title} to shelf.")
+            messages.success(request, f"Added {item.record.title} to your shelf.")
             
     return redirect('profile', username=request.user.username)
 
