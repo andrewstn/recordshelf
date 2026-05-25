@@ -53,13 +53,13 @@
                             <div class="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-600 flex-shrink-0">No Cover</div>
                         {% endif %}
                         <div class="overflow-hidden pr-2">
-                            <p class="text-brand text-[10px] font-bold uppercase tracking-widest mb-0.5">Current Spin</p>
+                            <p class="text-brand text-[10px] font-bold uppercase tracking-widest mb-0.5">Currently Spinning</p>
                             <p class="text-sm font-bold text-white truncate leading-tight">{{ directory_user.favorite_record.title }}</p>
                         </div>
                     </div>
                 {% else %}
                     <div class="bg-zinc-950/30 p-3 rounded-lg border border-zinc-800/30 border-dashed text-center text-zinc-600 text-xs py-5">
-                        No Current Spin Set
+                        Nothing Currently Spinning
                     </div>
                 {% endif %}
             </div>
