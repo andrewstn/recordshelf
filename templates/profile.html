@@ -7,9 +7,9 @@
         
         <div class="flex items-center gap-6 md:gap-8">
             {% if profile_user.profile_picture %}
-                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-zinc-800 shadow-xl flex-shrink-0">
+                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-zinc-800 shadow-xl shrink-0">
             {% else %}
-                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-zinc-900 flex items-center justify-center text-2xl font-black text-zinc-600 border-2 border-zinc-800 shadow-xl flex-shrink-0">
+                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-zinc-900 flex items-center justify-center text-2xl font-black text-zinc-600 border-2 border-zinc-800 shadow-xl shrink-0">
                     {{ profile_user.username|make_list|first|upper }}
                 </div>
             {% endif %}
@@ -51,7 +51,7 @@
             <div class="absolute -inset-4 bg-emerald-500/5 blur-2xl rounded-full opacity-60 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
             
             <div class="relative flex items-center gap-4 bg-zinc-950/60 backdrop-blur-md p-4 rounded-xl border border-zinc-900 shadow-2xl w-full md:w-72 hover:border-emerald-500/30 transition-colors duration-300">
-                <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="flex-shrink-0 block relative">
+                <a href="{% url 'album_detail' favorite_item.record.discogs_id %}" class="shrink-0 block relative">
                     {% if favorite_item.record.cover_art_url %}
                         <img src="{{ favorite_item.record.cover_art_url }}" alt="{{ favorite_item.record.title }}" referrerpolicy="no-referrer" class="w-16 h-16 rounded shadow-md object-cover border border-zinc-800">
                     {% else %}
@@ -82,7 +82,7 @@
     </div>
 
 
-    <div class="max-w-[1400px] mx-auto mb-24 relative group/shelf">
+    <div class="max-w-350 mx-auto mb-24 relative group/shelf">
         
         <div class="flex items-end justify-between mb-4 px-4 md:px-8">
             <div class="flex items-center gap-3">
@@ -110,8 +110,8 @@
             
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.06),transparent_65%)] pointer-events-none z-0 transition-opacity duration-500 group-hover/shelf:opacity-100"></div>
             
-            <div class="absolute inset-y-0 left-0 w-8 md:w-16 bg-gradient-to-r from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
-            <div class="absolute inset-y-0 right-0 w-8 md:w-16 bg-gradient-to-l from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-y-0 left-0 w-8 md:w-16 bg-linear-to-r from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-y-0 right-0 w-8 md:w-16 bg-linear-to-l from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
 
             {% if shelf_items %}
             <div id="shelf-container" 
@@ -146,7 +146,7 @@
                             <div class="absolute inset-0 w-full h-full bg-zinc-900 rounded-sm flex items-center justify-center text-zinc-700 text-xs border border-zinc-800 group-hover/card:border-emerald-500/40 transition-colors pointer-events-none">No Art</div>
                         {% endif %}
                         
-                        <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
+                        <div class="absolute inset-0 bg-linear-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
                     </button>
                 </div>
                 {% endfor %}
@@ -159,10 +159,10 @@
             {% endif %}
         </div>
 
-        <div class="h-5 md:h-6 w-full bg-gradient-to-b from-emerald-600 via-emerald-800 to-emerald-950 rounded-b-2xl border-t border-emerald-400 shadow-[0_25px_50px_-12px_rgba(16,185,129,0.4)] relative z-20 overflow-hidden">
-            <div class="w-full h-[1px] bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.9)]"></div>
-            <div class="absolute inset-x-0 top-1 h-[1px] bg-white/30"></div>
-            <div class="absolute inset-x-0 bottom-0 h-[1px] bg-emerald-950"></div>
+        <div class="h-5 md:h-6 w-full bg-linear-to-b from-emerald-600 via-emerald-800 to-emerald-950 rounded-b-2xl border-t border-emerald-400 shadow-[0_25px_50px_-12px_rgba(16,185,129,0.4)] relative z-20 overflow-hidden">
+            <div class="w-full h-px bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.9)]"></div>
+            <div class="absolute inset-x-0 top-1 h-px bg-white/30"></div>
+            <div class="absolute inset-x-0 bottom-0 h-px bg-emerald-950"></div>
         </div>
     </div>
 
@@ -171,11 +171,11 @@
         
         <div class="flex justify-between items-end mb-8 border-b border-zinc-900 pb-px">
             <div class="flex gap-8">
-                <a href="?tab=collection" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-[2px]
+                <a href="?tab=collection" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-0.5
                     {% if current_tab != 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
                     Entire Collection
                 </a>
-                <a href="?tab=wishlist" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-[2px]
+                <a href="?tab=wishlist" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-0.5
                     {% if current_tab == 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
                     Wishlist Space
                 </a>
@@ -445,8 +445,8 @@
         <!-- Cover Art -->
         <div class="relative w-full aspect-square bg-zinc-900">
             <img id="modal-cover" src="" referrerpolicy="no-referrer" class="w-full h-full object-cover hidden">
-            <div id="modal-no-cover" class="w-full h-full flex items-center justify-center text-zinc-600 text-sm hidden">No Art Available</div>
-            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent pointer-events-none"></div>
+            <div id="modal-no-cover" class="w-full h-full flex items-center justify-center text-zinc-600 text-sm">No Art Available</div>
+            <div class="absolute inset-0 bg-linear-to-t from-zinc-950 via-transparent to-transparent pointer-events-none"></div>
         </div>
 
         <!-- Info & Actions -->
@@ -456,7 +456,7 @@
             <p id="modal-variant" class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 truncate hidden"></p>
 
             <!-- Dynamic Owner/Visitor Actions -->
-            <div id="modal-owner-actions" class="hidden flex flex-col gap-2">
+            <div id="modal-owner-actions" class="hidden flex-col gap-2">
                 <form id="modal-remove-shelf-form" method="POST" action="" class="m-0">
                     {% csrf_token %}
                     <button type="submit" class="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
@@ -471,8 +471,8 @@
                 </form>
             </div>
 
-            <div id="modal-visitor-actions" class="hidden grid grid-cols-2 gap-2">
-                <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 flex items-center justify-center text-xs font-bold py-3 rounded-lg">
+            <div id="modal-visitor-actions" class="hidden grid-cols-2 gap-2">
+                <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 items-center justify-center text-xs font-bold py-3 rounded-lg">
                     ✓ In Collection
                 </div>
                 <form id="modal-visitor-add-form" method="POST" action="{% url 'add_record' %}" class="m-0">

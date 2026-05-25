@@ -23,7 +23,7 @@
             <div class="bg-zinc-900/50 border {% if activity.activity_type == 'FAVORITE' %}border-yellow-500/30{% else %}border-zinc-800{% endif %} p-5 rounded-xl flex items-start gap-4 transition hover:bg-zinc-800/80">
                 
                 <!-- User Avatar -->
-                <a href="{% url 'profile' activity.user.username %}" class="flex-shrink-0">
+                <a href="{% url 'profile' activity.user.username %}" class="shrink-0">
                     {% if activity.user.profile_picture %}
                         <img src="{{ activity.user.profile_picture.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-zinc-700">
                     {% else %}
@@ -34,7 +34,7 @@
                 </a>
 
                 <!-- Activity Content -->
-                <div class="flex-grow">
+                <div class="grow">
                     <p class="text-zinc-300 text-sm mb-2">
                         <a href="{% url 'profile' activity.user.username %}" class="font-bold text-white hover:text-brand transition">@{{ activity.user.username }}</a>
                         
@@ -57,7 +57,7 @@
 
                     <!-- The Record That Was Actioned -->
                     <div class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group w-max max-w-full">
-                        <a href="{% url 'album_detail' activity.record.discogs_id %}" class="flex-shrink-0 block">
+                        <a href="{% url 'album_detail' activity.record.discogs_id %}" class="shrink-0 block">
                             {% if activity.record.cover_art_url %}
                                 <img src="{{ activity.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-14 h-14 rounded shadow object-cover group-hover:scale-105 transition-transform">
                             {% else %}
@@ -79,7 +79,7 @@
                 </div>
                 
                 <!-- Action Icon -->
-               <div class="ml-auto flex-shrink-0 hidden sm:block">
+               <div class="ml-auto shrink-0 hidden sm:block">
                     {% if activity.activity_type == 'FAVORITE' %}
                         <svg class="w-7 h-7 text-yellow-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
                     

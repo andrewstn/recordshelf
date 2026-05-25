@@ -27,7 +27,7 @@
         <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-xl transition hover:bg-zinc-800 flex flex-col">
             
             <div class="flex items-center gap-4 mb-6">
-                <a href="{% url 'profile' directory_user.username %}" class="flex-shrink-0">
+                <a href="{% url 'profile' directory_user.username %}" class="shrink-0">
                     {% if directory_user.profile_picture %}
                         <img src="{{ directory_user.profile_picture.url }}" class="w-16 h-16 rounded-full object-cover border-2 border-zinc-700">
                     {% else %}
@@ -44,13 +44,13 @@
                 </div>
             </div>
 
-            <div class="flex-grow mb-6">
+            <div class="grow mb-6">
                 {% if directory_user.favorite_record %}
                     <div class="bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 flex items-center gap-3">
                         {% if directory_user.favorite_record.cover_art_url %}
-                            <img src="{{ directory_user.favorite_record.cover_art_url }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded shadow object-cover flex-shrink-0">
+                            <img src="{{ directory_user.favorite_record.cover_art_url }}" referrerpolicy="no-referrer" class="w-10 h-10 rounded shadow object-cover shrink-0">
                         {% else %}
-                            <div class="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-600 flex-shrink-0">No Cover</div>
+                            <div class="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-600 shrink-0">No Cover</div>
                         {% endif %}
                         <div class="overflow-hidden pr-2">
                             <p class="text-brand text-[10px] font-bold uppercase tracking-widest mb-0.5">Currently Spinning</p>

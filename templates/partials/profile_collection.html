@@ -8,7 +8,7 @@
                 <div class="w-full aspect-square bg-zinc-900 flex items-center justify-center text-zinc-700 card-img border border-zinc-800">No Cover</div>
             {% endif %}
         </a>
-        <div class="card-text flex flex-col flex-grow">
+        <div class="card-text flex flex-col grow">
             <a href="{% url 'album_detail' record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
                 <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ record.title }}</h3>
             </a>
@@ -53,7 +53,7 @@
             {% endif %}
         </a>
         
-        <div class="card-text flex flex-col flex-grow">
+        <div class="card-text flex flex-col grow">
             <a href="{% url 'album_detail' item.record.discogs_id %}" class="hover:text-emerald-400 transition block max-w-full">
                 <h3 class="text-base font-bold text-white leading-tight mb-1 truncate">{{ item.record.title }}</h3>
             </a>
@@ -64,7 +64,7 @@
             {% endif %}
             
             <div class="flex items-center justify-between text-[11px] font-bold mt-auto pt-3 border-t border-zinc-900/60">
-                <span class="text-zinc-400 truncate max-w-[120px]">{{ item.variant_description|default:"" }}</span>
+                <span class="text-zinc-400 truncate max-w-30">{{ item.variant_description|default:"" }}</span>
                 {% if item.rating %}
                     <span class="text-emerald-400 tracking-wider">
                         {% for i in "12345"|make_list %}{% if forloop.counter <= item.rating %}★{% else %}☆{% endif %}{% endfor %}

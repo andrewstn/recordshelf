@@ -13,7 +13,7 @@
             <div class="sticky top-24">
                 
                 <div class="mb-6 relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-b from-white/5 to-transparent rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    <div class="absolute -inset-1 bg-linear-to-b from-white/5 to-transparent rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
                     {% if album.images.0.resource_url %}
                         <img src="{{ album.images.0.resource_url }}" alt="{{ album.title }}" referrerpolicy="no-referrer" class="relative w-full aspect-square object-cover rounded-xl shadow-2xl shadow-black/50 ring-1 ring-white/10">
                     {% else %}
@@ -120,7 +120,7 @@
                             <h3 class="text-white font-bold mb-1">Stream Unavailable</h3>
                             <p class="text-sm text-zinc-500">We couldn't locate a verified Spotify stream for this exact pressing.</p>
                         </div>
-                        <div class="w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center text-zinc-600 opacity-50 flex-shrink-0">
+                        <div class="w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center text-zinc-600 opacity-50 shrink-0">
                             <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                     </div>

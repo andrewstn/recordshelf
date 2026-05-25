@@ -26,7 +26,7 @@
                         {{ request.user.username|make_list|first|upper }}
                     </div>
                 {% endif %}
-                <div class="flex-grow">
+                <div class="grow">
                     <label class="block text-sm font-medium text-zinc-400 mb-2">Change Avatar</label>
                     {{ profile_form.profile_picture }}
                     {% if profile_form.profile_picture.errors %}
