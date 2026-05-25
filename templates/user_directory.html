@@ -68,21 +68,18 @@
                 {% if request.user.is_authenticated %}
                     <form method="POST" action="{% url 'toggle_follow' directory_user.username %}" class="m-0">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center py-2 rounded-md font-bold transition text-sm cursor-pointer border
-                            {% if directory_user in request.user.following.all %}
-                                bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-red-900/50 hover:text-red-200 hover:border-red-800
-                            {% else %}
-                                bg-white text-zinc-950 border-white hover:bg-zinc-200 hover:border-zinc-200
-                            {% endif %}">
-                            {% if directory_user in request.user.following.all %}
+                        {% if directory_user in request.user.following.all %}
+                            <button type="submit" class="w-full bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 py-2 rounded-lg font-bold transition text-sm cursor-pointer">
                                 Unfollow
-                            {% else %}
+                            </button>
+                        {% else %}
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-2 rounded-lg font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm cursor-pointer">
                                 Follow
-                            {% endif %}
-                        </button>
+                            </button>
+                        {% endif %}
                     </form>
                 {% else %}
-                    <a href="{% url 'signup' %}" class="block w-full text-center py-2 rounded-md font-bold transition text-sm bg-white text-zinc-950 hover:bg-zinc-200 border border-white">
+                    <a href="{% url 'signup' %}" class="block w-full text-center py-2 rounded-lg font-bold transition text-sm bg-white text-zinc-950 hover:bg-zinc-200 border border-white">
                         Join to Follow
                     </a>
                 {% endif %}
