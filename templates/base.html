@@ -52,10 +52,15 @@
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-6">
         
         {% if messages %}
-            <div class="mb-6 space-y-2">
+            <div class="mb-6 space-y-2 relative z-50">
                 {% for message in messages %}
-                    <div class="p-4 rounded-md text-sm {% if message.tags == 'error' %}bg-red-950 text-red-200 border border-red-900{% else %}bg-zinc-800 text-zinc-200 border border-zinc-700{% endif %}">
-                        {{ message }}
+                    <div class="p-4 rounded-md text-sm flex justify-between items-center gap-4 transition-all duration-300 {% if message.tags == 'error' %}bg-red-950 text-red-200 border border-red-900{% else %}bg-zinc-800 text-zinc-200 border border-zinc-700{% endif %}">
+                        <span>{{ message }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0" aria-label="Dismiss">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
                 {% endfor %}
             </div>

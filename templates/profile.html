@@ -122,6 +122,7 @@
                             data-cover="{{ item.record.cover_art_url|default:'' }}"
                             data-title="{{ item.record.title }}"
                             data-artist="{{ item.record.artist.name }}"
+                            data-variant="{{ item.variant_description|default:'' }}"
                             data-discogs="{{ item.record.discogs_id }}"
                             data-item-id="{{ item.id }}"
                             data-in-collection="{% if item.record.discogs_id|stringformat:'s' in user_collection_discogs_ids %}true{% else %}false{% endif %}"
@@ -315,11 +316,20 @@
         const title = button.getAttribute('data-title');
         const artist = button.getAttribute('data-artist');
         const cover = button.getAttribute('data-cover');
+        const variant = button.getAttribute('data-variant');
         const discogsId = button.getAttribute('data-discogs');
         const itemId = button.getAttribute('data-item-id');
 
         document.getElementById('modal-title').textContent = title;
         document.getElementById('modal-artist').textContent = artist;
+        
+        const variantElement = document.getElementById('modal-variant');
+        if (variant) {
+            variantElement.textContent = variant;
+            variantElement.classList.remove('hidden');
+        } else {
+            variantElement.classList.add('hidden');
+        }
         
         const coverImg = document.getElementById('modal-cover');
         const noCover = document.getElementById('modal-no-cover');
@@ -334,8 +344,6 @@
 
         // Generate Links
         document.getElementById('modal-details-link').href = `/collection/album/${discogsId}/`;
-        document.getElementById('modal-discogs-link').href = `https://www.discogs.com/release/${discogsId}`;
-        document.getElementById('modal-spotify-link').href = `https://open.spotify.com/search/${encodeURIComponent(title + " " + artist)}/albums`;
         
         // Setup forms
         const isOwner = document.getElementById('shelf-container').getAttribute('data-is-owner') === 'true';
@@ -425,16 +433,8 @@
         <!-- Info & Actions -->
         <div class="p-6 relative -mt-6">
             <h3 id="modal-title" class="text-2xl font-black text-white leading-tight mb-1 truncate"></h3>
-            <p id="modal-artist" class="text-zinc-400 font-medium mb-6 truncate"></p>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <a id="modal-spotify-link" href="#" target="_blank" class="flex items-center justify-center bg-zinc-900 hover:bg-[#1DB954]/20 hover:text-[#1DB954] hover:border-[#1DB954]/50 border border-zinc-800 text-zinc-300 py-2.5 rounded-lg text-xs font-bold transition">
-                    Spotify Search
-                </a>
-                <a id="modal-discogs-link" href="#" target="_blank" class="flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 py-2.5 rounded-lg text-xs font-bold transition">
-                    Discogs Link
-                </a>
-            </div>
+            <p id="modal-artist" class="text-zinc-400 font-medium mb-1 truncate"></p>
+            <p id="modal-variant" class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 truncate hidden"></p>
 
             <!-- Dynamic Owner/Visitor Actions -->
             <div id="modal-owner-actions" class="hidden flex flex-col gap-2">

@@ -54,9 +54,9 @@ def add_record(request):
                 if request.user.wishlist.filter(id=item.record.id).exists():
                     request.user.wishlist.remove(item.record)
                 Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
-                messages.success(request, f"Added to your collection!")
+                messages.success(request, f"Added {item.record.title} to your collection!")
             else:
-                messages.info(request, f"This record is already in your collection.")
+                messages.info(request, f"{item.record.title} is already in your collection.")
                 
     # Check if a 'next' url was provided
     next_url = request.POST.get('next') or request.GET.get('next')
@@ -164,7 +164,7 @@ def toggle_shelf(request, item_id):
     
     if item.record in request.user.shelf.all():
         request.user.shelf.remove(item.record)
-        messages.info(request, f"Removed {item.record.title} from shelf.")
+        messages.info(request, f"Removed {item.record.title} from your shelf.")
     else:
         if request.user.shelf.count() >= 6:
             messages.error(request, "Your shelf is full! Remove one first.")
@@ -221,12 +221,12 @@ def toggle_wishlist(request):
         # Toggle the relationship
         if record in request.user.wishlist.all():
             request.user.wishlist.remove(record)
-            messages.success(request, "Removed from your wishlist.")
+            messages.success(request, f"Removed {record.title} from your wishlist.")
         else:
             request.user.wishlist.add(record)
             # Log the activity
             Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
-            messages.success(request, "Added to your wishlist!")
+            messages.success(request, f"Added {record.title} to your wishlist!")
             
     # Redirect back to exactly where they came from (the album page)
     return redirect(request.META.get('HTTP_REFERER', 'search'))
