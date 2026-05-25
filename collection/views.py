@@ -41,6 +41,33 @@ def prepare_discogs_search_results(results):
         prepared_results.append(prepared)
     return prepared_results
 
+def enrich_artist_release_images(releases):
+    release_ids = [str(release.get('id')) for release in releases if release.get('id')]
+    local_covers = {
+        str(discogs_id): cover_url
+        for discogs_id, cover_url in Record.objects.filter(
+            discogs_id__in=release_ids,
+            cover_art_url__isnull=False,
+        ).exclude(cover_art_url='').values_list('discogs_id', 'cover_art_url')
+    }
+
+    enriched_releases = []
+    for release in releases:
+        enriched = release.copy()
+        release_id = str(enriched.get('id') or '')
+        cover_image = local_covers.get(release_id)
+
+        if not cover_image and release_id:
+            master_data = fetch_discogs_master(release_id)
+            if master_data and master_data.get('images'):
+                image = master_data['images'][0]
+                cover_image = image.get('resource_url') or image.get('uri')
+
+        enriched['cover_image'] = cover_image or enriched.get('thumb')
+        enriched_releases.append(enriched)
+
+    return enriched_releases
+
 def search_page(request):
     query = request.GET.get('q', '')
     page = request.GET.get('page', 1)
@@ -304,6 +331,7 @@ def artist_detail(request, artist_id):
     
     # Filter only main masters
     releases = [r for r in releases_data if r.get('type') == 'master' and r.get('role') == 'Main']
+    releases = enrich_artist_release_images(releases)
         
     # Count local collectors
     collector_count = Record.objects.filter(artist=artist).aggregate(total=Count('collected_by'))['total'] or 0

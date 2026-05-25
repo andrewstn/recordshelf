@@ -46,8 +46,8 @@
                         {% for item in releases %}
                             <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col hover:bg-zinc-800 transition">
                                 <a href="{% url 'album_detail' item.id %}" class="block mb-4">
-                                    {% if item.thumb and "spacer.gif" not in item.thumb %}
-                                        <img src="{{ item.thumb }}" alt="{{ item.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md shadow-lg hover:opacity-80 transition">
+                                    {% if item.cover_image and "spacer.gif" not in item.cover_image %}
+                                        <img src="{{ item.cover_image }}" alt="{{ item.title }}" referrerpolicy="no-referrer" class="w-full aspect-square object-cover rounded-md shadow-lg hover:opacity-80 transition">
                                     {% else %}
                                         <div class="w-full aspect-square bg-zinc-800 rounded-md flex items-center justify-center text-zinc-600 hover:bg-zinc-700 transition">No Cover</div>
                                     {% endif %}
