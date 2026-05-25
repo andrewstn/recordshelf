@@ -117,18 +117,27 @@
                     
                     <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-11/12 h-3 bg-black/90 blur-sm rounded-full group-hover/card:blur-md group-hover/card:bg-emerald-950/40 group-hover/card:w-5/6 transition-all duration-300 pointer-events-none z-0"></div>
                     
-                    <a href="{% url 'album_detail' item.record.discogs_id %}" class="block relative w-full aspect-square z-10 rounded-sm bg-zinc-900 border-t border-l border-zinc-700/50 transition-all duration-300 group-hover/card:-translate-y-4 group-hover/card:-translate-x-1 shadow-[3px_0px_0px_#27272a,0px_10px_20px_rgba(0,0,0,0.8)] group-hover/card:shadow-[5px_0px_0px_#27272a,0px_15px_30px_rgba(16,185,129,0.2)]">
+                    <button type="button" 
+                            onclick="openShelfModal(this)"
+                            data-cover="{{ item.record.cover_art_url|default:'' }}"
+                            data-title="{{ item.record.title }}"
+                            data-artist="{{ item.record.artist.name }}"
+                            data-discogs="{{ item.record.discogs_id }}"
+                            data-item-id="{{ item.id }}"
+                            data-in-collection="{% if item.record.discogs_id|stringformat:'s' in user_collection_discogs_ids %}true{% else %}false{% endif %}"
+                            data-in-wishlist="{% if item.record.discogs_id|stringformat:'s' in user_wishlist_discogs_ids %}true{% else %}false{% endif %}"
+                            class="block relative w-full aspect-square z-10 rounded-sm bg-zinc-900 border-t border-l border-zinc-700/50 transition-all duration-300 group-hover/card:-translate-y-4 group-hover/card:-translate-x-1 shadow-[3px_0px_0px_#27272a,0px_10px_20px_rgba(0,0,0,0.8)] group-hover/card:shadow-[5px_0px_0px_#27272a,0px_15px_30px_rgba(16,185,129,0.2)]">
                         
                         <div class="absolute -inset-1 bg-emerald-500/0 group-hover/card:bg-emerald-500/10 blur-xl rounded-full transition-all duration-300 pointer-events-none z-0"></div>
                         
                         {% if item.record.cover_art_url %}
-                            <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full rounded-sm object-cover border border-zinc-900 group-hover/card:border-emerald-500/40 transition-colors duration-300">
+                            <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full rounded-sm object-cover border border-zinc-900 group-hover/card:border-emerald-500/40 transition-colors duration-300 pointer-events-none">
                         {% else %}
-                            <div class="absolute inset-0 w-full h-full bg-zinc-900 rounded-sm flex items-center justify-center text-zinc-700 text-xs border border-zinc-800 group-hover/card:border-emerald-500/40 transition-colors">No Art</div>
+                            <div class="absolute inset-0 w-full h-full bg-zinc-900 rounded-sm flex items-center justify-center text-zinc-700 text-xs border border-zinc-800 group-hover/card:border-emerald-500/40 transition-colors pointer-events-none">No Art</div>
                         {% endif %}
                         
                         <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
-                    </a>
+                    </button>
                 </div>
                 {% endfor %}
                 
@@ -295,5 +304,181 @@
         })
         .catch(error => console.error('Error fetching collection:', error));
     }
+
+    // Modal Logic
+    function openShelfModal(button) {
+        const modal = document.getElementById('shelf-modal');
+        const backdrop = document.getElementById('shelf-modal-backdrop');
+        const content = document.getElementById('shelf-modal-content');
+
+        // Populate Data
+        const title = button.getAttribute('data-title');
+        const artist = button.getAttribute('data-artist');
+        const cover = button.getAttribute('data-cover');
+        const discogsId = button.getAttribute('data-discogs');
+        const itemId = button.getAttribute('data-item-id');
+
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-artist').textContent = artist;
+        
+        const coverImg = document.getElementById('modal-cover');
+        const noCover = document.getElementById('modal-no-cover');
+        if (cover) {
+            coverImg.src = cover;
+            coverImg.classList.remove('hidden');
+            noCover.classList.add('hidden');
+        } else {
+            coverImg.classList.add('hidden');
+            noCover.classList.remove('hidden');
+        }
+
+        // Generate Links
+        document.getElementById('modal-details-link').href = `/collection/album/${discogsId}/`;
+        document.getElementById('modal-discogs-link').href = `https://www.discogs.com/release/${discogsId}`;
+        document.getElementById('modal-spotify-link').href = `https://open.spotify.com/search/${encodeURIComponent(title + " " + artist)}/albums`;
+        
+        // Setup forms
+        const isOwner = document.getElementById('shelf-container').getAttribute('data-is-owner') === 'true';
+        const ownerActions = document.getElementById('modal-owner-actions');
+        const visitorActions = document.getElementById('modal-visitor-actions');
+        
+        if (isOwner) {
+            ownerActions.classList.remove('hidden');
+            visitorActions.classList.add('hidden');
+            document.getElementById('modal-remove-shelf-form').action = `/collection/item/${itemId}/toggle-shelf/`;
+            document.getElementById('modal-remove-collection-form').action = `/collection/item/${itemId}/remove/`;
+        } else {
+            ownerActions.classList.add('hidden');
+            visitorActions.classList.remove('hidden');
+            document.getElementById('modal-visitor-discogs-id').value = discogsId;
+            document.getElementById('modal-visitor-wishlist-id').value = discogsId;
+
+            // Handle Visitor Collection Tracking
+            const inCollection = button.getAttribute('data-in-collection') === 'true';
+            const inWishlist = button.getAttribute('data-in-wishlist') === 'true';
+            
+            const addForm = document.getElementById('modal-visitor-add-form');
+            const inCollectionTag = document.getElementById('modal-visitor-in-collection');
+            const wishlistBtn = document.getElementById('modal-visitor-wishlist-btn');
+
+            if (inCollection) {
+                addForm.classList.add('hidden');
+                inCollectionTag.classList.remove('hidden');
+            } else {
+                addForm.classList.remove('hidden');
+                inCollectionTag.classList.add('hidden');
+            }
+
+            if (inWishlist) {
+                wishlistBtn.classList.replace('text-zinc-500', 'text-emerald-500');
+                wishlistBtn.innerHTML = '★ In Wishlist';
+            } else {
+                wishlistBtn.classList.replace('text-emerald-500', 'text-zinc-500');
+                wishlistBtn.innerHTML = '★ Wishlist';
+            }
+        }
+
+        // Show Modal
+        modal.classList.remove('pointer-events-none');
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            content.classList.remove('opacity-0', 'translate-y-4', 'scale-95');
+            // document.body.style.overflow = 'hidden'; // Optional Lock Scroll
+        }, 10);
+    }
+
+    function closeShelfModal() {
+        const modal = document.getElementById('shelf-modal');
+        const backdrop = document.getElementById('shelf-modal-backdrop');
+        const content = document.getElementById('shelf-modal-content');
+
+        backdrop.classList.add('opacity-0');
+        content.classList.add('opacity-0', 'translate-y-4', 'scale-95');
+        
+        setTimeout(() => {
+            modal.classList.add('pointer-events-none');
+            // document.body.style.overflow = '';
+        }, 300);
+    }
 </script>
+
+<!-- Shelf Interaction Modal -->
+<div id="shelf-modal" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+    
+    <!-- Blur Backdrop -->
+    <div id="shelf-modal-backdrop" onclick="closeShelfModal()" class="absolute inset-0 bg-black/60 backdrop-blur-lg opacity-0 transition-opacity duration-300"></div>
+    
+    <!-- Modal Dialog -->
+    <div id="shelf-modal-content" class="relative w-full max-w-sm mx-4 bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden opacity-0 translate-y-4 scale-95 transition-all duration-300 transform">
+        
+        <button onclick="closeShelfModal()" class="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-zinc-800 transition backdrop-blur-md">
+            ✕
+        </button>
+
+        <!-- Cover Art -->
+        <div class="relative w-full aspect-square bg-zinc-900">
+            <img id="modal-cover" src="" referrerpolicy="no-referrer" class="w-full h-full object-cover hidden">
+            <div id="modal-no-cover" class="w-full h-full flex items-center justify-center text-zinc-600 text-sm hidden">No Art Available</div>
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent pointer-events-none"></div>
+        </div>
+
+        <!-- Info & Actions -->
+        <div class="p-6 relative -mt-6">
+            <h3 id="modal-title" class="text-2xl font-black text-white leading-tight mb-1 truncate"></h3>
+            <p id="modal-artist" class="text-zinc-400 font-medium mb-6 truncate"></p>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <a id="modal-spotify-link" href="#" target="_blank" class="flex items-center justify-center bg-zinc-900 hover:bg-[#1DB954]/20 hover:text-[#1DB954] hover:border-[#1DB954]/50 border border-zinc-800 text-zinc-300 py-2.5 rounded-lg text-xs font-bold transition">
+                    Spotify Search
+                </a>
+                <a id="modal-discogs-link" href="#" target="_blank" class="flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 py-2.5 rounded-lg text-xs font-bold transition">
+                    Discogs Link
+                </a>
+            </div>
+
+            <!-- Dynamic Owner/Visitor Actions -->
+            <div id="modal-owner-actions" class="hidden flex flex-col gap-2">
+                <form id="modal-remove-shelf-form" method="POST" action="" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
+                        Remove from Display Shelf
+                    </button>
+                </form>
+                <form id="modal-remove-collection-form" method="POST" action="" class="m-0" onsubmit="return confirm('Are you sure you want to remove this from your entire collection?');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-zinc-950 border border-zinc-900/50 hover:bg-red-950/30 text-red-500 hover:border-red-900/50 text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
+                        Remove from Collection
+                    </button>
+                </form>
+            </div>
+
+            <div id="modal-visitor-actions" class="hidden grid grid-cols-2 gap-2">
+                <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 flex items-center justify-center text-xs font-bold py-3 rounded-lg">
+                    ✓ In Collection
+                </div>
+                <form id="modal-visitor-add-form" method="POST" action="{% url 'add_record' %}" class="m-0">
+                    {% csrf_token %}
+                    <input type="hidden" id="modal-visitor-discogs-id" name="discogs_id" value="">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
+                        + Collection
+                    </button>
+                </form>
+                <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0">
+                    {% csrf_token %}
+                    <input type="hidden" id="modal-visitor-wishlist-id" name="discogs_id" value="">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button id="modal-visitor-wishlist-btn" type="submit" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
+                        ★ Wishlist
+                    </button>
+                </form>
+            </div>
+
+            <a id="modal-details-link" href="#" class="mt-4 block w-full text-center text-zinc-500 hover:text-white text-xs font-semibold py-2 transition">
+                View Full Album Details &rarr;
+            </a>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

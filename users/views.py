@@ -63,6 +63,12 @@ def user_profile(request, username):
     favorite_item = None
     if profile_user.favorite_record:
         favorite_item = profile_user.collection.filter(record=profile_user.favorite_record).first()
+        
+    user_collection_discogs_ids = []
+    user_wishlist_discogs_ids = []
+    if request.user.is_authenticated:
+        user_collection_discogs_ids = [str(did) for did in request.user.collection.values_list('record__discogs_id', flat=True) if did]
+        user_wishlist_discogs_ids = [str(did) for did in request.user.wishlist.values_list('discogs_id', flat=True) if did]
     
     context = {
         'profile_user': profile_user,
@@ -74,6 +80,8 @@ def user_profile(request, username):
         'current_tab': current_tab,
         'search_query': search_query,
         'page_obj': page_obj,
+        'user_collection_discogs_ids': user_collection_discogs_ids,
+        'user_wishlist_discogs_ids': user_wishlist_discogs_ids,
     }
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
