@@ -22,6 +22,18 @@ def prepare_discogs_search_results(results):
             site_collection_count=Count('collected_by')
         ).values_list('discogs_id', 'site_collection_count')
     }
+    display_artist_names = []
+    for result in results:
+        full_title = result.get('title', '')
+        if ' - ' in full_title:
+            display_artist_names.append(full_title.split(' - ', 1)[0].strip())
+    local_artists = {
+        artist.name.lower(): artist.discogs_id
+        for artist in Artist.objects.filter(
+            name__in=display_artist_names,
+            discogs_id__isnull=False,
+        ).exclude(discogs_id='')
+    }
 
     prepared_results = []
     for result in results:
@@ -38,12 +50,9 @@ def prepare_discogs_search_results(results):
             prepared['display_title'] = full_title
         prepared['artist_discogs_id'] = ''
         if prepared['display_artist']:
-            local_artist = Artist.objects.filter(
-                name__iexact=prepared['display_artist'],
-                discogs_id__isnull=False,
-            ).exclude(discogs_id='').first()
-            if local_artist:
-                prepared['artist_discogs_id'] = local_artist.discogs_id
+            local_discogs_id = local_artists.get(prepared['display_artist'].lower())
+            if local_discogs_id:
+                prepared['artist_discogs_id'] = local_discogs_id
             elif prepared.get('id'):
                 master_data = fetch_discogs_master(prepared.get('id'))
                 if master_data and master_data.get('artists'):
@@ -207,7 +216,11 @@ def album_detail(request, discogs_id):
 def edit_item(request, item_id):
     """Displays a form to edit variant/rating for a specific collection item."""
     # Ensure the item exists AND belongs to the logged-in user
-    item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
+    item = get_object_or_404(
+        CollectionItem.objects.select_related('record', 'record__artist'),
+        id=item_id,
+        user=request.user,
+    )
     
     if request.method == 'POST':
         form = CollectionItemForm(request.POST, instance=item)
@@ -223,13 +236,17 @@ def edit_item(request, item_id):
 @login_required
 def remove_item(request, item_id):
     """Removes an item from the user's collection and cleans up their shelf."""
-    item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
+    item = get_object_or_404(
+        CollectionItem.objects.select_related('record'),
+        id=item_id,
+        user=request.user,
+    )
     
     if request.method == 'POST':
         # Cleanup: If this record is on their shelf or is their favorite, remove it first
-        if item.record in request.user.shelf.all():
+        if request.user.shelf.filter(pk=item.record_id).exists():
             request.user.shelf.remove(item.record)
-        if request.user.favorite_record == item.record:
+        if request.user.favorite_record_id == item.record_id:
             request.user.favorite_record = None
             request.user.save()
             
@@ -243,9 +260,13 @@ def remove_item(request, item_id):
 @login_required
 def toggle_shelf(request, item_id):
     """Adds or removes a record from the user's Top 6 shelf."""
-    item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
+    item = get_object_or_404(
+        CollectionItem.objects.select_related('record'),
+        id=item_id,
+        user=request.user,
+    )
     
-    if item.record in request.user.shelf.all():
+    if request.user.shelf.filter(pk=item.record_id).exists():
         request.user.shelf.remove(item.record)
         messages.info(request, f"Removed {item.record.title} from your shelf.")
     else:
@@ -261,7 +282,11 @@ def toggle_shelf(request, item_id):
 @login_required
 def toggle_favorite(request, item_id):
     """Sets or unsets a record as the user's all-time favorite (current spin)."""
-    item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
+    item = get_object_or_404(
+        CollectionItem.objects.select_related('record'),
+        id=item_id,
+        user=request.user,
+    )
     
     if request.method == 'POST':
         # If it's already the favorite, unset it
@@ -302,7 +327,7 @@ def toggle_wishlist(request):
             return redirect(request.META.get('HTTP_REFERER', 'search'))
             
         # Toggle the relationship
-        if record in request.user.wishlist.all():
+        if request.user.wishlist.filter(pk=record.pk).exists():
             request.user.wishlist.remove(record)
             messages.success(request, f"Removed {record.title} from your wishlist.")
         else:

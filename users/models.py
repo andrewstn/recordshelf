@@ -74,6 +74,11 @@ class Activity(models.Model):
 
     class Meta:
         ordering = ['-created_at'] # Always put the newest activity at the top
+        indexes = [
+            models.Index(fields=['-created_at'], name='activity_created_desc_idx'),
+            models.Index(fields=['user', '-created_at'], name='activity_user_created_idx'),
+            models.Index(fields=['activity_type', '-created_at'], name='activity_type_created_idx'),
+        ]
         verbose_name_plural = "Activities"
         
     def __str__(self):

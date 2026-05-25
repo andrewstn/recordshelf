@@ -68,7 +68,7 @@
                 {% if request.user.is_authenticated %}
                     <form method="POST" action="{% url 'toggle_follow' directory_user.username %}" class="m-0">
                         {% csrf_token %}
-                        {% if directory_user in request.user.following.all %}
+                        {% if directory_user.id in request_user_following_ids %}
                             <button type="submit" class="w-full bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 py-2 rounded-lg font-bold transition text-sm cursor-pointer">
                                 Unfollow
                             </button>

@@ -58,21 +58,30 @@ def user_profile(request, username):
         full_collection = paginator.get_page(request.GET.get('page'))
         page_obj = full_collection
 
+    profile_shelf_record_ids = list(profile_user.shelf.values_list('id', flat=True))
     shelf_items = list(
-        profile_user.collection.filter(record__in=profile_user.shelf.all()).select_related('record', 'record__artist')
+        profile_user.collection.filter(record_id__in=profile_shelf_record_ids).select_related('record', 'record__artist')
     )
     order_list = profile_user.shelf_order or []
     shelf_items.sort(key=lambda x: order_list.index(x.record.id) if x.record.id in order_list else 999)
     
     favorite_item = None
     if profile_user.favorite_record:
-        favorite_item = profile_user.collection.filter(record=profile_user.favorite_record).first()
+        favorite_item = profile_user.collection.select_related('record', 'record__artist').filter(record=profile_user.favorite_record).first()
         
     user_collection_discogs_ids = []
     user_wishlist_discogs_ids = []
+    owner_shelf_record_ids = []
+    favorite_record_id = None
+    is_following_profile = False
     if request.user.is_authenticated:
         user_collection_discogs_ids = [str(did) for did in request.user.collection.values_list('record__discogs_id', flat=True) if did]
         user_wishlist_discogs_ids = [str(did) for did in request.user.wishlist.values_list('discogs_id', flat=True) if did]
+        if request.user == profile_user:
+            owner_shelf_record_ids = list(request.user.shelf.values_list('id', flat=True))
+            favorite_record_id = request.user.favorite_record_id
+        else:
+            is_following_profile = request.user.following.filter(pk=profile_user.pk).exists()
     
     context = {
         'profile_user': profile_user,
@@ -86,6 +95,9 @@ def user_profile(request, username):
         'page_obj': page_obj,
         'user_collection_discogs_ids': user_collection_discogs_ids,
         'user_wishlist_discogs_ids': user_wishlist_discogs_ids,
+        'owner_shelf_record_ids': owner_shelf_record_ids,
+        'favorite_record_id': favorite_record_id,
+        'is_following_profile': is_following_profile,
     }
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -142,7 +154,7 @@ def toggle_follow(request, username):
         messages.warning(request, "You cannot follow yourself.")
         return redirect('profile', username=username)
 
-    if user_to_toggle in request.user.following.all():
+    if request.user.following.filter(pk=user_to_toggle.pk).exists():
         request.user.following.remove(user_to_toggle)
         messages.info(request, f"You unfollowed @{user_to_toggle.username}.")
     else:
@@ -212,10 +224,14 @@ def user_directory(request):
         
     # 4. Finally, order the results and apply the slice at the very end!
     users = users.order_by('-follower_count')[:50]
+    request_user_following_ids = []
+    if request.user.is_authenticated:
+        request_user_following_ids = list(request.user.following.values_list('id', flat=True))
         
     return render(request, 'user_directory.html', {
         'users': users,
-        'query': query
+        'query': query,
+        'request_user_following_ids': request_user_following_ids,
     })
 
 def followers_list(request, username):
@@ -226,11 +242,15 @@ def followers_list(request, username):
     users = profile_user.followers.annotate(
         follower_count=Count('followers')
     ).select_related('favorite_record', 'favorite_record__artist')
+    request_user_following_ids = []
+    if request.user.is_authenticated:
+        request_user_following_ids = list(request.user.following.values_list('id', flat=True))
     
     return render(request, 'user_list.html', {
         'profile_user': profile_user,
         'users': users,
-        'list_type': 'Followers'
+        'list_type': 'Followers',
+        'request_user_following_ids': request_user_following_ids,
     })
 
 def following_list(request, username):
@@ -241,9 +261,13 @@ def following_list(request, username):
     users = profile_user.following.annotate(
         follower_count=Count('followers')
     ).select_related('favorite_record', 'favorite_record__artist')
+    request_user_following_ids = []
+    if request.user.is_authenticated:
+        request_user_following_ids = list(request.user.following.values_list('id', flat=True))
     
     return render(request, 'user_list.html', {
         'profile_user': profile_user,
         'users': users,
-        'list_type': 'Following'
+        'list_type': 'Following',
+        'request_user_following_ids': request_user_following_ids,
     })

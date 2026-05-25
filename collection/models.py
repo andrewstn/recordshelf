@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.functions import Lower
 
 class Artist(models.Model):
     name = models.CharField(max_length=255)
@@ -10,6 +11,11 @@ class Artist(models.Model):
     
     def __str__(self):
         return self.name
+
+    class Meta:
+        indexes = [
+            models.Index(Lower('name'), name='artist_name_lower_idx'),
+        ]
 
 class Record(models.Model):
     title = models.CharField(max_length=255)
@@ -21,6 +27,13 @@ class Record(models.Model):
     
     def __str__(self):
         return f"{self.title} by {self.artist.name}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['title'], name='record_title_idx'),
+            models.Index(fields=['artist', 'title'], name='record_artist_title_idx'),
+            models.Index(fields=['-year'], name='record_year_desc_idx'),
+        ]
 
 class CollectionItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='collection')
@@ -49,6 +62,11 @@ class CollectionItem(models.Model):
     
     class Meta:
         unique_together = ('user', 'record')
+        indexes = [
+            models.Index(fields=['user', '-date_added'], name='collection_user_added_idx'),
+            models.Index(fields=['record', '-date_added'], name='collection_record_added_idx'),
+            models.Index(fields=['rating'], name='collection_rating_idx'),
+        ]
 
     def __str__(self):
         return f"{self.user.username}'s copy of {self.record.title}"

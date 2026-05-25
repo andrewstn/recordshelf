@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@source "../../templates";
+@source "../../collection";
+@source "../../users";
+
+@theme {
+    --color-brand: #10B981;
+}

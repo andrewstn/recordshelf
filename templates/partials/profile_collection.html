@@ -77,24 +77,24 @@
                     <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
                         <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold
-                            {% if item.record in request.user.shelf.all %}
+                            {% if item.record.id in owner_shelf_record_ids %}
                                 bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 hover:bg-zinc-900
                             {% else %}
                                 bg-zinc-950 text-zinc-500 hover:bg-zinc-900 border border-zinc-900
                             {% endif %}">
-                            {% if item.record in request.user.shelf.all %}✓ Shelved{% else %}Shelf{% endif %}
+                            {% if item.record.id in owner_shelf_record_ids %}✓ Shelved{% else %}Shelf{% endif %}
                         </button>
                     </form>
 
                     <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
                         <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold border
-                            {% if request.user.favorite_record == item.record %}
+                            {% if favorite_record_id == item.record.id %}
                                 bg-emerald-500 text-black border-transparent hover:bg-emerald-400
                             {% else %}
                                 bg-zinc-950 border-zinc-900 text-zinc-600 hover:bg-zinc-900 hover:text-zinc-300
                             {% endif %}">
-                            {% if request.user.favorite_record == item.record %}★ Spinning{% else %}Spin{% endif %}
+                            {% if favorite_record_id == item.record.id %}★ Spinning{% else %}Spin{% endif %}
                         </button>
                     </form>
 
