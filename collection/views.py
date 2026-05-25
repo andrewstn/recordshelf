@@ -298,7 +298,7 @@ def sync_artist(request, local_artist_id):
         
     url = "https://api.discogs.com/database/search"
     headers = {
-        'User-Agent': 'RecordStoreIO/1.0 +http://127.0.0.1:8000',
+        'User-Agent': 'recordshelf/1.0 +http://127.0.0.1:8000',
         'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
     }
     

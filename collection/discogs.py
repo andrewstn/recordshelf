@@ -5,7 +5,7 @@ def search_discogs(query, page=1, sort_by='relevance'):
     """Searches Discogs and returns results along with pagination data."""
     url = "https://api.discogs.com/database/search"
     headers = {
-        'User-Agent': 'RecordStoreIO/1.0 +http://127.0.0.1:8000',
+        'User-Agent': 'recordshelf/1.0 +http://127.0.0.1:8000',
         'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
     }
     
@@ -41,7 +41,7 @@ def fetch_discogs_master(master_id):
     url = f"https://api.discogs.com/masters/{master_id}"
     
     headers = {
-        'User-Agent': 'RecordStoreIO/1.0 +http://127.0.0.1:8000',
+        'User-Agent': 'recordshelf/1.0 +http://127.0.0.1:8000',
         'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
     }
     
@@ -55,7 +55,7 @@ def fetch_discogs_master(master_id):
 def fetch_discogs_artist(artist_id):
     url = f"https://api.discogs.com/artists/{artist_id}"
     headers = {
-        "User-Agent": "RecordStoreIO/1.0 +http://127.0.0.1:8000",
+        "User-Agent": "recordshelf/1.0 +http://127.0.0.1:8000",
         "Authorization": f"Discogs token={settings.DISCOGS_API_TOKEN}"
     }
     response = requests.get(url, headers=headers)
@@ -66,7 +66,7 @@ def fetch_discogs_artist(artist_id):
 def fetch_discogs_artist_releases(artist_id, page=1):
     url = f"https://api.discogs.com/artists/{artist_id}/releases"
     headers = {
-        "User-Agent": "RecordStoreIO/1.0 +http://127.0.0.1:8000",
+        "User-Agent": "recordshelf/1.0 +http://127.0.0.1:8000",
         "Authorization": f"Discogs token={settings.DISCOGS_API_TOKEN}"
     }
     # type=master doesnt work on artist releases, we could just get them and filter?
