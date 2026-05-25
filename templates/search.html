@@ -65,9 +65,21 @@
                     {% endif %}
                     
                     <a href="{% url 'album_detail' item.id %}" class="hover:text-brand transition cursor-pointer">
-                        <h3 class="text-md font-bold text-white leading-tight mb-1">{{ item.title }}</h3>
+                        <h3 class="text-md font-bold text-white leading-tight mb-1">{{ item.display_title }}</h3>
                     </a>
-                    <p class="text-sm text-zinc-400 mb-4">{{ item.year|default:"Unknown Year" }}</p>
+                    {% if item.display_artist and item.artist_discogs_id %}
+                        <a href="{% url 'artist_detail' item.artist_discogs_id %}" class="block mb-4 group cursor-pointer">
+                            <p class="text-sm text-zinc-400 group-hover:text-brand transition">{{ item.display_artist }}</p>
+                        </a>
+                    {% else %}
+                        <p class="text-sm text-zinc-400 mb-4">
+                            {% if item.display_artist %}
+                                {{ item.display_artist }}
+                            {% else %}
+                                {{ item.year|default:"Unknown Year" }}
+                            {% endif %}
+                        </p>
+                    {% endif %}
                     
                     {% if user.is_authenticated %}
                         {% if item.id|stringformat:"s" in user_collection_ids %}

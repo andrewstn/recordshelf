@@ -4,13 +4,42 @@ from django.contrib import messages
 from collection.spotify import get_spotify_album_id
 from .discogs import search_discogs, fetch_discogs_master, fetch_discogs_artist, fetch_discogs_artist_releases
 from .services import add_record_to_collection, get_or_create_record
-from .models import CollectionItem, Record
+from .models import Artist, CollectionItem, Record
 from .forms import CollectionItemForm
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
 from django.db.models import Count, Avg
+
+def prepare_discogs_search_results(results):
+    prepared_results = []
+    for result in results:
+        prepared = result.copy()
+        full_title = prepared.get('title', '')
+        if ' - ' in full_title:
+            artist_name, record_title = full_title.split(' - ', 1)
+            prepared['display_artist'] = artist_name.strip()
+            prepared['display_title'] = record_title.strip()
+        else:
+            prepared['display_artist'] = ''
+            prepared['display_title'] = full_title
+        prepared['artist_discogs_id'] = ''
+        if prepared['display_artist']:
+            local_artist = Artist.objects.filter(
+                name__iexact=prepared['display_artist'],
+                discogs_id__isnull=False,
+            ).exclude(discogs_id='').first()
+            if local_artist:
+                prepared['artist_discogs_id'] = local_artist.discogs_id
+            elif prepared.get('id'):
+                master_data = fetch_discogs_master(prepared.get('id'))
+                if master_data and master_data.get('artists'):
+                    artist_data = master_data['artists'][0]
+                    prepared['artist_discogs_id'] = artist_data.get('id') or ''
+                    prepared['display_artist'] = artist_data.get('name') or prepared['display_artist']
+        prepared_results.append(prepared)
+    return prepared_results
 
 def search_page(request):
     query = request.GET.get('q', '')
@@ -24,6 +53,7 @@ def search_page(request):
     if query:
         # If there's a query, hit the Discogs API (your existing logic)
         results, pagination = search_discogs(query, page, sort_by)
+        results = prepare_discogs_search_results(results)
     else:
         # If no query, grab the top 12 most collected records from our local DB
         popular_records = Record.objects.annotate(
@@ -233,7 +263,6 @@ def toggle_wishlist(request):
     # Redirect back to exactly where they came from (the album page)
     return redirect(request.META.get('HTTP_REFERER', 'search'))
 
-from .models import Artist
 def artist_detail(request, artist_id):
     # Get local artist if exists
     artist = Artist.objects.filter(discogs_id=artist_id).first()
