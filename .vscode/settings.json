@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "**/static/css/style.css": "plaintext"
+  },
+  "stylelint.ignoreFiles": [
+    "static/css/style.css"
+  ]
+}
