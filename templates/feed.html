@@ -56,12 +56,14 @@
                     </p>
 
                     <!-- The Record That Was Actioned -->
-                    <a href="{% url 'album_detail' activity.record.discogs_id %}" class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group cursor-pointer w-max max-w-full">
-                        {% if activity.record.cover_art_url %}
-                            <img src="{{ activity.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-14 h-14 rounded shadow object-cover flex-shrink-0 group-hover:scale-105 transition-transform">
-                        {% else %}
-                            <div class="w-14 h-14 rounded bg-zinc-800 flex items-center justify-center text-xs text-zinc-600 flex-shrink-0">No Cover</div>
-                        {% endif %}
+                    <div class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group w-max max-w-full">
+                        <a href="{% url 'album_detail' activity.record.discogs_id %}" class="flex-shrink-0 block">
+                            {% if activity.record.cover_art_url %}
+                                <img src="{{ activity.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-14 h-14 rounded shadow object-cover group-hover:scale-105 transition-transform">
+                            {% else %}
+                                <div class="w-14 h-14 rounded bg-zinc-800 flex items-center justify-center text-xs text-zinc-600">No Cover</div>
+                            {% endif %}
+                        </a>
                         
                         <div class="overflow-hidden pr-4">
                             <a href="{% url 'album_detail' activity.record.discogs_id %}">
@@ -73,7 +75,7 @@
                                 <a href="{% url 'sync_artist' activity.record.artist.id %}" class="text-sm text-zinc-400 truncate hover:text-brand transition block" title="Sync this artist from Discogs">{{ activity.record.artist.name }}</a>
                             {% endif %}
                         </div>
-                    </a>
+                    </div>
                 </div>
                 
                 <!-- Action Icon -->
