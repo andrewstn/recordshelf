@@ -18,8 +18,7 @@ def search_discogs(query, page=1, sort_by='relevance'):
     if sort_by == 'relevance':
         pass # Let Discogs default algorithm rank by text match quality
     elif sort_by == 'popularity':
-        params['sort'] = 'have'
-        params['sort_order'] = 'desc'
+        pass # Site popularity is applied after results are annotated locally.
     elif sort_by == 'newest':
         params['sort'] = 'year'
         params['sort_order'] = 'desc'
@@ -78,4 +77,3 @@ def fetch_discogs_artist_releases(artist_id, page=1):
         # filter out roles like Appearance? role=Main
         return data.get("releases", []), data.get("pagination", {})
     return [], {}
-

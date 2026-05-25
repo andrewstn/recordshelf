@@ -13,9 +13,21 @@ from users.models import Activity
 from django.db.models import Count, Avg
 
 def prepare_discogs_search_results(results):
+    result_ids = [str(result.get('id')) for result in results if result.get('id')]
+    site_counts = {
+        str(discogs_id): count
+        for discogs_id, count in Record.objects.filter(
+            discogs_id__in=result_ids,
+        ).annotate(
+            site_collection_count=Count('collected_by')
+        ).values_list('discogs_id', 'site_collection_count')
+    }
+
     prepared_results = []
     for result in results:
         prepared = result.copy()
+        result_id = str(prepared.get('id') or '')
+        prepared['site_collection_count'] = site_counts.get(result_id, 0)
         full_title = prepared.get('title', '')
         if ' - ' in full_title:
             artist_name, record_title = full_title.split(' - ', 1)
@@ -40,6 +52,16 @@ def prepare_discogs_search_results(results):
                     prepared['display_artist'] = artist_data.get('name') or prepared['display_artist']
         prepared_results.append(prepared)
     return prepared_results
+
+def sort_results_by_site_collection(results):
+    return sorted(
+        results,
+        key=lambda result: (
+            -result.get('site_collection_count', 0),
+            result.get('display_artist', '').lower(),
+            result.get('display_title', '').lower(),
+        )
+    )
 
 def enrich_artist_release_images(releases):
     release_ids = [str(release.get('id')) for release in releases if release.get('id')]
@@ -81,6 +103,8 @@ def search_page(request):
         # If there's a query, hit the Discogs API (your existing logic)
         results, pagination = search_discogs(query, page, sort_by)
         results = prepare_discogs_search_results(results)
+        if sort_by == 'popularity':
+            results = sort_results_by_site_collection(results)
     else:
         # If no query, grab the top 12 most collected records from our local DB
         popular_records = Record.objects.annotate(
