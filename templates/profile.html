@@ -82,7 +82,7 @@
     </div>
 
 
-    <div class="max-w-350 mx-auto mb-24 relative group/shelf">
+    <div class="max-w-350 mx-auto mb-24 relative group/shelf perspective-[1000px]">
         
         <div class="flex items-end justify-between mb-4 px-4 md:px-8">
             <div class="flex items-center gap-3">
@@ -106,12 +106,12 @@
             </div>
         </div>
         
-        <div class="relative bg-zinc-900/80 backdrop-blur-sm rounded-t-2xl border border-zinc-800/80 pt-12 pb-2 px-4 md:px-8 shadow-2xl transition-all duration-500 group-hover/shelf:border-zinc-700/50">
+        <div class="relative bg-emerald-950/10 backdrop-blur-sm rounded-t-2xl border border-emerald-900/40 pt-12 pb-2 px-4 md:px-8 shadow-2xl shadow-emerald-950/20 transition-all duration-500 group-hover/shelf:border-emerald-500/30">
             
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.06),transparent_65%)] pointer-events-none z-0 transition-opacity duration-500 group-hover/shelf:opacity-100"></div>
+            <div class="absolute inset-0 rounded-t-2xl bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.14),transparent_65%)] pointer-events-none z-0 transition-opacity duration-500 group-hover/shelf:opacity-100"></div>
             
-            <div class="absolute inset-y-0 left-0 w-8 md:w-16 bg-linear-to-r from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
-            <div class="absolute inset-y-0 right-0 w-8 md:w-16 bg-linear-to-l from-zinc-900 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-y-0 left-0 w-8 md:w-16 rounded-tl-2xl bg-linear-to-r from-emerald-950/90 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
+            <div class="absolute inset-y-0 right-0 w-8 md:w-16 rounded-tr-2xl bg-linear-to-l from-emerald-950/90 via-zinc-900/60 to-transparent z-20 pointer-events-none"></div>
 
             {% if shelf_items %}
             <div id="shelf-container" 
@@ -120,7 +120,7 @@
                  class="flex flex-wrap justify-center gap-3 md:gap-5 items-end relative z-10 pb-1">
                 
                 {% for item in shelf_items %}
-                <div data-id="{{ item.record.id }}" class="w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-6.25rem)/6)] relative z-10 cursor-grab active:cursor-grabbing group/card">
+                <div data-id="{{ item.record.id }}" class="w-[calc((100%-1.5rem)/3)] md:w-[calc((100%-6.25rem)/6)] relative z-10 cursor-grab active:cursor-grabbing group/card transform-3d">
                     
                     <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-11/12 h-3 bg-black/90 blur-sm rounded-full group-hover/card:blur-md group-hover/card:bg-emerald-950/40 group-hover/card:w-5/6 transition-all duration-300 pointer-events-none z-0"></div>
                     
@@ -136,9 +136,9 @@
                             data-item-id="{{ item.id }}"
                             data-in-collection="{% if item.record.discogs_id|stringformat:'s' in user_collection_discogs_ids %}true{% else %}false{% endif %}"
                             data-in-wishlist="{% if item.record.discogs_id|stringformat:'s' in user_wishlist_discogs_ids %}true{% else %}false{% endif %}"
-                            class="block relative w-full aspect-square z-10 rounded-sm bg-zinc-900 border-t border-l border-zinc-700/50 transition-all duration-300 group-hover/card:-translate-y-4 group-hover/card:-translate-x-1 shadow-[3px_0px_0px_#27272a,0px_10px_20px_rgba(0,0,0,0.8)] group-hover/card:shadow-[5px_0px_0px_#27272a,0px_15px_30px_rgba(16,185,129,0.2)]">
+                            class="block relative w-full aspect-square z-10 rounded-sm bg-zinc-900 border border-emerald-900/40 transition-all duration-300 transform group-hover/card:-translate-y-3 group-hover/card:shadow-[0_16px_28px_rgba(0,0,0,0.72),0_0_22px_rgba(16,185,129,0.16)] shadow-[0_10px_18px_rgba(0,0,0,0.62)]">
                         
-                        <div class="absolute -inset-1 bg-emerald-500/0 group-hover/card:bg-emerald-500/10 blur-xl rounded-full transition-all duration-300 pointer-events-none z-0"></div>
+                        <div class="absolute inset-0 bg-emerald-500/0 group-hover/card:bg-emerald-500/5 transition-colors duration-300 pointer-events-none z-10 rounded-sm"></div>
                         
                         {% if item.record.cover_art_url %}
                             <img src="{{ item.record.cover_art_url }}" alt="{{ item.record.title }}" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full rounded-sm object-cover border border-zinc-900 group-hover/card:border-emerald-500/40 transition-colors duration-300 pointer-events-none">
@@ -146,7 +146,7 @@
                             <div class="absolute inset-0 w-full h-full bg-zinc-900 rounded-sm flex items-center justify-center text-zinc-700 text-xs border border-zinc-800 group-hover/card:border-emerald-500/40 transition-colors pointer-events-none">No Art</div>
                         {% endif %}
                         
-                        <div class="absolute inset-0 bg-linear-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
+                        <div class="absolute inset-0 bg-linear-to-tr from-emerald-500/0 via-white/5 to-emerald-300/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20 pointer-events-none rounded-sm"></div>
                     </button>
                 </div>
                 {% endfor %}
@@ -159,8 +159,8 @@
             {% endif %}
         </div>
 
-        <div class="h-5 md:h-6 w-full bg-linear-to-b from-emerald-600 via-emerald-800 to-emerald-950 rounded-b-2xl border-t border-emerald-400 shadow-[0_25px_50px_-12px_rgba(16,185,129,0.4)] relative z-20 overflow-hidden">
-            <div class="w-full h-px bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.9)]"></div>
+        <div class="h-5 md:h-6 w-full bg-linear-to-b from-emerald-500 via-emerald-700 to-emerald-950 rounded-b-2xl border-t border-emerald-300 shadow-[0_25px_50px_-12px_rgba(16,185,129,0.55)] relative z-20 overflow-hidden">
+            <div class="w-full h-px bg-emerald-200 shadow-[0_0_14px_rgba(52,211,153,1)]"></div>
             <div class="absolute inset-x-0 top-1 h-px bg-white/30"></div>
             <div class="absolute inset-x-0 bottom-0 h-px bg-emerald-950"></div>
         </div>
