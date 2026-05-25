@@ -151,18 +151,18 @@ def toggle_shelf(request, item_id):
 
 @login_required
 def toggle_favorite(request, item_id):
-    """Sets or unsets a record as the user's all-time favorite."""
+    """Sets or unsets a record as the user's all-time favorite (current spin)."""
     item = get_object_or_404(CollectionItem, id=item_id, user=request.user)
     
     if request.method == 'POST':
         # If it's already the favorite, unset it
         if request.user.favorite_record == item.record:
             request.user.favorite_record = None
-            messages.info(request, "Removed Top Spin.")
+            messages.info(request, "Removed Current Spin.")
         else:
             request.user.favorite_record = item.record
             Activity.objects.create(user=request.user, activity_type='FAVORITE', record=item.record)
-            messages.success(request, f"{item.record.title} is now your Top Spin!")
+            messages.success(request, f"{item.record.title} is now your Current Spin!")
             
         request.user.save()
             

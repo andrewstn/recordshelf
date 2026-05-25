@@ -25,14 +25,14 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for u in users %}
-        <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex flex-col hover:bg-zinc-800/80 transition group">
+        <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 flex flex-col hover:bg-zinc-800/80 transition group h-full">
             
             <div class="flex items-start justify-between mb-4">
                 <a href="{% url 'profile' u.username %}" class="flex items-center gap-4 hover:opacity-80 transition">
                     {% if u.profile_picture %}
-                        <img src="{{ u.profile_picture.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-700">
+                        <img src="{{ u.profile_picture.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-800">
                     {% else %}
                         <div class="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center text-xl font-bold text-zinc-500 border-2 border-zinc-700">
                             {{ u.username|make_list|first|upper }}
@@ -46,16 +46,21 @@
                 </a>
             </div>
 
-            <div class="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50 mb-6 flex-grow">
-                <p class="text-[10px] uppercase tracking-widest text-brand font-bold mb-1.5 flex items-center gap-1">
-                    <span>★</span> Top Spin
+            <div class="bg-zinc-950/50 rounded-lg p-3 border border-zinc-800/50 mb-6 flex-grow transition-colors hover:border-emerald-500/30">
+                <p class="text-emerald-400 text-[10px] uppercase tracking-widest font-bold mb-2 flex items-center gap-2">
+                    <span class="relative flex h-2 w-2 ml-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Currently Spinning
                 </p>
+                
                 {% if u.favorite_record %}
                     <div class="flex items-center gap-3">
                         {% if u.favorite_record.cover_art_url %}
-                            <img src="{{ u.favorite_record.cover_art_url }}" class="w-10 h-10 rounded object-cover shadow-md">
+                            <img src="{{ u.favorite_record.cover_art_url }}" class="w-10 h-10 rounded object-cover shadow-md border border-zinc-800">
                         {% else %}
-                            <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-[10px]">No Art</div>
+                            <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-[10px] border border-zinc-700">No Art</div>
                         {% endif %}
                         <div class="overflow-hidden">
                             <p class="text-sm font-bold text-white truncate leading-tight">{{ u.favorite_record.title }}</p>
@@ -63,31 +68,30 @@
                         </div>
                     </div>
                 {% else %}
-                    <p class="text-xs text-zinc-500 italic">No favorite record set.</p>
+                    <p class="text-xs text-zinc-500 italic mt-1">No record spinning.</p>
                 {% endif %}
             </div>
 
-            {% if request.user.is_authenticated and request.user != u %}
-                <form method="POST" action="{% url 'toggle_follow' u.username %}" class="m-0">
-                    {% csrf_token %}
-                    <button type="submit" class="w-full py-2 rounded-lg font-bold transition text-sm cursor-pointer
+            <div class="mt-auto">
+                {% if request.user.is_authenticated and request.user != u %}
+                    <form method="POST" action="{% url 'toggle_follow' u.username %}" class="m-0">
+                        {% csrf_token %}
                         {% if u in request.user.following.all %}
-                            bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800
+                            <button type="submit" class="w-full bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 py-2 rounded-lg font-bold transition text-sm cursor-pointer">
+                                Unfollow
+                            </button>
                         {% else %}
-                            bg-white text-zinc-950 hover:bg-zinc-200
-                        {% endif %}">
-                        {% if u in request.user.following.all %}
-                            Unfollow
-                        {% else %}
-                            Follow
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-2 rounded-lg font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm cursor-pointer">
+                                Follow
+                            </button>
                         {% endif %}
-                    </button>
-                </form>
-            {% elif request.user == u %}
-                <div class="w-full py-2 rounded-lg font-bold text-sm text-center bg-zinc-900 text-zinc-600 border border-zinc-800">
-                    This is you
-                </div>
-            {% endif %}
+                    </form>
+                {% elif request.user == u %}
+                    <div class="w-full py-2 rounded-lg font-bold text-sm text-center bg-zinc-900 text-zinc-600 border border-zinc-800">
+                        This is you
+                    </div>
+                {% endif %}
+            </div>
             
         </div>
         {% empty %}
