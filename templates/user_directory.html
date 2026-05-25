@@ -40,7 +40,7 @@
                     <a href="{% url 'profile' directory_user.username %}" class="text-lg font-bold text-white hover:text-brand transition truncate block">
                         @{{ directory_user.username }}
                     </a>
-                    <p class="text-sm text-zinc-400">{{ directory_user.follower_count }} Followers</p>
+                    <p class="text-sm text-zinc-400">{{ directory_user.follower_count }} follower{{ directory_user.follower_count|pluralize }}</p>
                 </div>
             </div>
 

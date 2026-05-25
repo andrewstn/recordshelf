@@ -53,14 +53,6 @@
                         <p class="text-red-400 text-sm mt-1">{{ profile_form.tagline.errors.0 }}</p>
                     {% endif %}
                 </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-zinc-400 mb-2">Theme Interface</label>
-                    {{ profile_form.theme }}
-                    {% if profile_form.theme.errors %}
-                        <p class="text-red-400 text-sm mt-1">{{ profile_form.theme.errors.0 }}</p>
-                    {% endif %}
-                </div>
             </div>
 
             <div class="pt-6 border-t border-zinc-800/50 text-right">

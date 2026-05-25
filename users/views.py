@@ -21,6 +21,10 @@ class SignUpView(CreateView):
 
 User = get_user_model()
 
+def remove_password_autofocus(form):
+    for field in form.fields.values():
+        field.widget.attrs.pop('autofocus', None)
+
 def user_profile(request, username):
     profile_user = get_object_or_404(User, username=username)
     
@@ -96,6 +100,7 @@ def edit_profile(request):
         if 'update_profile' in request.POST:
             profile_form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
             password_form = PasswordChangeForm(request.user) # Blank password form
+            remove_password_autofocus(password_form)
             
             if profile_form.is_valid():
                 user = profile_form.save(commit=False)
@@ -109,6 +114,7 @@ def edit_profile(request):
         elif 'update_password' in request.POST:
             profile_form = ProfileEditForm(instance=request.user) # Blank profile form
             password_form = PasswordChangeForm(request.user, request.POST)
+            remove_password_autofocus(password_form)
             
             if password_form.is_valid():
                 user = password_form.save()
@@ -119,6 +125,7 @@ def edit_profile(request):
     else:
         profile_form = ProfileEditForm(instance=request.user)
         password_form = PasswordChangeForm(request.user)
+        remove_password_autofocus(password_form)
         
     return render(request, 'edit_profile.html', {
         'profile_form': profile_form,

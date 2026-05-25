@@ -278,13 +278,22 @@ def artist_detail(request, artist_id):
         
     # Count local collectors
     collector_count = Record.objects.filter(artist=artist).aggregate(total=Count('collected_by'))['total'] or 0
+
+    user_collection_ids = []
+    if request.user.is_authenticated:
+        user_collection_ids = [
+            str(did)
+            for did in request.user.collection.values_list('record__discogs_id', flat=True)
+            if did
+        ]
     
     context = {
         'artist': artist,
         'discogs_artist': discogs_artist,
         'releases': releases,
         'pagination': pagination,
-        'collector_count': collector_count
+        'collector_count': collector_count,
+        'user_collection_ids': user_collection_ids,
     }
     return render(request, 'artist_detail.html', context)
 

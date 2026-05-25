@@ -41,7 +41,7 @@
                     
                     <div>
                         <h3 class="text-lg font-bold text-white leading-tight">@{{ u.username }}</h3>
-                        <p class="text-xs text-zinc-400 font-medium">{{ u.follower_count }} Followers</p>
+                        <p class="text-xs text-zinc-400 font-medium">{{ u.follower_count }} follower{{ u.follower_count|pluralize }}</p>
                     </div>
                 </a>
             </div>

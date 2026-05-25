@@ -25,27 +25,29 @@
                 
                 <div class="flex flex-wrap gap-2 text-xs font-semibold">
                     <div class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400">
-                        <span class="text-white font-bold">{{ total_records }}</span> Records
+                        <span class="text-white font-bold">{{ total_records }}</span> record{{ total_records|pluralize }}
                     </div>
                     <a href="{% url 'followers_list' profile_user.username %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1">
-                        <span class="text-white font-bold">{{ profile_user.followers.count }}</span> Followers
+                        <span class="text-white font-bold">{{ profile_user.followers.count }}</span> follower{{ profile_user.followers.count|pluralize }}
                     </a>
                     <a href="{% url 'following_list' profile_user.username %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1">
-                        <span class="text-white font-bold">{{ profile_user.following.count }}</span> Following
+                        <span class="text-white font-bold">{{ profile_user.following.count }}</span> following
                     </a>
-                    
-                    {% if request.user == profile_user %}
-                    <a href="{% url 'edit_profile' %}" class="bg-zinc-950 border border-zinc-900 px-3 py-1.5 rounded-md text-zinc-400 hover:border-emerald-500/30 hover:text-emerald-400 transition flex items-center gap-1.5 md:ml-4 shadow-sm group">
-                        <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        Edit Profile
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
-        {% if favorite_item %}
+        {% if request.user == profile_user or favorite_item %}
         <div class="relative group w-full md:w-auto">
+            {% if request.user == profile_user %}
+            <div class="flex justify-start md:justify-end mb-4">
+                <a href="{% url 'edit_profile' %}" class="inline-flex items-center gap-2 bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500/30 px-3 py-2 rounded-lg text-xs font-bold transition shadow-sm group/settings">
+                    <svg class="w-4 h-4 text-zinc-500 group-hover/settings:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Edit Profile
+                </a>
+            </div>
+            {% endif %}
+            {% if favorite_item %}
             <div class="absolute -inset-4 bg-emerald-500/5 blur-2xl rounded-full opacity-60 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
             
             <div class="relative flex items-center gap-4 bg-zinc-950/60 backdrop-blur-md p-4 rounded-xl border border-zinc-900 shadow-2xl w-full md:w-72 hover:border-emerald-500/30 transition-colors duration-300">
@@ -74,6 +76,7 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
