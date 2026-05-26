@@ -16,9 +16,15 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 MAX_PROFILE_PICTURE_UPLOAD_SIZE = 2 * 1024 * 1024
 PROFILE_PICTURE_SIZE = (512, 512)
 PROFILE_PICTURE_QUALITY = 80
+USERNAME_MAX_LENGTH = 20
 PROFILE_PICTURE_WIDGET_ATTRS = {
     'class': 'w-full text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition cursor-pointer',
 }
+
+def validate_username_length(username):
+    if username and len(username) > USERNAME_MAX_LENGTH:
+        raise forms.ValidationError(f"Username must be {USERNAME_MAX_LENGTH} characters or fewer.")
+    return username
 
 class ProfilePictureField(forms.ImageField):
     def to_python(self, data):
@@ -38,8 +44,12 @@ class CustomUserCreationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Override the default 150-character limit from Django's AbstractUser
-        self.fields['username'].max_length = 20
-        self.fields['username'].help_text = "Required. 20 characters or fewer."
+        self.fields['username'].max_length = USERNAME_MAX_LENGTH
+        self.fields['username'].widget.attrs['maxlength'] = USERNAME_MAX_LENGTH
+        self.fields['username'].help_text = f"Required. {USERNAME_MAX_LENGTH} characters or fewer."
+
+    def clean_username(self):
+        return validate_username_length(super().clean_username())
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '').strip().lower()
@@ -179,7 +189,10 @@ class ProfileEditForm(forms.ModelForm):
         model = User
         fields = ['profile_picture', 'username', 'tagline']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition'}),
+            'username': forms.TextInput(attrs={
+                'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition',
+                'maxlength': str(USERNAME_MAX_LENGTH),
+            }),
             'tagline': forms.TextInput(attrs={
                 'class': 'w-full bg-zinc-900/50 border border-zinc-700 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
                 'placeholder': 'Vinyl enthusiast...',
@@ -250,7 +263,7 @@ class ProfileEditForm(forms.ModelForm):
             storage.delete(self._old_profile_picture_name)
 
     def clean_username(self):
-        new_username = self.cleaned_data.get('username')
+        new_username = validate_username_length(self.cleaned_data.get('username'))
         user = self.instance
         
         # If the username is actually being changed
