@@ -92,6 +92,41 @@ class SupportContactForm(forms.Form):
             raise forms.ValidationError("Invalid submission.")
         return ''
 
+class DeleteAccountForm(forms.Form):
+    confirm_username = forms.CharField(
+        label="Type your username",
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full bg-zinc-950 border border-red-950/70 rounded-lg p-3 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition',
+            'placeholder': 'Enter your username',
+            'autocomplete': 'off',
+        }),
+    )
+    password = forms.CharField(
+        label="Current password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full bg-zinc-950 border border-red-950/70 rounded-lg p-3 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition',
+            'placeholder': 'Enter your password',
+            'autocomplete': 'current-password',
+        }),
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_confirm_username(self):
+        confirm_username = self.cleaned_data.get('confirm_username', '').strip()
+        if self.user and confirm_username != self.user.username:
+            raise forms.ValidationError("This must match your username exactly.")
+        return confirm_username
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if self.user and not self.user.check_password(password):
+            raise forms.ValidationError("Enter your current password.")
+        return password
+
 User = get_user_model()
 
 class ProfileEditForm(forms.ModelForm):

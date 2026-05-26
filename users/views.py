@@ -9,12 +9,12 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from .forms import CustomUserCreationForm, SupportContactForm, User
+from .forms import CustomUserCreationForm, DeleteAccountForm, SupportContactForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import ProfileEditForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from .models import Activity
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
@@ -504,12 +504,15 @@ def user_profile(request, username):
 
 @login_required
 def edit_profile(request):
+    profile_form = ProfileEditForm(instance=request.user)
+    password_form = PasswordChangeForm(request.user)
+    delete_account_form = DeleteAccountForm(user=request.user)
+    remove_password_autofocus(password_form)
+
     if request.method == 'POST':
         # Check which form was submitted based on the button's name attribute
         if 'update_profile' in request.POST:
             profile_form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
-            password_form = PasswordChangeForm(request.user) # Blank password form
-            remove_password_autofocus(password_form)
             
             if profile_form.is_valid():
                 user = profile_form.save(commit=False)
@@ -525,7 +528,6 @@ def edit_profile(request):
                 return redirect('edit_profile')
                 
         elif 'update_password' in request.POST:
-            profile_form = ProfileEditForm(instance=request.user) # Blank profile form
             password_form = PasswordChangeForm(request.user, request.POST)
             remove_password_autofocus(password_form)
             
@@ -535,14 +537,31 @@ def edit_profile(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, "Password updated securely!")
                 return redirect('edit_profile')
-    else:
-        profile_form = ProfileEditForm(instance=request.user)
-        password_form = PasswordChangeForm(request.user)
-        remove_password_autofocus(password_form)
+
+        elif 'delete_account' in request.POST:
+            delete_account_form = DeleteAccountForm(request.POST, user=request.user)
+
+            if delete_account_form.is_valid():
+                username = request.user.username
+                profile_picture = request.user.profile_picture
+                profile_picture_name = profile_picture.name if profile_picture else ''
+                profile_picture_storage = profile_picture.storage if profile_picture else None
+
+                request.user.delete()
+                try:
+                    if profile_picture_name and profile_picture_storage.exists(profile_picture_name):
+                        profile_picture_storage.delete(profile_picture_name)
+                except Exception:
+                    pass
+
+                logout(request)
+                messages.success(request, f"Account @{username} has been deleted.")
+                return redirect('home')
         
     return render(request, 'edit_profile.html', {
         'profile_form': profile_form,
-        'password_form': password_form
+        'password_form': password_form,
+        'delete_account_form': delete_account_form,
     })
 
 @login_required
