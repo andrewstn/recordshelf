@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'users',
     'collection',
     'django.contrib.humanize',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -166,9 +167,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 # EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
@@ -184,3 +182,19 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
     ""
 ).split(",")
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+AWS_ACCESS_KEY_ID = os.getenv("R2_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("R2_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("R2_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = os.getenv("R2_ENDPOINT_URL")
+AWS_S3_REGION_NAME = "auto"
+AWS_S3_ADDRESSING_STYLE = "virtual"
+AWS_QUERYSTRING_AUTH = False
+
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+MEDIA_ROOT = BASE_DIR / "media"
+if DEBUG:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'

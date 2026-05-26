@@ -438,6 +438,7 @@ def edit_profile(request):
                     user.profile_picture.delete(save=False)
                     user.profile_picture = None
                 user.save()
+                profile_form.delete_replaced_profile_picture()
                 messages.success(request, "Profile updated successfully!")
                 return redirect('edit_profile')
                 
