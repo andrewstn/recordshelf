@@ -26,7 +26,7 @@ from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from .tokens import account_deletion_token, email_verification_token
 
 SHARE_IMAGE_TIMEOUT = 8
@@ -63,6 +63,11 @@ class SignUpView(CreateView):
         return redirect('email_verification_sent')
 
 User = get_user_model()
+
+def throttle_key(prefix, *parts):
+    raw_value = ":".join(str(part or "") for part in parts)
+    digest = hashlib.sha256(raw_value.encode("utf-8")).hexdigest()
+    return f"{prefix}:{digest}"
 
 def user_from_uid(uidb64):
     try:
@@ -102,7 +107,7 @@ def send_account_deletion_email(request, user):
         f"Hi {user.username},",
         "",
         "A request was made to permanently delete your recordshelf account.",
-        "Click the link below to confirm deletion:",
+        "Open the link below, then use the confirmation button to delete your account:",
         deletion_url,
         "",
         "This will permanently remove your profile, collection, shelf, wishlist, follows, and activity.",
@@ -147,8 +152,9 @@ def verify_email(request, uidb64, token):
 def resend_verification(request):
     form = ResendVerificationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = User.objects.filter(email__iexact=form.cleaned_data['email']).first()
-        if user and not user.email_verified:
+        email = form.cleaned_data['email'].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+        if user and not user.email_verified and cache.add(throttle_key("verify-resend", email), True, 60):
             try:
                 send_email_verification(request, user)
             except Exception:
@@ -166,8 +172,15 @@ def confirm_delete_account(request, uidb64, token):
         messages.error(request, "That account deletion link is invalid or expired.")
         return redirect('login')
 
+    if request.method != 'POST':
+        return render(request, 'registration/confirm_delete_account.html', {
+            'delete_user': user,
+            'uidb64': uidb64,
+            'token': token,
+        })
+
     username = delete_user_account(user)
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.username == username:
         logout(request)
     messages.success(request, f"Account @{username} has been deleted.")
     return redirect('home')
@@ -185,6 +198,12 @@ def support_contact(request):
     if request.method == "POST" and form.is_valid():
         if not settings.SUPPORT_EMAIL:
             messages.error(request, "Support email is not configured yet. Please try again soon.")
+        elif not cache.add(
+            throttle_key("support-contact", request.META.get("REMOTE_ADDR"), form.cleaned_data["email"]),
+            True,
+            60,
+        ):
+            messages.error(request, "Please wait a minute before sending another support message.")
         else:
             topic_label = dict(SupportContactForm.TOPIC_CHOICES).get(form.cleaned_data["topic"], "Support")
             user_line = "Anonymous user"
@@ -667,9 +686,15 @@ def edit_profile(request):
             delete_account_form = DeleteAccountForm(request.POST, user=request.user)
 
             if delete_account_form.is_valid():
+                deletion_email_cache_key = f"delete-account-email:{request.user.pk}"
+                if not cache.add(deletion_email_cache_key, True, 300):
+                    messages.error(request, "Please wait a few minutes before requesting another deletion email.")
+                    return redirect('edit_profile')
+
                 try:
                     send_account_deletion_email(request, request.user)
                 except Exception:
+                    cache.delete(deletion_email_cache_key)
                     messages.error(request, "Your account deletion email could not be sent. Please try again later.")
                 else:
                     messages.success(request, "Check your email to confirm account deletion.")
@@ -682,6 +707,7 @@ def edit_profile(request):
     })
 
 @login_required
+@require_POST
 def toggle_follow(request, username):
     """Allows a user to follow or unfollow another user."""
     user_to_toggle = get_object_or_404(User, username=username)

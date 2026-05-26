@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.utils.http import url_has_allowed_host_and_scheme
 from collection.spotify import get_spotify_album_id
 from .discogs import search_discogs, fetch_discogs_master, fetch_discogs_artist, fetch_discogs_artist_releases
 from .services import add_record_to_collection, get_or_create_record
@@ -11,6 +12,15 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
 from django.db.models import Count, Avg
+
+def safe_redirect(request, target_url, fallback):
+    if target_url and url_has_allowed_host_and_scheme(
+        target_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(target_url)
+    return redirect(fallback)
 
 def prepare_discogs_search_results(results):
     result_ids = [str(result.get('id')) for result in results if result.get('id')]
@@ -134,26 +144,26 @@ def search_page(request):
     })
 
 @login_required
+@require_POST
 def add_record(request):
     """Processes the button click to save an API result to the database."""
-    if request.method == 'POST':
-        discogs_id = request.POST.get('discogs_id')
-        
-        if discogs_id:
-            item, created = add_record_to_collection(request.user, discogs_id)
-            
-            if created:
-                if request.user.wishlist.filter(id=item.record.id).exists():
-                    request.user.wishlist.remove(item.record)
-                Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
-                messages.success(request, f"Added {item.record.title} to your collection!")
-            else:
-                messages.info(request, f"{item.record.title} is already in your collection.")
+    discogs_id = request.POST.get('discogs_id')
+
+    if discogs_id:
+        item, created = add_record_to_collection(request.user, discogs_id)
+
+        if created:
+            if request.user.wishlist.filter(id=item.record.id).exists():
+                request.user.wishlist.remove(item.record)
+            Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
+            messages.success(request, f"Added {item.record.title} to your collection!")
+        else:
+            messages.info(request, f"{item.record.title} is already in your collection.")
                 
     # Check if a 'next' url was provided
     next_url = request.POST.get('next') or request.GET.get('next')
     if next_url:
-        return redirect(next_url)
+        return safe_redirect(request, next_url, 'search')
         
     # Redirect back to the user's profile to see their new addition
     return redirect('profile', username=request.user.username)
@@ -234,6 +244,7 @@ def edit_item(request, item_id):
     return render(request, 'edit_item.html', {'form': form, 'item': item})
 
 @login_required
+@require_POST
 def remove_item(request, item_id):
     """Removes an item from the user's collection and cleans up their shelf."""
     item = get_object_or_404(
@@ -242,22 +253,19 @@ def remove_item(request, item_id):
         user=request.user,
     )
     
-    if request.method == 'POST':
-        # Cleanup: If this record is on their shelf or is their favorite, remove it first
-        if request.user.shelf.filter(pk=item.record_id).exists():
-            request.user.shelf.remove(item.record)
-        if request.user.favorite_record_id == item.record_id:
-            request.user.favorite_record = None
-            request.user.save()
-            
-        item.delete()
-        messages.success(request, f"Removed {item.record.title} from your collection.")
-        return redirect('profile', username=request.user.username)
-        
-    # If someone tries to GET this route, redirect them to the edit page safely
-    return redirect('edit_item', item_id=item.id)
+    # Cleanup: If this record is on their shelf or is their favorite, remove it first
+    if request.user.shelf.filter(pk=item.record_id).exists():
+        request.user.shelf.remove(item.record)
+    if request.user.favorite_record_id == item.record_id:
+        request.user.favorite_record = None
+        request.user.save()
+
+    item.delete()
+    messages.success(request, f"Removed {item.record.title} from your collection.")
+    return redirect('profile', username=request.user.username)
 
 @login_required
+@require_POST
 def toggle_shelf(request, item_id):
     """Adds or removes a record from the user's Top 6 shelf."""
     item = get_object_or_404(
@@ -280,6 +288,7 @@ def toggle_shelf(request, item_id):
     return redirect('profile', username=request.user.username)
 
 @login_required
+@require_POST
 def toggle_favorite(request, item_id):
     """Sets or unsets a record as the user's all-time favorite (current spin)."""
     item = get_object_or_404(
@@ -288,17 +297,16 @@ def toggle_favorite(request, item_id):
         user=request.user,
     )
     
-    if request.method == 'POST':
-        # If it's already the favorite, unset it
-        if request.user.favorite_record == item.record:
-            request.user.favorite_record = None
-            messages.info(request, "Removed Current Spin.")
-        else:
-            request.user.favorite_record = item.record
-            Activity.objects.create(user=request.user, activity_type='FAVORITE', record=item.record)
-            messages.success(request, f"{item.record.title} is now your Current Spin!")
-            
-        request.user.save()
+    # If it's already the favorite, unset it
+    if request.user.favorite_record == item.record:
+        request.user.favorite_record = None
+        messages.info(request, "Removed Current Spin.")
+    else:
+        request.user.favorite_record = item.record
+        Activity.objects.create(user=request.user, activity_type='FAVORITE', record=item.record)
+        messages.success(request, f"{item.record.title} is now your Current Spin!")
+
+    request.user.save()
             
     return redirect('profile', username=request.user.username)
 
@@ -308,36 +316,53 @@ def update_shelf_order(request):
     """Receives an AJAX POST from SortableJS and saves the new shelf order."""
     try:
         data = json.loads(request.body)
-        request.user.shelf_order = data.get('order', [])
+        submitted_order = data.get('order', [])
+        if not isinstance(submitted_order, list):
+            return JsonResponse({'status': 'error', 'message': 'Invalid shelf order.'}, status=400)
+
+        allowed_record_ids = set(request.user.shelf.values_list('id', flat=True))
+        sanitized_order = []
+        seen_record_ids = set()
+        for record_id in submitted_order[:6]:
+            try:
+                record_id = int(record_id)
+            except (TypeError, ValueError):
+                continue
+
+            if record_id in allowed_record_ids and record_id not in seen_record_ids:
+                sanitized_order.append(record_id)
+                seen_record_ids.add(record_id)
+
+        request.user.shelf_order = sanitized_order
         request.user.save()
         return JsonResponse({'status': 'success'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON.'}, status=400)
 
 @login_required
+@require_POST
 def toggle_wishlist(request):
-    if request.method == 'POST':
-        discogs_id = request.POST.get('discogs_id')
-        
-        # Ensures the record has a title and cover art
-        record = get_or_create_record(discogs_id)
-        
-        if not record:
-            messages.error(request, "Could not find this record to add to wishlist.")
-            return redirect(request.META.get('HTTP_REFERER', 'search'))
-            
-        # Toggle the relationship
-        if request.user.wishlist.filter(pk=record.pk).exists():
-            request.user.wishlist.remove(record)
-            messages.success(request, f"Removed {record.title} from your wishlist.")
-        else:
-            request.user.wishlist.add(record)
-            # Log the activity
-            Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
-            messages.success(request, f"Added {record.title} to your wishlist!")
+    discogs_id = request.POST.get('discogs_id')
+
+    # Ensures the record has a title and cover art
+    record = get_or_create_record(discogs_id)
+
+    if not record:
+        messages.error(request, "Could not find this record to add to wishlist.")
+        return safe_redirect(request, request.META.get('HTTP_REFERER'), 'search')
+
+    # Toggle the relationship
+    if request.user.wishlist.filter(pk=record.pk).exists():
+        request.user.wishlist.remove(record)
+        messages.success(request, f"Removed {record.title} from your wishlist.")
+    else:
+        request.user.wishlist.add(record)
+        # Log the activity
+        Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
+        messages.success(request, f"Added {record.title} to your wishlist!")
             
     # Redirect back to exactly where they came from (the album page)
-    return redirect(request.META.get('HTTP_REFERER', 'search'))
+    return safe_redirect(request, request.META.get('HTTP_REFERER'), 'search')
 
 def artist_detail(request, artist_id):
     # Get local artist if exists
@@ -403,6 +428,7 @@ def artist_detail(request, artist_id):
     }
     return render(request, 'artist_detail.html', context)
 
+@login_required
 def sync_artist(request, local_artist_id):
     from django.conf import settings
     import requests
@@ -418,7 +444,7 @@ def sync_artist(request, local_artist_id):
     }
     
     params = {'q': f'"{artist.name}"', 'type': 'artist', 'per_page': 1}
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, timeout=8)
     
     if response.status_code == 200:
         data = response.json()
@@ -430,4 +456,4 @@ def sync_artist(request, local_artist_id):
             return redirect('artist_detail', artist_id=discogs_id)
             
     messages.error(request, f"Could not map {artist.name} to a valid Discogs artist.")
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+    return safe_redirect(request, request.META.get('HTTP_REFERER'), 'home')

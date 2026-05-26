@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-16">
+    <div class="bg-red-950/10 border border-red-950/60 rounded-2xl p-8 shadow-xl">
+        <p class="text-xs font-black uppercase tracking-[0.28em] text-red-400 mb-3">Confirm Deletion</p>
+        <h1 class="text-3xl font-black text-white mb-3">Delete @{{ delete_user.username }}?</h1>
+        <p class="text-zinc-400 leading-relaxed">
+            This permanently removes the account, profile, collection, shelf, wishlist, follows, and activity. This cannot be undone.
+        </p>
+
+        <form method="POST" class="mt-8">
+            {% csrf_token %}
+            <button type="submit" class="w-full bg-red-500/10 text-red-300 hover:bg-red-500 hover:text-white border border-red-900/70 hover:border-red-500 font-bold py-3 rounded-lg transition-colors cursor-pointer">
+                Permanently Delete Account
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
