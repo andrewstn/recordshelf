@@ -1,6 +1,52 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .current-spin-marquee {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .current-spin-marquee__text {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: top;
+        white-space: nowrap;
+    }
+
+    .current-spin-marquee[data-scrollable="true"] .current-spin-marquee__text {
+        max-width: none;
+        overflow: visible;
+        padding-right: 1.5rem;
+        text-overflow: clip;
+        animation: current-spin-scroll var(--scroll-duration, 8s) ease-in-out infinite;
+    }
+
+    @keyframes current-spin-scroll {
+        0%, 14% {
+            transform: translateX(0);
+        }
+        50%, 64% {
+            transform: translateX(calc(-1 * var(--scroll-distance, 0px)));
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .current-spin-marquee[data-scrollable="true"] .current-spin-marquee__text {
+            animation: none;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+</style>
+
 <div class="max-w-5xl mx-auto py-8">
     
     <div class="mb-10 border-b border-zinc-800 pb-6 flex items-center justify-between">
@@ -58,12 +104,14 @@
                 {% if u.favorite_record %}
                     <div class="flex items-center gap-3">
                         {% if u.favorite_record.cover_art_url %}
-                            <img src="{{ u.favorite_record.cover_art_url }}" class="w-10 h-10 rounded object-cover shadow-md border border-zinc-800">
+                            <img src="{{ u.favorite_record.cover_art_url }}" class="w-10 h-10 rounded object-cover shadow-md border border-zinc-800 shrink-0">
                         {% else %}
-                            <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-[10px] border border-zinc-700">No Art</div>
+                            <div class="w-10 h-10 bg-zinc-800 rounded flex items-center justify-center text-zinc-600 text-[10px] border border-zinc-700 shrink-0">No Art</div>
                         {% endif %}
-                        <div class="overflow-hidden">
-                            <p class="text-sm font-bold text-white truncate leading-tight">{{ u.favorite_record.title }}</p>
+                        <div class="min-w-0 overflow-hidden">
+                            <p class="current-spin-marquee text-sm font-bold text-white leading-tight" title="{{ u.favorite_record.title }}">
+                                <span class="current-spin-marquee__text">{{ u.favorite_record.title }}</span>
+                            </p>
                             {% if u.favorite_record.artist.discogs_id %}
                                 <a href="{% url 'artist_detail' u.favorite_record.artist.discogs_id %}" class="text-xs text-zinc-400 truncate hover:text-emerald-400 transition block">{{ u.favorite_record.artist.name }}</a>
                             {% else %}
@@ -111,4 +159,37 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    (function() {
+        const updateCurrentSpinMarquees = () => {
+            document.querySelectorAll('.current-spin-marquee').forEach((marquee) => {
+                const text = marquee.querySelector('.current-spin-marquee__text');
+                if (!text) return;
+
+                marquee.removeAttribute('data-scrollable');
+                marquee.style.removeProperty('--scroll-distance');
+                marquee.style.removeProperty('--scroll-duration');
+
+                const overflow = Math.ceil(text.scrollWidth - marquee.clientWidth);
+                if (overflow > 4) {
+                    marquee.dataset.scrollable = 'true';
+                    marquee.style.setProperty('--scroll-distance', `${overflow}px`);
+                    marquee.style.setProperty('--scroll-duration', `${Math.min(14, Math.max(7, overflow / 18 + 6))}s`);
+                }
+            });
+        };
+
+        let marqueeResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(marqueeResizeTimer);
+            marqueeResizeTimer = setTimeout(updateCurrentSpinMarquees, 120);
+        });
+
+        document.addEventListener('DOMContentLoaded', updateCurrentSpinMarquees);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(updateCurrentSpinMarquees);
+        }
+    })();
+</script>
 {% endblock %}
