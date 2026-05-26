@@ -327,8 +327,6 @@ def profile_share_image(request, username):
         image.alpha_composite(overlay, (tile_x, tile_y))
         draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=24, outline=(39, 39, 42, 210), width=2)
 
-        draw.ellipse((tile_x + 18, tile_y + 18, tile_x + 62, tile_y + 62), fill=(16, 185, 129, 255))
-        draw_centered_text(draw, (tile_x + 40, tile_y + 28), str(index + 1), small_font, (0, 0, 0, 255))
         draw.text((tile_x, tile_y + tile_size + 18), fit_text(draw, item.record.title, body_bold_font, tile_size), font=body_bold_font, fill=(255, 255, 255, 255))
         draw.text((tile_x, tile_y + tile_size + 58), fit_text(draw, item.record.artist.name, body_font, tile_size), font=body_font, fill=(113, 113, 122, 255))
 
