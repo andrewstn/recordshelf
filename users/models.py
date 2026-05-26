@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
 
@@ -52,8 +53,17 @@ class CustomUser(AbstractUser):
 
     tagline = models.CharField(max_length=50, blank=True, null=True)
 
+    email_verified = models.BooleanField(default=True)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
+
     # Track when the username was last changed
     last_username_change = models.DateTimeField(null=True, blank=True)
+
+    def mark_email_verified(self):
+        self.email_verified = True
+        self.email_verified_at = timezone.now()
+        self.is_active = True
+        self.save(update_fields=['email_verified', 'email_verified_at', 'is_active'])
 
     def __str__(self):
         return self.username

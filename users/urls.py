@@ -1,10 +1,20 @@
 from django.urls import path, include
+from django.contrib.auth.views import LoginView
 from .views import SignUpView, user_profile
+from .forms import VerifiedAuthenticationForm
 from users import views
 
 urlpatterns = [
+    path('login/', LoginView.as_view(
+        template_name='registration/login.html',
+        authentication_form=VerifiedAuthenticationForm,
+    ), name='login'),
     path('', include('django.contrib.auth.urls')), 
     path('signup/', SignUpView.as_view(), name='signup'),
+    path('verify-email/sent/', views.email_verification_sent, name='email_verification_sent'),
+    path('verify-email/resend/', views.resend_verification, name='resend_verification'),
+    path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
+    path('delete-account/<uidb64>/<token>/', views.confirm_delete_account, name='confirm_delete_account'),
     
     path('edit/', views.edit_profile, name='edit_profile'),
     path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),

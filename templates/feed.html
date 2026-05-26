@@ -34,7 +34,7 @@
                 </a>
 
                 <!-- Activity Content -->
-                <div class="grow">
+                <div class="grow min-w-0">
                     <p class="text-zinc-300 text-sm mb-2">
                         <a href="{% url 'profile' activity.user.username %}" class="font-bold text-white hover:text-brand transition">@{{ activity.user.username }}</a>
                         
@@ -56,7 +56,7 @@
                     </p>
 
                     <!-- The Record That Was Actioned -->
-                    <div class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group w-max max-w-full">
+                    <div class="flex items-center gap-4 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800/50 hover:border-zinc-700 transition group w-full max-w-full">
                         <a href="{% url 'album_detail' activity.record.discogs_id %}" class="shrink-0 block">
                             {% if activity.record.cover_art_url %}
                                 <img src="{{ activity.record.cover_art_url }}" referrerpolicy="no-referrer" class="w-14 h-14 rounded shadow object-cover group-hover:scale-105 transition-transform">
@@ -65,8 +65,8 @@
                             {% endif %}
                         </a>
                         
-                        <div class="overflow-hidden pr-4">
-                            <a href="{% url 'album_detail' activity.record.discogs_id %}">
+                        <div class="min-w-0 overflow-hidden pr-4">
+                            <a href="{% url 'album_detail' activity.record.discogs_id %}" class="block min-w-0">
                                 <h4 class="text-md font-bold text-white truncate leading-tight group-hover:text-brand transition">{{ activity.record.title }}</h4>
                             </a>
                             {% if activity.record.artist.discogs_id %}

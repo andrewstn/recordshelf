@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-16">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-black text-white mb-2">Resend Verification</h1>
+        <p class="text-zinc-400">Enter the email you used to sign up.</p>
+    </div>
+
+    <form method="POST" class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl shadow-xl">
+        {% csrf_token %}
+        <div>
+            <label class="block text-sm font-bold text-zinc-400 mb-2">Email</label>
+            {{ form.email }}
+            {% for error in form.email.errors %}
+                <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-500 text-zinc-950 py-3 rounded-md font-bold hover:bg-emerald-400 transition mt-8 cursor-pointer shadow-lg shadow-emerald-500/20">
+            Send Verification Email
+        </button>
+    </form>
+</div>
+{% endblock %}

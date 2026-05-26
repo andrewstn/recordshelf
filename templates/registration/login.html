@@ -12,13 +12,17 @@
         
         {% if form.errors %}
             <div class="bg-red-950/50 border border-red-900 text-red-400 p-3 rounded mb-6 text-sm">
-                Your username and password didn't match. Please try again.
+                {% if form.non_field_errors %}
+                    {{ form.non_field_errors.0 }}
+                {% else %}
+                    Your username and password didn't match. Please try again.
+                {% endif %}
             </div>
         {% endif %}
 
         <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold text-zinc-400 mb-2">Username</label>
+                <label class="block text-sm font-bold text-zinc-400 mb-2">Username or email</label>
                 <input type="text" name="username" autofocus required class="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition">
             </div>
             
@@ -39,6 +43,10 @@
     <p class="text-center text-zinc-500 mt-8">
         Don't have an account? 
         <a href="{% url 'signup' %}" class="text-white hover:text-brand font-medium transition">Sign up</a>
+    </p>
+    <p class="text-center text-zinc-500 mt-3">
+        Need a verification email?
+        <a href="{% url 'resend_verification' %}" class="text-emerald-400 hover:text-emerald-300 font-medium transition">Resend it</a>
     </p>
 </div>
 {% endblock %}

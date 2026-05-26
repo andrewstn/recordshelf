@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-16">
+    <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 shadow-xl text-center">
+        <p class="text-xs font-black uppercase tracking-[0.28em] text-emerald-400 mb-3">Verify Email</p>
+        <h1 class="text-3xl font-black text-white mb-3">Check your inbox</h1>
+        <p class="text-zinc-400 leading-relaxed">
+            We sent a verification link to your email. You will need to verify your account before logging in.
+        </p>
+        <div class="mt-8 flex flex-col gap-3">
+            <a href="{% url 'login' %}" class="bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700 font-bold py-3 rounded-lg transition">
+                Go to Login
+            </a>
+            <a href="{% url 'resend_verification' %}" class="text-sm text-emerald-400 hover:text-emerald-300 transition">
+                Resend verification email
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

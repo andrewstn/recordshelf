@@ -19,12 +19,17 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
+from users import views as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('v/<uidb64>/<token>/', user_views.verify_email, name='verify_email_short'),
+    path('d/<uidb64>/<token>/', user_views.confirm_delete_account, name='confirm_delete_account_short'),
     path('accounts/', include('users.urls')),
     path('collection/', include('collection.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms'),
+    path('support/', user_views.support_contact, name='support'),
 ]
 
 # This allows Django to display uploaded profile pictures locally
@@ -35,4 +40,3 @@ if settings.DEBUG:
         path('404/', TemplateView.as_view(template_name='404.html')),
         path('500/', TemplateView.as_view(template_name='500.html')),
     ]
-

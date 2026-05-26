@@ -76,7 +76,7 @@
             Security
         </h2>
         
-        <form method="POST" class="space-y-4">
+        <form method="POST" class="space-y-4 security-password-form">
             {% csrf_token %}
             
             {% for field in password_form %}
@@ -84,7 +84,7 @@
                     <label class="block text-sm font-medium text-zinc-400 mb-2">{{ field.label }}</label>
                     {{ field }}
                     {% if field.help_text %}
-                        <p class="text-xs text-zinc-500 mt-1">{{ field.help_text|safe }}</p>
+                        <div class="form-help-text text-[11px] leading-relaxed text-zinc-500 mt-1">{{ field.help_text|safe }}</div>
                     {% endif %}
                     {% if field.errors %}
                         <p class="text-red-400 text-sm mt-1">{{ field.errors.0 }}</p>
@@ -105,10 +105,54 @@
             </div>
         </form>
     </div>
+
+    <div class="bg-red-950/10 border border-red-950/60 rounded-2xl p-6 md:p-8 mt-8 shadow-xl">
+        <h2 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
+            Delete Account
+        </h2>
+        <p class="text-sm text-zinc-400 mb-6 max-w-2xl">
+            This sends a confirmation link to your verified email address. After you click it, your profile, collection, shelf, wishlist, follows, and activity will be permanently removed.
+        </p>
+
+        <form method="POST" class="space-y-5" onsubmit="return confirm('Permanently delete your recordshelf account? This cannot be undone.');">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-400 mb-2">{{ delete_account_form.confirm_username.label }}</label>
+                    {{ delete_account_form.confirm_username }}
+                    <p class="text-xs text-zinc-500 mt-2">Type <span class="font-bold text-zinc-300">{{ request.user.username }}</span> to confirm.</p>
+                    {% if delete_account_form.confirm_username.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ delete_account_form.confirm_username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-zinc-400 mb-2">{{ delete_account_form.password.label }}</label>
+                    {{ delete_account_form.password }}
+                    {% if delete_account_form.password.errors %}
+                        <p class="text-red-400 text-sm mt-1">{{ delete_account_form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if delete_account_form.non_field_errors %}
+                <div class="bg-red-900/20 border border-red-900 text-red-400 p-3 rounded-md text-sm">
+                    {{ delete_account_form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="pt-6 border-t border-red-950/50 text-right">
+                <button type="submit" name="delete_account" class="bg-red-500/10 text-red-300 hover:bg-red-500 hover:text-white border border-red-900/70 hover:border-red-500 font-bold py-2.5 px-6 rounded-lg transition-colors cursor-pointer">
+                    Email Deletion Link
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <style>
-    input[type="password"] {
+    .security-password-form input[type="password"] {
         width: 100%;
         background-color: rgba(24, 24, 27, 0.5); /* zinc-900/50 */
         border: 1px solid #3f3f46; /* zinc-700 */
@@ -117,7 +161,7 @@
         color: white;
         transition: all 0.2s;
     }
-    input[type="password"]:focus {
+    .security-password-form input[type="password"]:focus {
         outline: none;
         border-color: #10b981; /* emerald-500 */
         box-shadow: 0 0 0 1px #10b981;
@@ -132,6 +176,15 @@
         list-style-type: none;
         padding-left: 0;
         margin-top: 0.25rem;
+    }
+    .form-help-text ul {
+        margin-top: 0.35rem;
+    }
+    .form-help-text li {
+        color: #71717a;
+        font-size: 0.6875rem;
+        line-height: 1.35;
+        margin-top: 0.18rem;
     }
 </style>
 {% endblock %}

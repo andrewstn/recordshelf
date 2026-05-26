@@ -5,24 +5,29 @@ from urllib.parse import urlparse
 
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, UnidentifiedImageError
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.views.generic import CreateView
-from .forms import CustomUserCreationForm, User
+from .forms import CustomUserCreationForm, DeleteAccountForm, ResendVerificationForm, SupportContactForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import ProfileEditForm
-from django.contrib.auth import login
+from django.contrib.auth import logout
 from .models import Activity
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.core.mail import EmailMessage
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_GET
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.decorators.http import require_GET, require_POST
+from .tokens import account_deletion_token, email_verification_token
 
 SHARE_IMAGE_TIMEOUT = 8
 SHARE_IMAGE_CACHE_TIMEOUT = 60 * 60 * 24
@@ -40,10 +45,199 @@ SHARE_IMAGE_ALLOWED_CONTENT_TYPES = {
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login') 
     template_name = 'registration/signup.html'
 
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.is_active = False
+        user.email_verified = False
+        user.email_verified_at = None
+        user.save()
+        try:
+            send_email_verification(self.request, user)
+        except Exception:
+            messages.error(self.request, "Your account was created, but the verification email could not be sent. Please try resending it.")
+            return redirect('resend_verification')
+
+        messages.success(self.request, "Account created. Check your email to verify your account before logging in.")
+        return redirect('email_verification_sent')
+
 User = get_user_model()
+
+def throttle_key(prefix, *parts):
+    raw_value = ":".join(str(part or "") for part in parts)
+    digest = hashlib.sha256(raw_value.encode("utf-8")).hexdigest()
+    return f"{prefix}:{digest}"
+
+def user_from_uid(uidb64):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        return User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return None
+
+def send_email_verification(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = email_verification_token.make_token(user)
+    verification_url = request.build_absolute_uri(
+        reverse('verify_email_short', kwargs={'uidb64': uid, 'token': token})
+    )
+    body = "\n".join([
+        f"Hi {user.username},",
+        "",
+        "Welcome to recordshelf. Please verify your email address before logging in:",
+        verification_url,
+        "",
+        "If you did not create this account, you can ignore this email.",
+    ])
+    EmailMessage(
+        subject="Verify your recordshelf email",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    ).send(fail_silently=False)
+
+def send_account_deletion_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = account_deletion_token.make_token(user)
+    deletion_url = request.build_absolute_uri(
+        reverse('confirm_delete_account_short', kwargs={'uidb64': uid, 'token': token})
+    )
+    body = "\n".join([
+        f"Hi {user.username},",
+        "",
+        "A request was made to permanently delete your recordshelf account.",
+        "Open the link below, then use the confirmation button to delete your account:",
+        deletion_url,
+        "",
+        "This will permanently remove your profile, collection, shelf, wishlist, follows, and activity.",
+        "If you did not request this, you can ignore this email and your account will remain active.",
+    ])
+    EmailMessage(
+        subject="Confirm recordshelf account deletion",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    ).send(fail_silently=False)
+
+def delete_user_account(user):
+    username = user.username
+    profile_picture = user.profile_picture
+    profile_picture_name = profile_picture.name if profile_picture else ''
+    profile_picture_storage = profile_picture.storage if profile_picture else None
+
+    user.delete()
+    try:
+        if profile_picture_name and profile_picture_storage.exists(profile_picture_name):
+            profile_picture_storage.delete(profile_picture_name)
+    except Exception:
+        pass
+
+    return username
+
+def email_verification_sent(request):
+    return render(request, 'registration/email_verification_sent.html')
+
+def verify_email(request, uidb64, token):
+    user = user_from_uid(uidb64)
+    if user and user.email_verified and user.is_active:
+        messages.success(request, "Email already verified. You can log in.")
+    elif user and email_verification_token.check_token(user, token):
+        user.mark_email_verified()
+        messages.success(request, "Email verified. You can log in now.")
+    else:
+        messages.error(request, "That verification link is invalid or expired. Please request a new one.")
+    return redirect('login')
+
+def resend_verification(request):
+    form = ResendVerificationForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        email = form.cleaned_data['email'].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+        if user and not user.email_verified and cache.add(throttle_key("verify-resend", email), True, 60):
+            try:
+                send_email_verification(request, user)
+            except Exception:
+                messages.error(request, "The verification email could not be sent. Please try again later.")
+                return redirect('resend_verification')
+
+        messages.success(request, "If a pending account exists for that email, a verification link has been sent.")
+        return redirect('login')
+
+    return render(request, 'registration/resend_verification.html', {'form': form})
+
+def confirm_delete_account(request, uidb64, token):
+    user = user_from_uid(uidb64)
+    if not user or not account_deletion_token.check_token(user, token):
+        messages.error(request, "That account deletion link is invalid or expired.")
+        return redirect('login')
+
+    if request.method != 'POST':
+        return render(request, 'registration/confirm_delete_account.html', {
+            'delete_user': user,
+            'uidb64': uidb64,
+            'token': token,
+        })
+
+    username = delete_user_account(user)
+    if request.user.is_authenticated and request.user.username == username:
+        logout(request)
+    messages.success(request, f"Account @{username} has been deleted.")
+    return redirect('home')
+
+def support_contact(request):
+    initial = {}
+    if request.user.is_authenticated:
+        initial = {
+            "name": request.user.get_username(),
+            "email": request.user.email,
+        }
+
+    form = SupportContactForm(request.POST or None, initial=initial)
+
+    if request.method == "POST" and form.is_valid():
+        if not settings.SUPPORT_EMAIL:
+            messages.error(request, "Support email is not configured yet. Please try again soon.")
+        elif not cache.add(
+            throttle_key("support-contact", request.META.get("REMOTE_ADDR"), form.cleaned_data["email"]),
+            True,
+            60,
+        ):
+            messages.error(request, "Please wait a minute before sending another support message.")
+        else:
+            topic_label = dict(SupportContactForm.TOPIC_CHOICES).get(form.cleaned_data["topic"], "Support")
+            user_line = "Anonymous user"
+            if request.user.is_authenticated:
+                user_line = f"{request.user.username} (id: {request.user.id})"
+
+            body = "\n".join([
+                f"Topic: {topic_label}",
+                f"Name: {form.cleaned_data['name']}",
+                f"Email: {form.cleaned_data['email']}",
+                f"Account: {user_line}",
+                "",
+                form.cleaned_data["message"],
+            ])
+
+            try:
+                email = EmailMessage(
+                    subject=f"[recordshelf support] {form.cleaned_data['subject']}",
+                    body=body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.SUPPORT_EMAIL],
+                    reply_to=[form.cleaned_data["email"]],
+                )
+                email.send(fail_silently=False)
+            except Exception:
+                messages.error(request, "Your message could not be sent. Please try again later.")
+            else:
+                messages.success(request, "Thanks, your message was sent.")
+                return redirect("support")
+
+    return render(request, "support.html", {
+        "form": form,
+        "support_email": settings.SUPPORT_EMAIL,
+    })
 
 def remove_password_autofocus(form):
     for field in form.fields.values():
@@ -454,12 +648,15 @@ def user_profile(request, username):
 
 @login_required
 def edit_profile(request):
+    profile_form = ProfileEditForm(instance=request.user)
+    password_form = PasswordChangeForm(request.user)
+    delete_account_form = DeleteAccountForm(user=request.user)
+    remove_password_autofocus(password_form)
+
     if request.method == 'POST':
         # Check which form was submitted based on the button's name attribute
         if 'update_profile' in request.POST:
             profile_form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
-            password_form = PasswordChangeForm(request.user) # Blank password form
-            remove_password_autofocus(password_form)
             
             if profile_form.is_valid():
                 user = profile_form.save(commit=False)
@@ -475,7 +672,6 @@ def edit_profile(request):
                 return redirect('edit_profile')
                 
         elif 'update_password' in request.POST:
-            profile_form = ProfileEditForm(instance=request.user) # Blank profile form
             password_form = PasswordChangeForm(request.user, request.POST)
             remove_password_autofocus(password_form)
             
@@ -485,17 +681,33 @@ def edit_profile(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, "Password updated securely!")
                 return redirect('edit_profile')
-    else:
-        profile_form = ProfileEditForm(instance=request.user)
-        password_form = PasswordChangeForm(request.user)
-        remove_password_autofocus(password_form)
+
+        elif 'delete_account' in request.POST:
+            delete_account_form = DeleteAccountForm(request.POST, user=request.user)
+
+            if delete_account_form.is_valid():
+                deletion_email_cache_key = f"delete-account-email:{request.user.pk}"
+                if not cache.add(deletion_email_cache_key, True, 300):
+                    messages.error(request, "Please wait a few minutes before requesting another deletion email.")
+                    return redirect('edit_profile')
+
+                try:
+                    send_account_deletion_email(request, request.user)
+                except Exception:
+                    cache.delete(deletion_email_cache_key)
+                    messages.error(request, "Your account deletion email could not be sent. Please try again later.")
+                else:
+                    messages.success(request, "Check your email to confirm account deletion.")
+                    return redirect('edit_profile')
         
     return render(request, 'edit_profile.html', {
         'profile_form': profile_form,
-        'password_form': password_form
+        'password_form': password_form,
+        'delete_account_form': delete_account_form,
     })
 
 @login_required
+@require_POST
 def toggle_follow(request, username):
     """Allows a user to follow or unfollow another user."""
     user_to_toggle = get_object_or_404(User, username=username)
@@ -513,21 +725,6 @@ def toggle_follow(request, username):
         messages.success(request, f"You are now following @{user_to_toggle.username}!")
 
     return redirect('profile', username=username)
-
-def signup(request):
-    """Handles new user registration."""
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # Log the user in immediately after registering
-            login(request, user)
-            messages.success(request, f"Welcome to the club, {user.username}!")
-            return redirect('profile', username=user.username)
-    else:
-        form = CustomUserCreationForm()
-        
-    return render(request, 'registration/signup.html', {'form': form})
 
 def social_feed(request):
     """Displays a chronological feed. Personalized for users, global for guests."""

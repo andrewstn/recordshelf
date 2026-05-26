@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-10 md:py-16">
+    <div class="grid lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14 items-start">
+        <div class="pt-2">
+            <p class="text-xs font-black uppercase tracking-[0.28em] text-emerald-400 mb-3">Support</p>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight text-white mb-4">Contact recordshelf</h1>
+            <p class="text-zinc-400 leading-relaxed">
+                Need help with your account, spotted something odd, or want to send launch feedback? Send a note and it will go straight to the project support inbox.
+            </p>
+
+            <div class="mt-8 border-t border-zinc-800 pt-6 space-y-4 text-sm text-zinc-400">
+                <div>
+                    <p class="font-bold text-zinc-200 mb-1">Support email</p>
+                    {% if support_email %}
+                        <a href="mailto:{{ support_email }}" class="text-emerald-400 hover:text-emerald-300 transition">{{ support_email }}</a>
+                    {% else %}
+                        <p class="text-zinc-500">Coming soon.</p>
+                    {% endif %}
+                </div>
+                <p>
+                    For copyright or content concerns, include the affected URL, the record or profile involved, and the best way to reach you.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 sm:p-8 shadow-2xl">
+            {% csrf_token %}
+            {{ form.website }}
+
+            {% if form.non_field_errors %}
+                <div class="mb-5 rounded-lg border border-red-900 bg-red-950/60 p-3 text-sm text-red-200">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="grid sm:grid-cols-2 gap-5">
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-bold text-zinc-300 mb-2">Name</label>
+                    {{ form.name }}
+                    {% for error in form.name.errors %}
+                        <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-bold text-zinc-300 mb-2">Email</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}
+                        <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <label for="{{ form.topic.id_for_label }}" class="block text-sm font-bold text-zinc-300 mb-2">Topic</label>
+                {{ form.topic }}
+                {% for error in form.topic.errors %}
+                    <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="mt-5">
+                <label for="{{ form.subject.id_for_label }}" class="block text-sm font-bold text-zinc-300 mb-2">Subject</label>
+                {{ form.subject }}
+                {% for error in form.subject.errors %}
+                    <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="mt-5">
+                <label for="{{ form.message.id_for_label }}" class="block text-sm font-bold text-zinc-300 mb-2">Message</label>
+                {{ form.message }}
+                {% for error in form.message.errors %}
+                    <p class="text-xs text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="mt-7 w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 rounded-lg font-black transition shadow-[0_0_24px_rgba(16,185,129,0.24)]">
+                Send Message
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
