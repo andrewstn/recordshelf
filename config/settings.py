@@ -183,8 +183,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
     ""
 ).split(",")
 
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
+# Media / R2 Storage
 if DEBUG:
     MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
     MEDIA_ROOT = BASE_DIR / "media"
@@ -198,7 +197,9 @@ else:
     AWS_QUERYSTRING_AUTH = False
     AWS_DEFAULT_ACL = None
 
-    MEDIA_URL = os.getenv("MEDIA_URL")
+    AWS_S3_CUSTOM_DOMAIN = os.getenv("R2_PUBLIC_DOMAIN")
+
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
     STORAGES = {
         "default": {
