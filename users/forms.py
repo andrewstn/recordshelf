@@ -39,6 +39,59 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['username'].max_length = 20
         self.fields['username'].help_text = "Required. 20 characters or fewer."
 
+class SupportContactForm(forms.Form):
+    TOPIC_CHOICES = [
+        ('help', 'Help with my account'),
+        ('bug', 'Report a bug'),
+        ('content', 'Content or copyright concern'),
+        ('feedback', 'Feedback or feature idea'),
+        ('other', 'Something else'),
+    ]
+
+    name = forms.CharField(
+        max_length=80,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+            'placeholder': 'Your name',
+        }),
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+            'placeholder': 'you@example.com',
+        }),
+    )
+    topic = forms.ChoiceField(
+        choices=TOPIC_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+        }),
+    )
+    subject = forms.CharField(
+        max_length=120,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+            'placeholder': 'What can I help with?',
+        }),
+    )
+    message = forms.CharField(
+        max_length=3000,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full min-h-40 bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition resize-y',
+            'placeholder': 'Share the details, including any usernames, records, or steps to reproduce if relevant.',
+            'rows': 7,
+        }),
+    )
+    website = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput,
+    )
+
+    def clean_website(self):
+        if self.cleaned_data.get('website'):
+            raise forms.ValidationError("Invalid submission.")
+        return ''
+
 User = get_user_model()
 
 class ProfileEditForm(forms.ModelForm):

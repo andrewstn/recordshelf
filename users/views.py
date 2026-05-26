@@ -5,10 +5,11 @@ from urllib.parse import urlparse
 
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, UnidentifiedImageError
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from .forms import CustomUserCreationForm, User
+from .forms import CustomUserCreationForm, SupportContactForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -19,6 +20,7 @@ from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.core.mail import EmailMessage
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -44,6 +46,54 @@ class SignUpView(CreateView):
     template_name = 'registration/signup.html'
 
 User = get_user_model()
+
+def support_contact(request):
+    initial = {}
+    if request.user.is_authenticated:
+        initial = {
+            "name": request.user.get_username(),
+            "email": request.user.email,
+        }
+
+    form = SupportContactForm(request.POST or None, initial=initial)
+
+    if request.method == "POST" and form.is_valid():
+        if not settings.SUPPORT_EMAIL:
+            messages.error(request, "Support email is not configured yet. Please try again soon.")
+        else:
+            topic_label = dict(SupportContactForm.TOPIC_CHOICES).get(form.cleaned_data["topic"], "Support")
+            user_line = "Anonymous user"
+            if request.user.is_authenticated:
+                user_line = f"{request.user.username} (id: {request.user.id})"
+
+            body = "\n".join([
+                f"Topic: {topic_label}",
+                f"Name: {form.cleaned_data['name']}",
+                f"Email: {form.cleaned_data['email']}",
+                f"Account: {user_line}",
+                "",
+                form.cleaned_data["message"],
+            ])
+
+            try:
+                email = EmailMessage(
+                    subject=f"[recordshelf support] {form.cleaned_data['subject']}",
+                    body=body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.SUPPORT_EMAIL],
+                    reply_to=[form.cleaned_data["email"]],
+                )
+                email.send(fail_silently=False)
+            except Exception:
+                messages.error(request, "Your message could not be sent. Please try again later.")
+            else:
+                messages.success(request, "Thanks, your message was sent.")
+                return redirect("support")
+
+    return render(request, "support.html", {
+        "form": form,
+        "support_email": settings.SUPPORT_EMAIL,
+    })
 
 def remove_password_autofocus(form):
     for field in form.fields.values():
