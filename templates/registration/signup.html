@@ -18,7 +18,7 @@
                     <input type="{{ field.field.widget.input_type|default:'text' }}" name="{{ field.html_name }}" {% if field.field.required %}required{% endif %} class="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition">
                     
                     {% if field.help_text %}
-                        <p class="text-xs text-zinc-500 mt-2">{{ field.help_text|safe }}</p>
+                        <div class="form-help-text text-[11px] leading-relaxed text-zinc-500 mt-2">{{ field.help_text|safe }}</div>
                     {% endif %}
                     
                     {% for error in field.errors %}
@@ -38,4 +38,18 @@
         <a href="{% url 'login' %}" class="text-white hover:text-brand font-medium transition">Log in</a>
     </p>
 </div>
+
+<style>
+    .form-help-text ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 0.35rem;
+    }
+    .form-help-text li {
+        color: #71717a;
+        font-size: 0.6875rem;
+        line-height: 1.35;
+        margin-top: 0.18rem;
+    }
+</style>
 {% endblock %}
