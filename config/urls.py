@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('users.urls')),
     path('collection/', include('collection.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms'),
 ]
 
 # This allows Django to display uploaded profile pictures locally
@@ -35,4 +36,3 @@ if settings.DEBUG:
         path('404/', TemplateView.as_view(template_name='404.html')),
         path('500/', TemplateView.as_view(template_name='500.html')),
     ]
-
