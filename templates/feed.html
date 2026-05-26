@@ -2,6 +2,52 @@
 {% load humanize %}
 
 {% block content %}
+<style>
+    .current-spin-marquee {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .current-spin-marquee__text {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: top;
+        white-space: nowrap;
+    }
+
+    .current-spin-marquee[data-scrollable="true"] .current-spin-marquee__text {
+        max-width: none;
+        overflow: visible;
+        padding-right: 1.5rem;
+        text-overflow: clip;
+        animation: current-spin-scroll var(--scroll-duration, 8s) ease-in-out infinite;
+    }
+
+    @keyframes current-spin-scroll {
+        0%, 14% {
+            transform: translateX(0);
+        }
+        50%, 64% {
+            transform: translateX(calc(-1 * var(--scroll-distance, 0px)));
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .current-spin-marquee[data-scrollable="true"] .current-spin-marquee__text {
+            animation: none;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+</style>
+
 <div class="max-w-2xl mx-auto py-12">
     
     <!-- Dynamic Header & Guest CTA -->
@@ -67,7 +113,9 @@
                         
                         <div class="min-w-0 overflow-hidden pr-4">
                             <a href="{% url 'album_detail' activity.record.discogs_id %}" class="block min-w-0">
-                                <h4 class="text-md font-bold text-white truncate leading-tight group-hover:text-brand transition">{{ activity.record.title }}</h4>
+                                <h4 class="current-spin-marquee text-md font-bold text-white leading-tight group-hover:text-brand transition" title="{{ activity.record.title }}">
+                                    <span class="current-spin-marquee__text">{{ activity.record.title }}</span>
+                                </h4>
                             </a>
                             {% if activity.record.artist.discogs_id %}
                                 <a href="{% url 'artist_detail' activity.record.artist.discogs_id %}" class="text-sm text-zinc-400 truncate hover:text-brand transition block">{{ activity.record.artist.name }}</a>
@@ -107,4 +155,37 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    (function() {
+        const updateCurrentSpinMarquees = () => {
+            document.querySelectorAll('.current-spin-marquee').forEach((marquee) => {
+                const text = marquee.querySelector('.current-spin-marquee__text');
+                if (!text) return;
+
+                marquee.removeAttribute('data-scrollable');
+                marquee.style.removeProperty('--scroll-distance');
+                marquee.style.removeProperty('--scroll-duration');
+
+                const overflow = Math.ceil(text.scrollWidth - marquee.clientWidth);
+                if (overflow > 4) {
+                    marquee.dataset.scrollable = 'true';
+                    marquee.style.setProperty('--scroll-distance', `${overflow}px`);
+                    marquee.style.setProperty('--scroll-duration', `${Math.min(14, Math.max(7, overflow / 18 + 6))}s`);
+                }
+            });
+        };
+
+        let marqueeResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(marqueeResizeTimer);
+            marqueeResizeTimer = setTimeout(updateCurrentSpinMarquees, 120);
+        });
+
+        document.addEventListener('DOMContentLoaded', updateCurrentSpinMarquees);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(updateCurrentSpinMarquees);
+        }
+    })();
+</script>
 {% endblock %}
