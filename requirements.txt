@@ -1,6 +1,7 @@
 asgiref==3.11.1
 certifi==2026.5.20
 charset-normalizer==3.4.7
+dj-database-url==3.1.2
 Django==6.0.5
 greenlet==3.5.1
 idna==3.16
