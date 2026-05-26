@@ -1,9 +1,11 @@
 from io import BytesIO
 from uuid import uuid4
 
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -38,6 +40,43 @@ class CustomUserCreationForm(UserCreationForm):
         # Override the default 150-character limit from Django's AbstractUser
         self.fields['username'].max_length = 20
         self.fields['username'].help_text = "Required. 20 characters or fewer."
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+class VerifiedAuthenticationForm(AuthenticationForm):
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        'inactive': "Please verify your email before logging in.",
+    }
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            user = User.objects.filter(username__iexact=username).first()
+            if user is None:
+                user = User.objects.filter(email__iexact=username).first()
+
+            if user and user.check_password(password) and (not user.is_active or not user.email_verified):
+                raise ValidationError(
+                    self.error_messages['inactive'],
+                    code='inactive',
+                )
+
+        return super().clean()
+
+class ResendVerificationForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition',
+            'placeholder': 'you@example.com',
+        }),
+    )
 
 class SupportContactForm(forms.Form):
     TOPIC_CHOICES = [
