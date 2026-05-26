@@ -434,6 +434,9 @@ def edit_profile(request):
                 # If the username changed, update the timestamp
                 if 'username' in profile_form.changed_data:
                     user.last_username_change = timezone.now()
+                if profile_form.cleaned_data.get('reset_profile_picture'):
+                    user.profile_picture.delete(save=False)
+                    user.profile_picture = None
                 user.save()
                 messages.success(request, "Profile updated successfully!")
                 return redirect('edit_profile')

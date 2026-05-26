@@ -23,6 +23,8 @@ class CustomUserCreationForm(UserCreationForm):
 User = get_user_model()
 
 class ProfileEditForm(forms.ModelForm):
+    reset_profile_picture = forms.BooleanField(required=False)
+
     class Meta:
         model = User
         fields = ['profile_picture', 'username', 'tagline']
