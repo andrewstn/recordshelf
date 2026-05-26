@@ -241,7 +241,7 @@
                     <div data-share-header class="flex items-start justify-between gap-6 border-b border-white/10 pb-7">
                         <div class="flex items-center gap-4 sm:gap-5 min-w-0">
                             {% if profile_user.profile_picture %}
-                                <img data-share-profile-image src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-emerald-500/30 shadow-xl shrink-0">
+                                <img data-share-profile-image src="{% url 'profile_picture_proxy' profile_user.username %}" alt="{{ profile_user.username }}" crossorigin="anonymous" referrerpolicy="no-referrer" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-emerald-500/30 shadow-xl shrink-0">
                             {% else %}
                                 <div data-share-profile-fallback class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-zinc-900 flex items-center justify-center text-2xl font-black text-emerald-400 border-2 border-emerald-500/30 shadow-xl shrink-0">
                                     {{ profile_user.username|make_list|first|upper }}
@@ -804,7 +804,9 @@
                     context.font = elementFont(profileFallback, '900 28px ui-sans-serif, system-ui, sans-serif');
                     context.fillStyle = '#34d399';
                     context.textAlign = 'center';
-                    context.fillText((shareCard.dataset.username || '').slice(0, 1).toUpperCase(), profileRect.left + profileRect.width / 2, profileRect.top + profileRect.height * 0.28);
+                    context.textBaseline = 'middle';
+                    context.fillText((shareCard.dataset.username || '').slice(0, 1).toUpperCase(), profileRect.left + profileRect.width / 2, profileRect.top + profileRect.height / 2);
+                    context.textBaseline = 'top';
                     context.textAlign = 'left';
                 }
             }

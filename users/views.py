@@ -1,4 +1,5 @@
 import hashlib
+import mimetypes
 from io import BytesIO
 from urllib.parse import urlparse
 
@@ -192,6 +193,39 @@ def draw_centered_text(draw, xy, text, font, fill):
     box = draw.textbbox((0, 0), text, font=font)
     draw.text((x - (box[2] - box[0]) / 2, y), text, font=font, fill=fill)
 
+def draw_centered_box_text(draw, box, text, font, fill):
+    left, top, right, bottom = box
+    text_box = draw.textbbox((0, 0), text, font=font)
+    text_width = text_box[2] - text_box[0]
+    text_height = text_box[3] - text_box[1]
+    draw.text(
+        (
+            left + (right - left - text_width) / 2 - text_box[0],
+            top + (bottom - top - text_height) / 2 - text_box[1],
+        ),
+        text,
+        font=font,
+        fill=fill,
+    )
+
+@require_GET
+def profile_picture_proxy(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    if not profile_user.profile_picture:
+        return HttpResponseBadRequest("No profile picture.")
+
+    try:
+        with profile_user.profile_picture.open("rb") as picture_file:
+            content = picture_file.read()
+    except (OSError, ValueError):
+        return HttpResponseBadRequest("Profile picture could not be used.")
+
+    content_type = mimetypes.guess_type(profile_user.profile_picture.name)[0] or "image/webp"
+    if content_type not in SHARE_IMAGE_ALLOWED_CONTENT_TYPES:
+        content_type = "image/webp"
+
+    return HttpResponse(content, content_type=content_type)
+
 def make_share_background(size):
     width, height = size
     base = Image.new("RGBA", size, "#09090b")
@@ -261,7 +295,7 @@ def profile_share_image(request, username):
         draw.ellipse((x, y, x + profile_size, y + profile_size), outline=(16, 185, 129, 120), width=3)
     else:
         draw.ellipse((x, y, x + profile_size, y + profile_size), fill=(24, 24, 27, 255), outline=(16, 185, 129, 120), width=3)
-        draw_centered_text(draw, (x + profile_size / 2, y + 34), profile_user.username[:1].upper(), title_font, (52, 211, 153, 255))
+        draw_centered_box_text(draw, (x, y, x + profile_size, y + profile_size), profile_user.username[:1].upper(), title_font, (52, 211, 153, 255))
 
     text_x = x + profile_size + 30
     draw.text((text_x, y + 4), "RECORDSHELF", font=small_font, fill=(52, 211, 153, 255))
