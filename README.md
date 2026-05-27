@@ -1,15 +1,64 @@
 # Record Shelf
 
-Record Shelf is a Django web app for building and sharing a personal vinyl record collection. Users can search album data, save records to a collection or wishlist, curate a profile shelf, follow other collectors, and manage account preferences.
+A production full-stack social platform for vinyl collectors to catalog collections, build profile shelves, discover records, and connect with other collectors.
 
-Production site: [record-shelf.com](https://record-shelf.com)
+Live: [record-shelf.com](https://record-shelf.com)
+
+Record Shelf was built to create a more visual and social way for vinyl collectors to showcase collections online.
+
+## Features
+
+- Custom profile shelves with drag-and-drop record placement
+- Collection and wishlist management
+- Community profiles and following system
+- Discogs and Spotify powered record discovery
+- Authentication with email verification and password reset
+- Cloudflare R2 media uploads
+- Analytics and monitoring with PostHog and Sentry
+
+## Screenshots
+
+![Landing Page Screenshot](docs/landing.png)
+![Profile Shelf Screenshot](docs/profile.png)
+![Record Modal Screenshot](docs/modal.png)
+
+## Architecture
+
+Frontend:
+
+- Django templates
+- Tailwind CSS
+
+Backend:
+
+- Django 6
+- PostgreSQL-compatible database configured with `DATABASE_URL`
+
+Infrastructure:
+
+- Railway
+- Cloudflare DNS
+- Cloudflare R2
+- Gunicorn
+- WhiteNoise
+
+Observability:
+
+- PostHog
+- Sentry
+
+External APIs:
+
+- Discogs
+- Spotify
+- Resend
 
 ## Tech Stack
 
 - Python / Django 6
-- PostgreSQL-compatible database configured with `DATABASE_URL`
 - Django templates for server-rendered pages
 - Tailwind CSS 4, built with the Tailwind CLI
+- PostgreSQL-compatible database
 - WhiteNoise for compressed static file serving
 - Gunicorn for production WSGI serving
 - Pillow for image upload processing
@@ -19,11 +68,12 @@ Production site: [record-shelf.com](https://record-shelf.com)
 
 ## Cloud Infrastructure and External Services
 
-The repository does not include Terraform, Docker, or platform-specific deployment manifests, so the application host itself is configured outside this repo. The runtime is a standard Gunicorn/Django deployment exposed at `record-shelf.com`.
+Infrastructure is configured through managed cloud services and environment-based deployment configuration. The production app is deployed on Railway and exposed through Cloudflare at `record-shelf.com`.
 
 Cloud and third-party services configured by the app:
 
 - **Domain:** `record-shelf.com`
+- **Application hosting:** Railway
 - **Database:** PostgreSQL-compatible database provided through `DATABASE_URL`
 - **Media storage:** Cloudflare R2, configured through the S3-compatible `django-storages` backend
 - **Email delivery:** Resend, via the custom `users.email_backend.ResendEmailBackend`
