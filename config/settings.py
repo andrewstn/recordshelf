@@ -188,14 +188,8 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "recordshelf <hello@record-shelf.com>"
 )
 
-# When deploying to production, configure SMTP with environment variables:
-# EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-# EMAIL_HOST=smtp.gmail.com
-# EMAIL_PORT=587
-# EMAIL_USE_TLS=True
-# EMAIL_HOST_USER=your SMTP username
-# EMAIL_HOST_PASSWORD=your SMTP password
-# SUPPORT_EMAIL = 'support@example.com'
+SUPPORT_EMAIL = "support@record-shelf.com"
+HELLO_EMAIL = "hello@record-shelf.com"
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = not DEBUG
