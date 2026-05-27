@@ -8,18 +8,37 @@ def email_list(value):
     return list(value)
 
 
-def send_resend_email(*, subject, body, to, reply_to=None):
+def send_resend_email(
+    *,
+    subject,
+    body,
+    to,
+    from_email=None,
+    cc=None,
+    bcc=None,
+    reply_to=None,
+    html=None,
+    attachments=None,
+):
     if not settings.RESEND_API_KEY:
         raise ValueError("RESEND_API_KEY is not configured.")
 
     payload = {
-        "from": settings.RESEND_FROM_EMAIL,
+        "from": from_email or settings.RESEND_FROM_EMAIL,
         "to": email_list(to),
         "subject": subject,
         "text": body,
     }
+    if cc:
+        payload["cc"] = email_list(cc)
+    if bcc:
+        payload["bcc"] = email_list(bcc)
     if reply_to:
         payload["reply_to"] = email_list(reply_to)
+    if html:
+        payload["html"] = html
+    if attachments:
+        payload["attachments"] = attachments
 
     response = requests.post(
         settings.RESEND_API_URL,

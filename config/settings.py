@@ -175,7 +175,7 @@ AUTHENTICATION_BACKENDS = [
 
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend"
+    "users.email_backend.ResendEmailBackend"
 )
 
 EMAIL_HOST = os.getenv("EMAIL_HOST", "")

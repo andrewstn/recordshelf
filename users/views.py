@@ -11,8 +11,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.views import PasswordResetView
-from .email import send_resend_email
-from .forms import CustomUserCreationForm, DeleteAccountForm, ResendPasswordResetForm, ResendVerificationForm, SupportContactForm, User
+from .forms import CustomUserCreationForm, DeleteAccountForm, ResendVerificationForm, SupportContactForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -72,7 +71,6 @@ class SignUpView(CreateView):
 User = get_user_model()
 
 class ResendPasswordResetView(PasswordResetView):
-    form_class = ResendPasswordResetForm
     template_name = 'registration/password_reset_form.html'
     email_template_name = 'registration/password_reset_email.txt'
     subject_template_name = 'registration/password_reset_subject.txt'
@@ -142,12 +140,13 @@ def send_account_deletion_email(request, user):
     ).send(fail_silently=False)
 
 def send_support_email_via_resend(subject, body, reply_to):
-    return send_resend_email(
+    return EmailMessage(
         subject=subject,
         body=body,
-        to=settings.SUPPORT_EMAIL,
-        reply_to=reply_to,
-    )
+        from_email=settings.RESEND_FROM_EMAIL,
+        to=[settings.SUPPORT_EMAIL],
+        reply_to=[reply_to],
+    ).send(fail_silently=False)
 
 def delete_user_account(user):
     username = user.username
