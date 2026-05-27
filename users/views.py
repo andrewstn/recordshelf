@@ -3,6 +3,7 @@ import mimetypes
 from io import BytesIO
 from urllib.parse import urlparse
 
+import posthog
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, UnidentifiedImageError
 from django.conf import settings
@@ -60,6 +61,10 @@ class SignUpView(CreateView):
         except Exception:
             messages.error(self.request, "Your account was created, but the verification email could not be sent. Please try resending it.")
             return redirect('resend_verification')
+
+        with posthog.new_context():
+            posthog.identify_context(str(user.id))
+            posthog.capture('user_signed_up')
 
         messages.success(self.request, "Account created. Check your email to verify your account before logging in.")
         return redirect('email_verification_sent')
@@ -254,6 +259,12 @@ def support_contact(request):
             except (requests.RequestException, ValueError):
                 messages.error(request, "Your message could not be sent. Please try again later.")
             else:
+                user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
+                with posthog.new_context():
+                    posthog.identify_context(user_id)
+                    posthog.capture('support_message_sent', properties={
+                        'topic': form.cleaned_data.get('topic', ''),
+                    })
                 messages.success(request, "Thanks, your message was sent.")
                 return redirect("support")
 
@@ -720,6 +731,9 @@ def edit_profile(request):
                     cache.delete(deletion_email_cache_key)
                     messages.error(request, "Your account deletion email could not be sent. Please try again later.")
                 else:
+                    with posthog.new_context():
+                        posthog.identify_context(str(request.user.id))
+                        posthog.capture('account_deletion_requested')
                     messages.success(request, "Check your email to confirm account deletion.")
                     return redirect('edit_profile')
         
@@ -745,6 +759,9 @@ def toggle_follow(request, username):
         messages.info(request, f"You unfollowed @{user_to_toggle.username}.")
     else:
         request.user.following.add(user_to_toggle)
+        with posthog.new_context():
+            posthog.identify_context(str(request.user.id))
+            posthog.capture('user_followed')
         messages.success(request, f"You are now following @{user_to_toggle.username}!")
 
     return redirect('profile', username=username)

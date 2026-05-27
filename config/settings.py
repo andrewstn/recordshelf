@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'posthog.integrations.django.PosthogContextMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -155,6 +156,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 DISCOGS_API_TOKEN = os.getenv('DISCOGS_API_TOKEN')
+
+POSTHOG_PROJECT_TOKEN = os.environ.get('POSTHOG_PROJECT_TOKEN', '')
+POSTHOG_HOST = os.environ.get('POSTHOG_HOST', 'https://us.i.posthog.com')
+POSTHOG_DISABLED = os.environ.get('POSTHOG_DISABLED', 'False').lower() == 'true'
 
 # Where to send users after they log in (TODO: build the 'home' URL later)
 LOGIN_REDIRECT_URL = 'home'

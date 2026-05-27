@@ -1,3 +1,4 @@
+import posthog
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -124,6 +125,13 @@ def search_page(request):
         results = prepare_discogs_search_results(results)
         if sort_by == 'popularity':
             results = sort_results_by_site_collection(results)
+        user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
+        with posthog.new_context():
+            posthog.identify_context(user_id)
+            posthog.capture('record_searched', properties={
+                'result_count': len(results),
+                'sort_by': sort_by,
+            })
     else:
         # If no query, grab the top 12 most collected records from our local DB
         popular_records = Record.objects.annotate(
@@ -156,6 +164,11 @@ def add_record(request):
             if request.user.wishlist.filter(id=item.record.id).exists():
                 request.user.wishlist.remove(item.record)
             Activity.objects.create(user=request.user, activity_type='ADD', record=item.record)
+            with posthog.new_context():
+                posthog.identify_context(str(request.user.id))
+                posthog.capture('record_added_to_collection', properties={
+                    'discogs_id': discogs_id,
+                })
             messages.success(request, f"Added {item.record.title} to your collection!")
         else:
             messages.info(request, f"{item.record.title} is already in your collection.")
@@ -211,6 +224,15 @@ def album_detail(request, discogs_id):
             average_rating = round(aggregation['avg_rating'], 1)
             rating_count = record.collected_by.filter(rating__isnull=False).count()
         
+    user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
+    with posthog.new_context():
+        posthog.identify_context(user_id)
+        posthog.capture('album_viewed', properties={
+            'discogs_id': discogs_id,
+            'in_collection': in_collection,
+            'in_wishlist': in_wishlist,
+        })
+
     context = {
         'album': album_data,
         'in_collection': in_collection,
@@ -260,7 +282,13 @@ def remove_item(request, item_id):
         request.user.favorite_record = None
         request.user.save()
 
+    discogs_id = item.record.discogs_id
     item.delete()
+    with posthog.new_context():
+        posthog.identify_context(str(request.user.id))
+        posthog.capture('record_removed_from_collection', properties={
+            'discogs_id': discogs_id,
+        })
     messages.success(request, f"Removed {item.record.title} from your collection.")
     return redirect('profile', username=request.user.username)
 
@@ -280,9 +308,15 @@ def toggle_shelf(request, item_id):
     else:
         if request.user.shelf.count() >= 6:
             messages.error(request, "Your shelf is full! Remove one first.")
-        else:  
+        else:
             request.user.shelf.add(item.record)
             Activity.objects.create(user=request.user, activity_type='SHELF', record=item.record)
+            with posthog.new_context():
+                posthog.identify_context(str(request.user.id))
+                posthog.capture('record_added_to_shelf', properties={
+                    'discogs_id': item.record.discogs_id,
+                    'shelf_count': request.user.shelf.count(),
+                })
             messages.success(request, f"Added {item.record.title} to your shelf.")
             
     return redirect('profile', username=request.user.username)
@@ -304,6 +338,11 @@ def toggle_favorite(request, item_id):
     else:
         request.user.favorite_record = item.record
         Activity.objects.create(user=request.user, activity_type='FAVORITE', record=item.record)
+        with posthog.new_context():
+            posthog.identify_context(str(request.user.id))
+            posthog.capture('current_spin_set', properties={
+                'discogs_id': item.record.discogs_id,
+            })
         messages.success(request, f"{item.record.title} is now your Current Spin!")
 
     request.user.save()
@@ -357,8 +396,12 @@ def toggle_wishlist(request):
         messages.success(request, f"Removed {record.title} from your wishlist.")
     else:
         request.user.wishlist.add(record)
-        # Log the activity
         Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
+        with posthog.new_context():
+            posthog.identify_context(str(request.user.id))
+            posthog.capture('record_added_to_wishlist', properties={
+                'discogs_id': discogs_id,
+            })
         messages.success(request, f"Added {record.title} to your wishlist!")
             
     # Redirect back to exactly where they came from (the album page)
