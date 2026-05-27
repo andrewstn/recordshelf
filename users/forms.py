@@ -2,6 +2,7 @@ from io import BytesIO
 from uuid import uuid4
 
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 from django import forms
@@ -10,8 +11,11 @@ from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.text import slugify
+from django.template import loader
 from datetime import timedelta
 from PIL import Image, ImageOps, UnidentifiedImageError
+
+from .email import send_resend_email
 
 MAX_PROFILE_PICTURE_UPLOAD_SIZE = 2 * 1024 * 1024
 PROFILE_PICTURE_SIZE = (512, 512)
@@ -87,6 +91,25 @@ class ResendVerificationForm(forms.Form):
             'placeholder': 'you@example.com',
         }),
     )
+
+class ResendPasswordResetForm(PasswordResetForm):
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        subject = loader.render_to_string(subject_template_name, context)
+        subject = ''.join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+        send_resend_email(
+            subject=subject,
+            body=body,
+            to=to_email,
+        )
 
 class SupportContactForm(forms.Form):
     TOPIC_CHOICES = [

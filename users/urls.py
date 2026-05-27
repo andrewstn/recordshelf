@@ -1,6 +1,11 @@
-from django.urls import path, include
-from django.contrib.auth.views import LoginView
-from .views import SignUpView, user_profile
+from django.urls import include, path, reverse_lazy
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+)
+from .views import ResendPasswordResetView, SignUpView, user_profile
 from .forms import VerifiedAuthenticationForm
 from users import views
 
@@ -9,6 +14,17 @@ urlpatterns = [
         template_name='registration/login.html',
         authentication_form=VerifiedAuthenticationForm,
     ), name='login'),
+    path('password_reset/', ResendPasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/done/', PasswordResetDoneView.as_view(
+        template_name='registration/password_reset_done.html',
+    ), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(
+        template_name='registration/password_reset_confirm.html',
+        success_url=reverse_lazy('password_reset_complete'),
+    ), name='password_reset_confirm'),
+    path('reset/done/', PasswordResetCompleteView.as_view(
+        template_name='registration/password_reset_complete.html',
+    ), name='password_reset_complete'),
     path('', include('django.contrib.auth.urls')), 
     path('signup/', SignUpView.as_view(), name='signup'),
     path('verify-email/sent/', views.email_verification_sent, name='email_verification_sent'),

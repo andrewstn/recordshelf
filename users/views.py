@@ -7,9 +7,11 @@ import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, UnidentifiedImageError
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
-from .forms import CustomUserCreationForm, DeleteAccountForm, ResendVerificationForm, SupportContactForm, User
+from django.contrib.auth.views import PasswordResetView
+from .email import send_resend_email
+from .forms import CustomUserCreationForm, DeleteAccountForm, ResendPasswordResetForm, ResendVerificationForm, SupportContactForm, User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -63,6 +65,20 @@ class SignUpView(CreateView):
         return redirect('email_verification_sent')
 
 User = get_user_model()
+
+class ResendPasswordResetView(PasswordResetView):
+    form_class = ResendPasswordResetForm
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.txt'
+    subject_template_name = 'registration/password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except (requests.RequestException, ValueError):
+            messages.error(self.request, "Password reset email is not configured yet. Please try again later.")
+            return self.form_invalid(form)
 
 def throttle_key(prefix, *parts):
     raw_value = ":".join(str(part or "") for part in parts)
@@ -121,27 +137,12 @@ def send_account_deletion_email(request, user):
     ).send(fail_silently=False)
 
 def send_support_email_via_resend(subject, body, reply_to):
-    if not settings.RESEND_API_KEY:
-        raise ValueError("RESEND_API_KEY is not configured.")
-
-    response = requests.post(
-        settings.RESEND_API_URL,
-        headers={
-            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
-            "Content-Type": "application/json",
-            "User-Agent": "recordshelf/1.0",
-        },
-        json={
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [settings.SUPPORT_EMAIL],
-            "subject": subject,
-            "text": body,
-            "reply_to": [reply_to],
-        },
-        timeout=settings.EMAIL_TIMEOUT,
+    return send_resend_email(
+        subject=subject,
+        body=body,
+        to=settings.SUPPORT_EMAIL,
+        reply_to=reply_to,
     )
-    response.raise_for_status()
-    return response.json()
 
 def delete_user_account(user):
     username = user.username
