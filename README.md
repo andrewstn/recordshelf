@@ -85,6 +85,26 @@ Cloud and third-party services configured by the app:
 
 Production media uploads are stored in Cloudflare R2 when `DEBUG=False`. Local development stores media files under `media/`.
 
+## CI/CD
+
+GitHub Actions runs the project pipeline on pull requests and pushes to `main`.
+
+The CI job:
+
+- Installs Python and Node dependencies
+- Builds Tailwind CSS
+- Runs Django system checks
+- Checks for missing migrations
+- Verifies static asset collection
+- Runs the Django test suite
+
+On pushes to `main`, the deploy job runs after CI succeeds and deploys to Railway with `railway up --ci`.
+
+Required GitHub Actions secrets for deployment:
+
+- `RAILWAY_TOKEN`: Railway project token scoped to the production environment
+- `RAILWAY_SERVICE`: Optional Railway service name, useful if the Railway project has multiple services
+
 ## Local Development Setup
 
 ### Prerequisites
