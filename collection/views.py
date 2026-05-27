@@ -423,6 +423,11 @@ def artist_detail(request, artist_id):
     if artist:
         # Update text/image if we didn't have them
         changed = False
+        cleaned_name = clean_artist_name(artist.name)
+        if cleaned_name and cleaned_name != artist.name:
+            artist.name = cleaned_name
+            changed = True
+
         if not artist.profile_text and discogs_artist.get('profile'):
             artist.profile_text = discogs_artist.get('profile')
             changed = True

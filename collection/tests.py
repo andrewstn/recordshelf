@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.test import SimpleTestCase
 from django.test import TestCase
+from django.urls import reverse
 
 from .models import Artist
 from .services import get_or_create_record
@@ -38,3 +39,20 @@ class GetOrCreateRecordArtistCleanupTests(TestCase):
         artist.refresh_from_db()
         self.assertEqual(artist.name, "Clairo")
         self.assertEqual(record.artist, artist)
+
+
+class ArtistDetailCleanupTests(TestCase):
+    @patch("collection.views.fetch_discogs_artist_releases")
+    @patch("collection.views.fetch_discogs_artist")
+    def test_existing_artist_detail_cleans_database_name(self, mock_fetch_artist, mock_fetch_releases):
+        artist = Artist.objects.create(name="EDEN (86)", discogs_id="86")
+        mock_fetch_artist.return_value = {"name": "EDEN (86)", "profile": "", "images": []}
+        mock_fetch_releases.return_value = ([], {"pages": 1, "page": 1})
+
+        response = self.client.get(reverse("artist_detail", args=[86]))
+
+        self.assertEqual(response.status_code, 200)
+        artist.refresh_from_db()
+        self.assertEqual(artist.name, "EDEN")
+        self.assertContains(response, "EDEN")
+        self.assertNotContains(response, "EDEN (86)")
