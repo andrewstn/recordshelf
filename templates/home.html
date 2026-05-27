@@ -21,11 +21,15 @@
             
             <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                 <a href="{% url 'search' %}" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg px-8 py-4 rounded-xl transition-all shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] hover:-translate-y-1">
-                    Start Your Shelf
+                    {% if request.user.is_authenticated %}Find New Records{% else %}Start Your Shelf{% endif %}
                 </a>
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'profile' request.user.username %}" class="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 hover:border-zinc-700 font-bold text-lg px-8 py-4 rounded-xl transition-all">
                         Go to My Profile
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 hover:border-zinc-700 font-bold text-lg px-8 py-4 rounded-xl transition-all">
+                        Sign-up/Login
                     </a>
                 {% endif %}
             </div>
