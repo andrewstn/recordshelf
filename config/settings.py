@@ -190,6 +190,7 @@ DEFAULT_FROM_EMAIL = os.getenv(
 
 SUPPORT_EMAIL = "support@record-shelf.com"
 HELLO_EMAIL = "hello@record-shelf.com"
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "10"))
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = not DEBUG
