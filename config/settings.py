@@ -188,9 +188,12 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "recordshelf <hello@record-shelf.com>"
 )
 
-SUPPORT_EMAIL = "support@record-shelf.com"
-HELLO_EMAIL = "hello@record-shelf.com"
 EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "10"))
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "support@record-shelf.com")
+HELLO_EMAIL = os.getenv("HELLO_EMAIL", "hello@record-shelf.com")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_API_URL = os.getenv("RESEND_API_URL", "https://api.resend.com/emails")
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", DEFAULT_FROM_EMAIL)
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = not DEBUG

@@ -120,6 +120,29 @@ def send_account_deletion_email(request, user):
         to=[user.email],
     ).send(fail_silently=False)
 
+def send_support_email_via_resend(subject, body, reply_to):
+    if not settings.RESEND_API_KEY:
+        raise ValueError("RESEND_API_KEY is not configured.")
+
+    response = requests.post(
+        settings.RESEND_API_URL,
+        headers={
+            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+            "Content-Type": "application/json",
+            "User-Agent": "recordshelf/1.0",
+        },
+        json={
+            "from": settings.RESEND_FROM_EMAIL,
+            "to": [settings.SUPPORT_EMAIL],
+            "subject": subject,
+            "text": body,
+            "reply_to": [reply_to],
+        },
+        timeout=settings.EMAIL_TIMEOUT,
+    )
+    response.raise_for_status()
+    return response.json()
+
 def delete_user_account(user):
     username = user.username
     profile_picture = user.profile_picture
@@ -198,6 +221,8 @@ def support_contact(request):
     if request.method == "POST" and form.is_valid():
         if not settings.SUPPORT_EMAIL:
             messages.error(request, "Support email is not configured yet. Please try again soon.")
+        elif not settings.RESEND_API_KEY:
+            messages.error(request, "Support email API is not configured yet. Please try again soon.")
         elif not cache.add(
             throttle_key("support-contact", request.META.get("REMOTE_ADDR"), form.cleaned_data["email"]),
             True,
@@ -220,15 +245,12 @@ def support_contact(request):
             ])
 
             try:
-                email = EmailMessage(
+                send_support_email_via_resend(
                     subject=f"[recordshelf support] {form.cleaned_data['subject']}",
                     body=body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[settings.SUPPORT_EMAIL],
-                    reply_to=[form.cleaned_data["email"]],
+                    reply_to=form.cleaned_data["email"],
                 )
-                email.send(fail_silently=False)
-            except Exception:
+            except (requests.RequestException, ValueError):
                 messages.error(request, "Your message could not be sent. Please try again later.")
             else:
                 messages.success(request, "Thanks, your message was sent.")
