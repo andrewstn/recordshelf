@@ -1,5 +1,6 @@
 from .models import Record, CollectionItem, Artist
 from .discogs import fetch_discogs_master
+from .utils import clean_artist_name
 
 def get_or_create_record(discogs_id):
     """Safely fetches or creates a fully populated Record from Discogs."""
@@ -18,17 +19,26 @@ def get_or_create_record(discogs_id):
     artist_discogs_id = None
     if album_data.get('artists'):
         artist_node = album_data['artists'][0]
-        artist_name = artist_node.get('name', 'Unknown Artist')
+        artist_name = clean_artist_name(artist_node.get('name', 'Unknown Artist'))
         artist_discogs_id = artist_node.get('id')
         
     # 1. Get or Create the Artist
-    artist, created = Artist.objects.get_or_create(name=artist_name)
-    if created and artist_discogs_id:
-        artist.discogs_id = artist_discogs_id
-        artist.save()
-    elif not created and not artist.discogs_id and artist_discogs_id:
-        artist.discogs_id = artist_discogs_id
-        artist.save()
+    artist = None
+    if artist_discogs_id:
+        artist = Artist.objects.filter(discogs_id=artist_discogs_id).first()
+
+    if artist:
+        fields_to_update = []
+        if artist.name != artist_name:
+            artist.name = artist_name
+            fields_to_update.append('name')
+        if fields_to_update:
+            artist.save(update_fields=fields_to_update)
+    else:
+        artist, created = Artist.objects.get_or_create(name=artist_name)
+        if not artist.discogs_id and artist_discogs_id:
+            artist.discogs_id = artist_discogs_id
+            artist.save(update_fields=['discogs_id'])
     
     # 2. Create the fully populated Record
     record = Record.objects.create(

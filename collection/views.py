@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
 from django.db.models import Count, Avg
+from .utils import clean_artist_name
 
 def safe_redirect(request, target_url, fallback):
     if target_url and url_has_allowed_host_and_scheme(
@@ -37,7 +38,7 @@ def prepare_discogs_search_results(results):
     for result in results:
         full_title = result.get('title', '')
         if ' - ' in full_title:
-            display_artist_names.append(full_title.split(' - ', 1)[0].strip())
+            display_artist_names.append(clean_artist_name(full_title.split(' - ', 1)[0]))
     local_artists = {
         artist.name.lower(): artist.discogs_id
         for artist in Artist.objects.filter(
@@ -54,7 +55,7 @@ def prepare_discogs_search_results(results):
         full_title = prepared.get('title', '')
         if ' - ' in full_title:
             artist_name, record_title = full_title.split(' - ', 1)
-            prepared['display_artist'] = artist_name.strip()
+            prepared['display_artist'] = clean_artist_name(artist_name)
             prepared['display_title'] = record_title.strip()
         else:
             prepared['display_artist'] = ''
@@ -69,7 +70,9 @@ def prepare_discogs_search_results(results):
                 if master_data and master_data.get('artists'):
                     artist_data = master_data['artists'][0]
                     prepared['artist_discogs_id'] = artist_data.get('id') or ''
-                    prepared['display_artist'] = artist_data.get('name') or prepared['display_artist']
+                    prepared['display_artist'] = clean_artist_name(
+                        artist_data.get('name') or prepared['display_artist']
+                    )
         prepared_results.append(prepared)
     return prepared_results
 
@@ -210,7 +213,7 @@ def album_detail(request, discogs_id):
     title = album_data.get('title', '')
     artist_name = ''
     if album_data.get('artists'):
-        artist_name = album_data['artists'][0].get('name', '')
+        artist_name = clean_artist_name(album_data['artists'][0].get('name', ''))
         
     spotify_id = get_spotify_album_id(title, artist_name)
     
@@ -436,7 +439,9 @@ def artist_detail(request, artist_id):
         images = discogs_artist.get('images', [])
         image_url = images[0].get('resource_url') or images[0].get('uri') if images else None
         
-        artist, created = Artist.objects.get_or_create(name=discogs_artist.get('name', 'Unknown Artist'))
+        artist, created = Artist.objects.get_or_create(
+            name=clean_artist_name(discogs_artist.get('name', 'Unknown Artist'))
+        )
         artist.discogs_id = artist_id
         artist.profile_text = discogs_artist.get('profile')
         artist.image_url = image_url
