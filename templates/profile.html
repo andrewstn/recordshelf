@@ -78,6 +78,33 @@
             text-overflow: ellipsis;
         }
     }
+
+    @media (max-width: 639px) {
+        #share-shelf-stage {
+            overflow: auto;
+            padding: 0;
+        }
+
+        #share-shelf-toolbar {
+            left: 1rem;
+            right: 1rem;
+            justify-content: center;
+            max-width: none;
+        }
+
+        #share-shelf-viewport {
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-width: 920px;
+            min-height: 100%;
+            padding: 5.5rem 1rem 2rem;
+        }
+
+        #share-shelf-card {
+            width: 920px;
+            max-width: 920px;
+        }
+    }
 </style>
 
 <div id="profile-page" class="py-8 px-4 sm:px-6">
@@ -289,7 +316,7 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(16,185,129,0.18),transparent_32%),linear-gradient(145deg,rgba(9,9,11,1),rgba(24,24,27,0.98)_48%,rgba(2,44,34,0.72))] pointer-events-none"></div>
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_48%,rgba(0,0,0,0.58))] pointer-events-none"></div>
 
-        <div class="fixed top-4 right-4 z-50 flex flex-wrap justify-end gap-2 max-w-[calc(100vw-2rem)]">
+        <div id="share-shelf-toolbar" class="fixed top-4 right-4 z-50 flex flex-wrap justify-end gap-2 max-w-[calc(100vw-2rem)]">
             <button type="button" id="share-copy-link" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">Copy Link</button>
             <button type="button" id="share-export-png" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">Export PNG</button>
             <button type="button" id="share-native" class="bg-emerald-500 text-black hover:bg-emerald-400 border border-emerald-400 px-3 py-2 rounded-lg text-xs font-black transition cursor-pointer">Share</button>
@@ -298,7 +325,7 @@
 
         <p id="share-status" class="fixed left-1/2 bottom-4 z-50 hidden -translate-x-1/2 rounded-full border border-zinc-800 bg-zinc-950/90 px-4 py-2 text-xs font-bold text-zinc-200 shadow-2xl backdrop-blur-md"></p>
 
-        <div class="relative z-10 min-h-full flex items-center justify-center py-16 sm:py-20">
+        <div id="share-shelf-viewport" class="relative z-10 min-h-full flex items-center justify-center py-16 sm:py-20">
             <article id="share-shelf-card" tabindex="-1" data-username="{{ profile_user.username }}" data-tagline="{{ profile_user.tagline|default:'' }}" data-total-records="{{ total_records }}" class="relative w-full max-w-230 overflow-hidden rounded-3xl border border-emerald-500/20 bg-zinc-950 shadow-[0_30px_90px_rgba(0,0,0,0.65),0_0_90px_rgba(16,185,129,0.12)]">
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_22%_12%,rgba(16,185,129,0.22),transparent_28%),radial-gradient(circle_at_76%_82%,rgba(16,185,129,0.12),transparent_30%)] pointer-events-none"></div>
                 <div class="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),transparent_32%,rgba(0,0,0,0.34))] pointer-events-none"></div>
