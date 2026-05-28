@@ -21,6 +21,9 @@ class UsersConfig(AppConfig):
 
         @receiver(user_logged_in)
         def on_user_logged_in(sender, request, user, **kwargs):
+            if settings.POSTHOG_DISABLED or not settings.POSTHOG_PROJECT_TOKEN:
+                return
+
             with posthog.new_context():
                 posthog.identify_context(str(user.id))
                 posthog.capture('user_logged_in', properties={

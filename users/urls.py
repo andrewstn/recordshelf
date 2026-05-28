@@ -1,19 +1,14 @@
 from django.urls import include, path, reverse_lazy
 from django.contrib.auth.views import (
-    LoginView,
     PasswordResetCompleteView,
     PasswordResetConfirmView,
     PasswordResetDoneView,
 )
-from .views import ResendPasswordResetView, SignUpView, user_profile
-from .forms import VerifiedAuthenticationForm
+from .views import ResendPasswordResetView, SignUpView, VerifiedLoginView, user_profile
 from users import views
 
 urlpatterns = [
-    path('login/', LoginView.as_view(
-        template_name='registration/login.html',
-        authentication_form=VerifiedAuthenticationForm,
-    ), name='login'),
+    path('login/', VerifiedLoginView.as_view(), name='login'),
     path('password_reset/', ResendPasswordResetView.as_view(), name='password_reset'),
     path('password_reset/done/', PasswordResetDoneView.as_view(
         template_name='registration/password_reset_done.html',

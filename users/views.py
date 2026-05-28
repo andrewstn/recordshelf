@@ -10,8 +10,8 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
-from django.contrib.auth.views import PasswordResetView
-from .forms import CustomUserCreationForm, DeleteAccountForm, ResendVerificationForm, SupportContactForm, User
+from django.contrib.auth.views import LoginView, PasswordResetView
+from .forms import CustomUserCreationForm, DeleteAccountForm, ResendVerificationForm, SupportContactForm, User, VerifiedAuthenticationForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -44,6 +44,36 @@ SHARE_IMAGE_ALLOWED_CONTENT_TYPES = {
     "image/webp",
     "image/gif",
 }
+RECORDSHELF_USERNAME = "recordshelf"
+
+
+def establish_recordshelf_mutual_follow(user):
+    if not user or not user.is_active or not user.email_verified:
+        return False
+
+    recordshelf_user = User.objects.filter(username__iexact=RECORDSHELF_USERNAME).first()
+    if not recordshelf_user or recordshelf_user.pk == user.pk:
+        return False
+
+    user.following.add(recordshelf_user)
+    recordshelf_user.following.add(user)
+    return True
+
+
+class VerifiedLoginView(LoginView):
+    template_name = 'registration/login.html'
+    authentication_form = VerifiedAuthenticationForm
+
+    def form_valid(self, form):
+        user = form.get_user()
+        is_first_login = user.last_login is None
+        response = super().form_valid(form)
+        if is_first_login and establish_recordshelf_mutual_follow(user):
+            messages.info(
+                self.request,
+                "You're now following @recordshelf for featured collections, updates, and community picks.",
+            )
+        return response
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm

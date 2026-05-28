@@ -1,9 +1,13 @@
 from unittest.mock import Mock, patch
 
 from django.core.mail import EmailMessage, EmailMultiAlternatives
-from django.test import SimpleTestCase, override_settings
+from django.contrib.messages import get_messages
+from django.test import SimpleTestCase, TestCase, override_settings
+from django.urls import reverse
+from django.utils import timezone
 
 from .views import send_support_email_via_resend
+from .models import CustomUser
 
 
 class ResendSupportEmailTests(SimpleTestCase):
@@ -114,3 +118,54 @@ class ResendEmailBackendTests(SimpleTestCase):
         self.assertEqual(payload["text"], "Plain fallback.")
         self.assertEqual(payload["html"], "<p>HTML body.</p>")
         response.raise_for_status.assert_called_once_with()
+
+
+class VerifiedLoginViewTests(TestCase):
+    def setUp(self):
+        self.recordshelf = CustomUser.objects.create_user(
+            username="recordshelf",
+            email="hello@record-shelf.com",
+            password="password123",
+            is_active=True,
+            email_verified=True,
+        )
+        self.user = CustomUser.objects.create_user(
+            username="newcollector",
+            email="newcollector@example.com",
+            password="password123",
+            is_active=True,
+            email_verified=True,
+        )
+
+    def test_first_verified_login_adds_mutual_recordshelf_follow(self):
+        response = self.client.post(reverse("login"), {
+            "username": "newcollector",
+            "password": "password123",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(self.user.following.filter(pk=self.recordshelf.pk).exists())
+        self.assertTrue(self.recordshelf.following.filter(pk=self.user.pk).exists())
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+        self.assertIn(
+            "You're now following @recordshelf for featured collections, updates, and community picks.",
+            messages,
+        )
+
+    def test_later_login_does_not_readd_recordshelf_follow_after_unfollow(self):
+        self.user.last_login = timezone.now()
+        self.user.save(update_fields=["last_login"])
+
+        response = self.client.post(reverse("login"), {
+            "username": "newcollector",
+            "password": "password123",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(self.user.following.filter(pk=self.recordshelf.pk).exists())
+        self.assertFalse(self.recordshelf.following.filter(pk=self.user.pk).exists())
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+        self.assertNotIn(
+            "You're now following @recordshelf for featured collections, updates, and community picks.",
+            messages,
+        )
