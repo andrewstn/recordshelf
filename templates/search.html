@@ -91,6 +91,7 @@
                             <form method="POST" action="{% url 'add_record' %}" class="mt-auto">
                                 {% csrf_token %}
                                 <input type="hidden" name="discogs_id" value="{{ item.id }}">
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                 <button type="submit" class="w-full bg-zinc-800 hover:bg-brand hover:text-zinc-950 text-white font-semibold py-2 rounded-md transition cursor-pointer text-sm">
                                     + Add to Collection
                                 </button>
@@ -169,6 +170,7 @@
                             <form method="POST" action="{% url 'add_record' %}" class="mt-auto">
                                 {% csrf_token %}
                                 <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                 <button type="submit" class="w-full bg-zinc-800 hover:bg-brand hover:text-zinc-950 text-white font-semibold py-2 rounded-md transition cursor-pointer text-sm">
                                     + Add to Collection
                                 </button>

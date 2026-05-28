@@ -169,3 +169,45 @@ class VerifiedLoginViewTests(TestCase):
             "You're now following @recordshelf for featured collections, updates, and community picks.",
             messages,
         )
+
+
+class ToggleFollowRedirectTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="collector",
+            email="collector@example.com",
+            password="password123",
+        )
+        self.other_user = CustomUser.objects.create_user(
+            username="neighbor",
+            email="neighbor@example.com",
+            password="password123",
+        )
+        self.client.force_login(self.user)
+
+    @patch("users.views.posthog")
+    def test_toggle_follow_returns_to_safe_next_url(self, mock_posthog):
+        response = self.client.post(reverse("toggle_follow", args=[self.other_user.username]), {
+            "next": "/accounts/community/?q=neighbor",
+        })
+
+        self.assertRedirects(
+            response,
+            "/accounts/community/?q=neighbor",
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(self.user.following.filter(pk=self.other_user.pk).exists())
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+        self.assertIn("You are now following @neighbor!", messages)
+
+    @patch("users.views.posthog")
+    def test_toggle_follow_rejects_external_next_url(self, mock_posthog):
+        response = self.client.post(reverse("toggle_follow", args=[self.other_user.username]), {
+            "next": "https://example.com/",
+        })
+
+        self.assertRedirects(
+            response,
+            reverse("profile", args=[self.other_user.username]),
+            fetch_redirect_response=False,
+        )

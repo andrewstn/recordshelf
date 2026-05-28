@@ -27,7 +27,7 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import url_has_allowed_host_and_scheme, urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.http import require_GET, require_POST
 from .tokens import account_deletion_token, email_verification_token
 
@@ -38,6 +38,18 @@ SHARE_IMAGE_ALLOWED_HOST_SUFFIXES = (
     "discogs.com",
     "scdn.co",
 )
+
+
+def safe_redirect(request, target_url, fallback, **fallback_kwargs):
+    if target_url and url_has_allowed_host_and_scheme(
+        target_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(target_url)
+    return redirect(fallback, **fallback_kwargs)
+
+
 SHARE_IMAGE_ALLOWED_CONTENT_TYPES = {
     "image/jpeg",
     "image/png",
@@ -781,7 +793,12 @@ def toggle_follow(request, username):
     # Prevent users from following themselves
     if request.user == user_to_toggle:
         messages.warning(request, "You cannot follow yourself.")
-        return redirect('profile', username=username)
+        return safe_redirect(
+            request,
+            request.POST.get('next') or request.GET.get('next'),
+            'profile',
+            username=username,
+        )
 
     if request.user.following.filter(pk=user_to_toggle.pk).exists():
         request.user.following.remove(user_to_toggle)
@@ -793,7 +810,12 @@ def toggle_follow(request, username):
             posthog.capture('user_followed')
         messages.success(request, f"You are now following @{user_to_toggle.username}!")
 
-    return redirect('profile', username=username)
+    return safe_redirect(
+        request,
+        request.POST.get('next') or request.GET.get('next'),
+        'profile',
+        username=username,
+    )
 
 def social_feed(request):
     """Displays a chronological feed. Personalized for users, global for guests."""
