@@ -79,7 +79,7 @@
         }
     }
 
-    @media (max-width: 639px) {
+    @media (max-width: 767px) {
         #share-shelf-stage {
             overflow: auto;
             padding: 0;
@@ -103,6 +103,61 @@
         #share-shelf-card {
             width: 920px;
             max-width: 920px;
+        }
+
+        #share-shelf-card [data-share-content] {
+            padding: 3rem;
+        }
+
+        #share-shelf-card [data-share-profile-image],
+        #share-shelf-card [data-share-profile-fallback] {
+            width: 5rem;
+            height: 5rem;
+        }
+
+        #share-shelf-card [data-share-username] {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        #share-shelf-card [data-share-tagline] {
+            font-size: 1rem;
+            line-height: 1.625;
+        }
+
+        #share-shelf-card [data-share-stat-value] {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        #share-shelf-card [data-share-stat-label] {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+
+        #share-shelf-card [data-share-current-image] {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        #share-shelf-card [data-share-current-title] {
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+
+        #share-shelf-card [data-share-grid] {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.25rem;
+        }
+
+        #share-shelf-card [data-share-record-title] {
+            font-size: 1rem;
+            line-height: 1.5rem;
+        }
+
+        #share-shelf-card [data-share-record-artist] {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
         }
     }
 </style>
