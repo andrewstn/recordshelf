@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('v/<uidb64>/<token>/', user_views.verify_email, name='verify_email_short'),
     path('d/<uidb64>/<token>/', user_views.confirm_delete_account, name='confirm_delete_account_short'),
+    path('share.png', user_views.site_share_image, name='site_share_image'),
     path('accounts/', include('users.urls')),
     path('collection/', include('collection.urls')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),

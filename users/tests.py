@@ -6,6 +6,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from collection.models import Artist, CollectionItem, Record
 from .views import send_support_email_via_resend
 from .models import CustomUser
 
@@ -211,3 +212,55 @@ class ToggleFollowRedirectTests(TestCase):
             reverse("profile", args=[self.other_user.username]),
             fetch_redirect_response=False,
         )
+
+
+class LinkEmbedTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="embedtest",
+            email="embedtest@example.com",
+            password="password123",
+            tagline="A shelf built for link previews.",
+        )
+        self.artist = Artist.objects.create(name="Preview Artist", discogs_id="77")
+        self.records = []
+        for index in range(1, 4):
+            record = Record.objects.create(
+                title=f"Preview Record {index}",
+                artist=self.artist,
+                year=2020 + index,
+                discogs_id=str(8000 + index),
+            )
+            CollectionItem.objects.create(user=self.user, record=record)
+            self.records.append(record)
+        self.user.shelf.set(self.records)
+
+    def test_sitewide_default_embed_meta_tags(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, '<meta property="og:title" content="recordshelf">')
+        self.assertContains(
+            response,
+            "Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.",
+        )
+        self.assertContains(response, reverse("site_share_image"))
+        self.assertContains(response, '<meta name="twitter:card" content="summary_large_image">')
+
+    def test_profile_embed_meta_tags(self):
+        response = self.client.get(reverse("profile", args=[self.user.username]))
+
+        self.assertContains(response, f'<title>@{self.user.username} - recordshelf</title>')
+        self.assertContains(response, f'<meta property="og:title" content="@{self.user.username} on recordshelf">')
+        self.assertContains(response, reverse("profile_embed_image", args=[self.user.username]))
+        self.assertContains(response, "profile picture and shelf display")
+
+    def test_embed_image_endpoints_return_pngs(self):
+        site_response = self.client.get(reverse("site_share_image"))
+        profile_response = self.client.get(reverse("profile_embed_image", args=[self.user.username]))
+
+        self.assertEqual(site_response.status_code, 200)
+        self.assertEqual(site_response["Content-Type"], "image/png")
+        self.assertTrue(site_response.content.startswith(b"\x89PNG"))
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertEqual(profile_response["Content-Type"], "image/png")
+        self.assertTrue(profile_response.content.startswith(b"\x89PNG"))

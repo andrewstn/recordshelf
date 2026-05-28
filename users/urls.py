@@ -33,6 +33,7 @@ urlpatterns = [
     path('community/', views.user_directory, name='user_directory'),
     path('share-image/', views.share_image_proxy, name='share_image_proxy'),
     path('<str:username>/profile-picture/', views.profile_picture_proxy, name='profile_picture_proxy'),
+    path('<str:username>/embed.png', views.profile_embed_image, name='profile_embed_image'),
     path('<str:username>/share.png', views.profile_share_image, name='profile_share_image'),
     
     # Dynamic profile routing
