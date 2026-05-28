@@ -13,14 +13,14 @@
         <meta property="og:title" content="recordshelf">
         <meta property="og:description" content="Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.">
         <meta property="og:url" content="{{ request.build_absolute_uri }}">
-        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}">
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}?v=4">
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:image:alt" content="recordshelf branding">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="recordshelf">
         <meta name="twitter:description" content="Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.">
-        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}">
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}?v=4">
     {% endblock %}
     
     <link rel="stylesheet" href="{% static 'css/style.css' %}">

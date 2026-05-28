@@ -374,10 +374,12 @@ def share_image_proxy(request):
 
 def load_share_font(size, bold=False):
     paths = [
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/System/Library/Fonts/SFNS.ttf",
+        "/System/Library/Fonts/HelveticaNeue.ttc",
+        "/System/Library/Fonts/Helvetica.ttc",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf",
     ]
     for path in paths:
         try:
@@ -530,17 +532,31 @@ def site_share_image(request):
     image = Image.new("RGBA", (width, height), "#09090b")
     draw = ImageDraw.Draw(image)
 
-    brand_font = load_share_font(132, bold=True)
-    icon_size = 132
-    gap = 28
+    brand_size = 184
+    gap = 34
+    max_logo_width = width - 120
+    while brand_size > 120:
+        brand_font = load_share_font(brand_size, bold=True)
+        icon_size = brand_size
+        logo_width = icon_size + gap + text_width(draw, "recordshelf", brand_font)
+        if logo_width <= max_logo_width:
+            break
+        brand_size -= 4
+
+    brand_font = load_share_font(brand_size, bold=True)
+    icon_size = brand_size
     logo_width = icon_size + gap + text_width(draw, "recordshelf", brand_font)
     x = (width - logo_width) / 2
     y = (height - icon_size) / 2
 
     draw.ellipse((x, y, x + icon_size, y + icon_size), fill=(16, 185, 129, 255))
-    draw.ellipse((x + 39, y + 39, x + 93, y + 93), fill=(9, 9, 11, 255))
-    draw.ellipse((x + 57, y + 57, x + 75, y + 75), fill=(16, 185, 129, 255))
-    draw.text((x + icon_size + gap, y - 7), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
+    inner_padding = icon_size * 0.3
+    inner_size = icon_size * 0.4
+    dot_padding = icon_size * 0.44
+    dot_size = icon_size * 0.12
+    draw.ellipse((x + inner_padding, y + inner_padding, x + inner_padding + inner_size, y + inner_padding + inner_size), fill=(9, 9, 11, 255))
+    draw.ellipse((x + dot_padding, y + dot_padding, x + dot_padding + dot_size, y + dot_padding + dot_size), fill=(16, 185, 129, 255))
+    draw.text((x + icon_size + gap, y - 10), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
 
     return png_response(image)
 
@@ -563,18 +579,19 @@ def profile_embed_image(request, username):
     image = make_share_background((width, height))
     draw = ImageDraw.Draw(image)
 
-    title_font = load_share_font(78, bold=True)
-    heading_font = load_share_font(28, bold=True)
-    body_font = load_share_font(38)
-    stat_font = load_share_font(54, bold=True)
-    tiny_font = load_share_font(21, bold=True)
+    brand_font = load_share_font(42, bold=True)
+    title_font = load_share_font(92, bold=True)
+    body_font = load_share_font(40)
+    stat_font = load_share_font(34, bold=True)
+    label_font = load_share_font(24, bold=True)
+    tile_font = load_share_font(27, bold=True)
 
-    card = (58, 58, width - 58, height - 58)
-    draw.rounded_rectangle(card, radius=38, fill=(9, 9, 11, 238), outline=(16, 185, 129, 74), width=2)
+    card = (46, 46, width - 46, height - 46)
+    draw.rounded_rectangle(card, radius=32, fill=(9, 9, 11, 238), outline=(16, 185, 129, 86), width=2)
 
-    avatar_x = 96
-    avatar_y = 92
-    avatar_size = 146
+    avatar_x = 86
+    avatar_y = 82
+    avatar_size = 168
     profile_image = image_from_profile(profile_user)
     if profile_image:
         image.alpha_composite(circular_image(profile_image, avatar_size), (avatar_x, avatar_y))
@@ -583,28 +600,32 @@ def profile_embed_image(request, username):
         draw.ellipse((avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), fill=(24, 24, 27, 255), outline=(16, 185, 129, 130), width=3)
         draw_centered_box_text(draw, (avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), profile_user.username[:1].upper(), title_font, (52, 211, 153, 255))
 
-    text_x = avatar_x + avatar_size + 34
-    draw.text((text_x, avatar_y + 1), "RECORDSHELF", font=heading_font, fill=(52, 211, 153, 255))
-    draw.text((text_x, avatar_y + 34), fit_text(draw, f"@{profile_user.username}", title_font, 720), font=title_font, fill=(255, 255, 255, 255))
+    text_x = avatar_x + avatar_size + 36
+    logo_size = 34
+    logo_y = avatar_y + 6
+    draw.ellipse((text_x, logo_y, text_x + logo_size, logo_y + logo_size), fill=(16, 185, 129, 255))
+    draw.ellipse((text_x + 10, logo_y + 10, text_x + 24, logo_y + 24), fill=(9, 9, 11, 255))
+    draw.ellipse((text_x + 15, logo_y + 15, text_x + 19, logo_y + 19), fill=(16, 185, 129, 255))
+    draw.text((text_x + 46, avatar_y - 3), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
+    draw.text((text_x, avatar_y + 52), fit_text(draw, f"@{profile_user.username}", title_font, 640), font=title_font, fill=(255, 255, 255, 255))
 
     tagline = profile_user.tagline or "Showcasing a vinyl collection on recordshelf."
-    line_y = avatar_y + 132
-    for line in wrap_text(draw, tagline, body_font, 700, max_lines=2):
-        draw.text((text_x, line_y), line, font=body_font, fill=(212, 212, 216, 255))
-        line_y += 46
+    draw.text((text_x, avatar_y + 146), fit_text(draw, tagline, body_font, 690), font=body_font, fill=(161, 161, 170, 255))
 
-    stat_x = width - 180
-    draw.text((stat_x, avatar_y + 40), str(total_records), font=stat_font, fill=(255, 255, 255, 255))
-    draw.text((stat_x, avatar_y + 102), f"RECORD{'S' if total_records != 1 else ''}", font=tiny_font, fill=(113, 113, 122, 255))
+    stat_text = f"{total_records} record{'s' if total_records != 1 else ''}"
+    stat_box = (width - 244, avatar_y + 22, width - 86, avatar_y + 82)
+    draw.rounded_rectangle(stat_box, radius=12, fill=(9, 9, 11, 255), outline=(24, 24, 27, 255), width=2)
+    stat_width = text_width(draw, stat_text, stat_font)
+    draw.text((stat_box[0] + (stat_box[2] - stat_box[0] - stat_width) / 2, stat_box[1] + 9), stat_text, font=stat_font, fill=(212, 212, 216, 255))
 
-    shelf_y = 344
-    draw.text((96, shelf_y - 42), "SHELF", font=heading_font, fill=(113, 113, 122, 255))
-    draw.text((width - 286, shelf_y - 38), "RECORD-SHELF.COM", font=tiny_font, fill=(82, 82, 91, 255))
+    shelf_y = 354
+    draw.text((86, shelf_y - 46), "MY RECORD SHELF", font=label_font, fill=(113, 113, 122, 255))
+    draw.text((width - 306, shelf_y - 46), "record-shelf.com", font=label_font, fill=(82, 82, 91, 255))
 
-    tile_size = 144
-    gap = 28
+    tile_size = 154
+    gap = 30
     for index in range(6):
-        tile_x = 96 + index * (tile_size + gap)
+        tile_x = 86 + index * (tile_size + gap)
         tile_y = shelf_y
         shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow)
@@ -619,15 +640,11 @@ def profile_embed_image(request, username):
                 image.alpha_composite(rounded_image(cover, tile_size, 18), (tile_x, tile_y))
             else:
                 draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, fill=(24, 24, 27, 255), outline=(39, 39, 42, 255), width=2)
-                draw_centered_text(draw, (tile_x + tile_size / 2, tile_y + 58), "No Art", body_font, (82, 82, 91, 255))
+                draw_centered_text(draw, (tile_x + tile_size / 2, tile_y + 62), "No Art", tile_font, (113, 113, 122, 255))
         else:
             draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, fill=(24, 24, 27, 190), outline=(39, 39, 42, 180), width=2)
 
         draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, outline=(16, 185, 129, 48), width=2)
-
-    draw.line((96, 510, width - 96, 510), fill=(255, 255, 255, 28), width=2)
-    draw.text((96, 528), "recordshelf", font=heading_font, fill=(161, 161, 170, 255))
-    draw.text((width - 246, 534), "VINYL PROFILES", font=tiny_font, fill=(113, 113, 122, 255))
 
     return png_response(image)
 
