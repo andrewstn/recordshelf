@@ -248,7 +248,7 @@ class LinkEmbedTests(TestCase):
         )
         self.assertContains(response, '<meta property="og:image:height" content="1200">')
         self.assertContains(response, reverse("site_share_image"))
-        self.assertContains(response, '<meta name="twitter:card" content="summary_large_image">')
+        self.assertContains(response, '<meta name="twitter:card" content="summary">')
 
     def test_profile_embed_meta_tags(self):
         response = self.client.get(reverse("profile", args=[self.user.username]))
