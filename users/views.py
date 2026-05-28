@@ -527,32 +527,20 @@ def png_response(image):
 @require_GET
 def site_share_image(request):
     width, height = 1200, 630
-    image = make_share_background((width, height))
+    image = Image.new("RGBA", (width, height), "#09090b")
     draw = ImageDraw.Draw(image)
 
-    brand_font = load_share_font(92, bold=True)
-    heading_font = load_share_font(30, bold=True)
-    body_font = load_share_font(36)
-    tiny_font = load_share_font(20, bold=True)
+    brand_font = load_share_font(132, bold=True)
+    icon_size = 132
+    gap = 28
+    logo_width = icon_size + gap + text_width(draw, "recordshelf", brand_font)
+    x = (width - logo_width) / 2
+    y = (height - icon_size) / 2
 
-    card = (70, 70, width - 70, height - 70)
-    draw.rounded_rectangle(card, radius=40, fill=(9, 9, 11, 236), outline=(16, 185, 129, 78), width=2)
-
-    draw.ellipse((116, 118, 206, 208), fill=(16, 185, 129, 255))
-    draw.ellipse((142, 144, 180, 182), fill=(9, 9, 11, 255))
-    draw.ellipse((154, 156, 168, 170), fill=(16, 185, 129, 255))
-
-    draw.text((232, 116), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
-    draw.text((236, 216), "SHOWCASE YOUR VINYL COLLECTION", font=heading_font, fill=(52, 211, 153, 255))
-
-    y = 298
-    for line in wrap_text(draw, SITE_EMBED_TAGLINE, body_font, 850, max_lines=3):
-        draw.text((116, y), line, font=body_font, fill=(212, 212, 216, 255))
-        y += 50
-
-    draw.line((116, 504, width - 116, 504), fill=(255, 255, 255, 32), width=2)
-    draw.text((116, 535), "RECORD-SHELF.COM", font=tiny_font, fill=(113, 113, 122, 255))
-    draw.text((width - 304, 535), "DIGITAL VINYL ARCHIVE", font=tiny_font, fill=(113, 113, 122, 255))
+    draw.ellipse((x, y, x + icon_size, y + icon_size), fill=(16, 185, 129, 255))
+    draw.ellipse((x + 39, y + 39, x + 93, y + 93), fill=(9, 9, 11, 255))
+    draw.ellipse((x + 57, y + 57, x + 75, y + 75), fill=(16, 185, 129, 255))
+    draw.text((x + icon_size + gap, y - 7), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
 
     return png_response(image)
 
@@ -569,24 +557,24 @@ def profile_embed_image(request, username):
     )
     order_list = profile_user.shelf_order or []
     shelf_items.sort(key=lambda x: order_list.index(x.record.id) if x.record.id in order_list else 999)
-    shelf_items = shelf_items[:5]
+    shelf_items = shelf_items[:6]
 
     width, height = 1200, 630
     image = make_share_background((width, height))
     draw = ImageDraw.Draw(image)
 
-    title_font = load_share_font(70, bold=True)
-    heading_font = load_share_font(25, bold=True)
-    body_font = load_share_font(30)
-    stat_font = load_share_font(42, bold=True)
-    tiny_font = load_share_font(18, bold=True)
+    title_font = load_share_font(78, bold=True)
+    heading_font = load_share_font(28, bold=True)
+    body_font = load_share_font(38)
+    stat_font = load_share_font(54, bold=True)
+    tiny_font = load_share_font(21, bold=True)
 
     card = (58, 58, width - 58, height - 58)
     draw.rounded_rectangle(card, radius=38, fill=(9, 9, 11, 238), outline=(16, 185, 129, 74), width=2)
 
-    avatar_x = 108
-    avatar_y = 116
-    avatar_size = 126
+    avatar_x = 96
+    avatar_y = 92
+    avatar_size = 146
     profile_image = image_from_profile(profile_user)
     if profile_image:
         image.alpha_composite(circular_image(profile_image, avatar_size), (avatar_x, avatar_y))
@@ -595,28 +583,28 @@ def profile_embed_image(request, username):
         draw.ellipse((avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), fill=(24, 24, 27, 255), outline=(16, 185, 129, 130), width=3)
         draw_centered_box_text(draw, (avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), profile_user.username[:1].upper(), title_font, (52, 211, 153, 255))
 
-    text_x = avatar_x + avatar_size + 30
-    draw.text((text_x, avatar_y + 2), "RECORDSHELF", font=heading_font, fill=(52, 211, 153, 255))
-    draw.text((text_x, avatar_y + 34), fit_text(draw, f"@{profile_user.username}", title_font, 540), font=title_font, fill=(255, 255, 255, 255))
+    text_x = avatar_x + avatar_size + 34
+    draw.text((text_x, avatar_y + 1), "RECORDSHELF", font=heading_font, fill=(52, 211, 153, 255))
+    draw.text((text_x, avatar_y + 34), fit_text(draw, f"@{profile_user.username}", title_font, 720), font=title_font, fill=(255, 255, 255, 255))
 
     tagline = profile_user.tagline or "Showcasing a vinyl collection on recordshelf."
-    line_y = avatar_y + 118
-    for line in wrap_text(draw, tagline, body_font, 620, max_lines=2):
+    line_y = avatar_y + 132
+    for line in wrap_text(draw, tagline, body_font, 700, max_lines=2):
         draw.text((text_x, line_y), line, font=body_font, fill=(212, 212, 216, 255))
-        line_y += 38
+        line_y += 46
 
-    stat_x = width - 228
-    draw.text((stat_x, avatar_y + 36), str(total_records), font=stat_font, fill=(255, 255, 255, 255))
-    draw.text((stat_x, avatar_y + 86), f"RECORD{'S' if total_records != 1 else ''}", font=tiny_font, fill=(113, 113, 122, 255))
+    stat_x = width - 180
+    draw.text((stat_x, avatar_y + 40), str(total_records), font=stat_font, fill=(255, 255, 255, 255))
+    draw.text((stat_x, avatar_y + 102), f"RECORD{'S' if total_records != 1 else ''}", font=tiny_font, fill=(113, 113, 122, 255))
 
-    shelf_y = 334
-    draw.text((108, shelf_y - 42), "SHELF", font=heading_font, fill=(113, 113, 122, 255))
-    draw.text((width - 284, shelf_y - 42), "RECORD-SHELF.COM", font=tiny_font, fill=(82, 82, 91, 255))
+    shelf_y = 344
+    draw.text((96, shelf_y - 42), "SHELF", font=heading_font, fill=(113, 113, 122, 255))
+    draw.text((width - 286, shelf_y - 38), "RECORD-SHELF.COM", font=tiny_font, fill=(82, 82, 91, 255))
 
-    tile_size = 138
-    gap = 26
-    for index in range(5):
-        tile_x = 108 + index * (tile_size + gap)
+    tile_size = 144
+    gap = 28
+    for index in range(6):
+        tile_x = 96 + index * (tile_size + gap)
         tile_y = shelf_y
         shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow)
@@ -637,9 +625,9 @@ def profile_embed_image(request, username):
 
         draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, outline=(16, 185, 129, 48), width=2)
 
-    draw.line((108, 538, width - 108, 538), fill=(255, 255, 255, 28), width=2)
-    draw.text((108, 562), "recordshelf", font=heading_font, fill=(161, 161, 170, 255))
-    draw.text((width - 240, 566), "VINYL PROFILES", font=tiny_font, fill=(113, 113, 122, 255))
+    draw.line((96, 510, width - 96, 510), fill=(255, 255, 255, 28), width=2)
+    draw.text((96, 528), "recordshelf", font=heading_font, fill=(161, 161, 170, 255))
+    draw.text((width - 246, 534), "VINYL PROFILES", font=tiny_font, fill=(113, 113, 122, 255))
 
     return png_response(image)
 
