@@ -57,10 +57,6 @@ SHARE_IMAGE_ALLOWED_CONTENT_TYPES = {
     "image/gif",
 }
 RECORDSHELF_USERNAME = "recordshelf"
-SITE_EMBED_TAGLINE = (
-    "Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. "
-    "Display your favorite records, discover new pressings, and connect with fellow collectors."
-)
 
 
 def establish_recordshelf_mutual_follow(user):
@@ -526,127 +522,40 @@ def png_response(image):
     return HttpResponse(output.getvalue(), content_type="image/png")
 
 
-@require_GET
-def site_share_image(request):
-    width, height = 1200, 630
-    image = Image.new("RGBA", (width, height), "#09090b")
+def make_logo_embed_image():
+    size = 1200
+    image = Image.new("RGBA", (size, size), "#09090b")
     draw = ImageDraw.Draw(image)
 
-    brand_size = 184
-    gap = 34
-    max_logo_width = width - 120
-    while brand_size > 120:
-        brand_font = load_share_font(brand_size, bold=True)
-        icon_size = brand_size
-        logo_width = icon_size + gap + text_width(draw, "recordshelf", brand_font)
-        if logo_width <= max_logo_width:
-            break
-        brand_size -= 4
+    viewbox_size = 860
+    scale = viewbox_size / 24
+    x = (size - viewbox_size) / 2
+    y = (size - viewbox_size) / 2
+    emerald_500 = (16, 185, 129, 255)
+    background = (9, 9, 11, 255)
 
-    brand_font = load_share_font(brand_size, bold=True)
-    icon_size = brand_size
-    logo_width = icon_size + gap + text_width(draw, "recordshelf", brand_font)
-    x = (width - logo_width) / 2
-    y = (height - icon_size) / 2
+    def point(value):
+        return x + value * scale
 
-    draw.ellipse((x, y, x + icon_size, y + icon_size), fill=(16, 185, 129, 255))
-    inner_padding = icon_size * 0.3
-    inner_size = icon_size * 0.4
-    dot_padding = icon_size * 0.44
-    dot_size = icon_size * 0.12
-    draw.ellipse((x + inner_padding, y + inner_padding, x + inner_padding + inner_size, y + inner_padding + inner_size), fill=(9, 9, 11, 255))
-    draw.ellipse((x + dot_padding, y + dot_padding, x + dot_padding + dot_size, y + dot_padding + dot_size), fill=(16, 185, 129, 255))
-    draw.text((x + icon_size + gap, y - 10), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
+    def ypoint(value):
+        return y + value * scale
 
-    return png_response(image)
+    draw.ellipse((point(2), ypoint(2), point(22), ypoint(22)), fill=emerald_500)
+    draw.ellipse((point(7), ypoint(7), point(17), ypoint(17)), fill=background)
+    draw.ellipse((point(9), ypoint(9), point(15), ypoint(15)), fill=emerald_500)
+
+    return image
+
+
+@require_GET
+def site_share_image(request):
+    return png_response(make_logo_embed_image())
 
 
 @require_GET
 def profile_embed_image(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    full_collection = profile_user.collection.select_related('record', 'record__artist')
-    total_records = full_collection.count()
-
-    profile_shelf_record_ids = list(profile_user.shelf.values_list('id', flat=True))
-    shelf_items = list(
-        profile_user.collection.filter(record_id__in=profile_shelf_record_ids).select_related('record', 'record__artist')
-    )
-    order_list = profile_user.shelf_order or []
-    shelf_items.sort(key=lambda x: order_list.index(x.record.id) if x.record.id in order_list else 999)
-    shelf_items = shelf_items[:6]
-
-    width, height = 1200, 630
-    image = make_share_background((width, height))
-    draw = ImageDraw.Draw(image)
-
-    brand_font = load_share_font(42, bold=True)
-    title_font = load_share_font(92, bold=True)
-    body_font = load_share_font(40)
-    stat_font = load_share_font(34, bold=True)
-    label_font = load_share_font(24, bold=True)
-    tile_font = load_share_font(27, bold=True)
-
-    card = (46, 46, width - 46, height - 46)
-    draw.rounded_rectangle(card, radius=32, fill=(9, 9, 11, 238), outline=(16, 185, 129, 86), width=2)
-
-    avatar_x = 86
-    avatar_y = 82
-    avatar_size = 168
-    profile_image = image_from_profile(profile_user)
-    if profile_image:
-        image.alpha_composite(circular_image(profile_image, avatar_size), (avatar_x, avatar_y))
-        draw.ellipse((avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), outline=(16, 185, 129, 130), width=3)
-    else:
-        draw.ellipse((avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), fill=(24, 24, 27, 255), outline=(16, 185, 129, 130), width=3)
-        draw_centered_box_text(draw, (avatar_x, avatar_y, avatar_x + avatar_size, avatar_y + avatar_size), profile_user.username[:1].upper(), title_font, (52, 211, 153, 255))
-
-    text_x = avatar_x + avatar_size + 36
-    logo_size = 34
-    logo_y = avatar_y + 6
-    draw.ellipse((text_x, logo_y, text_x + logo_size, logo_y + logo_size), fill=(16, 185, 129, 255))
-    draw.ellipse((text_x + 10, logo_y + 10, text_x + 24, logo_y + 24), fill=(9, 9, 11, 255))
-    draw.ellipse((text_x + 15, logo_y + 15, text_x + 19, logo_y + 19), fill=(16, 185, 129, 255))
-    draw.text((text_x + 46, avatar_y - 3), "recordshelf", font=brand_font, fill=(255, 255, 255, 255))
-    draw.text((text_x, avatar_y + 52), fit_text(draw, f"@{profile_user.username}", title_font, 640), font=title_font, fill=(255, 255, 255, 255))
-
-    tagline = profile_user.tagline or "Showcasing a vinyl collection on recordshelf."
-    draw.text((text_x, avatar_y + 146), fit_text(draw, tagline, body_font, 690), font=body_font, fill=(161, 161, 170, 255))
-
-    stat_text = f"{total_records} record{'s' if total_records != 1 else ''}"
-    stat_box = (width - 244, avatar_y + 22, width - 86, avatar_y + 82)
-    draw.rounded_rectangle(stat_box, radius=12, fill=(9, 9, 11, 255), outline=(24, 24, 27, 255), width=2)
-    stat_width = text_width(draw, stat_text, stat_font)
-    draw.text((stat_box[0] + (stat_box[2] - stat_box[0] - stat_width) / 2, stat_box[1] + 9), stat_text, font=stat_font, fill=(212, 212, 216, 255))
-
-    shelf_y = 354
-    draw.text((86, shelf_y - 46), "MY RECORD SHELF", font=label_font, fill=(113, 113, 122, 255))
-    draw.text((width - 306, shelf_y - 46), "record-shelf.com", font=label_font, fill=(82, 82, 91, 255))
-
-    tile_size = 154
-    gap = 30
-    for index in range(6):
-        tile_x = 86 + index * (tile_size + gap)
-        tile_y = shelf_y
-        shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        shadow_draw = ImageDraw.Draw(shadow)
-        shadow_draw.rounded_rectangle((tile_x + 6, tile_y + 14, tile_x + tile_size + 6, tile_y + tile_size + 14), radius=18, fill=(0, 0, 0, 110))
-        shadow = shadow.filter(ImageFilter.GaussianBlur(10))
-        image = Image.alpha_composite(image, shadow)
-        draw = ImageDraw.Draw(image)
-
-        if index < len(shelf_items):
-            cover = image_from_url(shelf_items[index].record.cover_art_url)
-            if cover:
-                image.alpha_composite(rounded_image(cover, tile_size, 18), (tile_x, tile_y))
-            else:
-                draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, fill=(24, 24, 27, 255), outline=(39, 39, 42, 255), width=2)
-                draw_centered_text(draw, (tile_x + tile_size / 2, tile_y + 62), "No Art", tile_font, (113, 113, 122, 255))
-        else:
-            draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, fill=(24, 24, 27, 190), outline=(39, 39, 42, 180), width=2)
-
-        draw.rounded_rectangle((tile_x, tile_y, tile_x + tile_size, tile_y + tile_size), radius=18, outline=(16, 185, 129, 48), width=2)
-
-    return png_response(image)
+    get_object_or_404(User, username=username)
+    return png_response(make_logo_embed_image())
 
 
 @require_GET

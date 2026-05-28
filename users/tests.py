@@ -238,11 +238,15 @@ class LinkEmbedTests(TestCase):
     def test_sitewide_default_embed_meta_tags(self):
         response = self.client.get(reverse("home"))
 
-        self.assertContains(response, '<meta property="og:title" content="recordshelf">')
+        self.assertContains(
+            response,
+            '<meta property="og:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">',
+        )
         self.assertContains(
             response,
             "Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.",
         )
+        self.assertContains(response, '<meta property="og:image:height" content="1200">')
         self.assertContains(response, reverse("site_share_image"))
         self.assertContains(response, '<meta name="twitter:card" content="summary_large_image">')
 
@@ -250,9 +254,13 @@ class LinkEmbedTests(TestCase):
         response = self.client.get(reverse("profile", args=[self.user.username]))
 
         self.assertContains(response, f'<title>@{self.user.username} - recordshelf</title>')
-        self.assertContains(response, f'<meta property="og:title" content="@{self.user.username} on recordshelf">')
+        self.assertContains(
+            response,
+            '<meta property="og:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">',
+        )
+        self.assertContains(response, f"Check out @{self.user.username}'s vinyl collection on recordshelf.")
         self.assertContains(response, reverse("profile_embed_image", args=[self.user.username]))
-        self.assertContains(response, "profile picture and shelf display")
+        self.assertContains(response, "recordshelf logo")
 
     def test_embed_image_endpoints_return_pngs(self):
         site_response = self.client.get(reverse("site_share_image"))

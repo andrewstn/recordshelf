@@ -3,20 +3,20 @@
 {% block title %}@{{ profile_user.username }} - recordshelf{% endblock %}
 
 {% block meta %}
-    <meta name="description" content="@{{ profile_user.username }}'s vinyl collection on recordshelf.">
+    <meta name="description" content="Check out @{{ profile_user.username }}'s vinyl collection on recordshelf.">
     <meta property="og:site_name" content="recordshelf">
     <meta property="og:type" content="profile">
-    <meta property="og:title" content="@{{ profile_user.username }} on recordshelf">
-    <meta property="og:description" content="@{{ profile_user.username }}'s vinyl collection on recordshelf.">
+    <meta property="og:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">
+    <meta property="og:description" content="Check out @{{ profile_user.username }}'s vinyl collection on recordshelf.">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'profile_embed_image' profile_user.username %}?v=4">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'profile_embed_image' profile_user.username %}?v=6">
     <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="@{{ profile_user.username }}'s recordshelf profile with profile picture and shelf display">
+    <meta property="og:image:height" content="1200">
+    <meta property="og:image:alt" content="recordshelf logo">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@{{ profile_user.username }} on recordshelf">
-    <meta name="twitter:description" content="@{{ profile_user.username }}'s vinyl collection on recordshelf.">
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'profile_embed_image' profile_user.username %}?v=4">
+    <meta name="twitter:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">
+    <meta name="twitter:description" content="Check out @{{ profile_user.username }}'s vinyl collection on recordshelf.">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'profile_embed_image' profile_user.username %}?v=6">
 {% endblock %}
 
 {% block content %}
