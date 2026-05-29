@@ -1,4 +1,5 @@
 import posthog
+from config.analytics import posthog_distinct_id
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -128,9 +129,8 @@ def search_page(request):
         results = prepare_discogs_search_results(results)
         if sort_by == 'popularity':
             results = sort_results_by_site_collection(results)
-        user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
         with posthog.new_context():
-            posthog.identify_context(user_id)
+            posthog.identify_context(posthog_distinct_id(request))
             posthog.capture('record_searched', properties={
                 'result_count': len(results),
                 'sort_by': sort_by,
@@ -227,9 +227,8 @@ def album_detail(request, discogs_id):
             average_rating = round(aggregation['avg_rating'], 1)
             rating_count = record.collected_by.filter(rating__isnull=False).count()
         
-    user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
     with posthog.new_context():
-        posthog.identify_context(user_id)
+        posthog.identify_context(posthog_distinct_id(request))
         posthog.capture('album_viewed', properties={
             'discogs_id': discogs_id,
             'in_collection': in_collection,

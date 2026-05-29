@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 
 import posthog
 import requests
+from config.analytics import posthog_distinct_id
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps, UnidentifiedImageError
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -300,9 +301,8 @@ def support_contact(request):
             except (requests.RequestException, ValueError):
                 messages.error(request, "Your message could not be sent. Please try again later.")
             else:
-                user_id = str(request.user.id) if request.user.is_authenticated else 'anonymous'
                 with posthog.new_context():
-                    posthog.identify_context(user_id)
+                    posthog.identify_context(posthog_distinct_id(request))
                     posthog.capture('support_message_sent', properties={
                         'topic': form.cleaned_data.get('topic', ''),
                     })

@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.http import HttpResponse
 from django.test import SimpleTestCase
 from django.test import TestCase
 from django.urls import reverse
@@ -94,3 +95,61 @@ class AddRecordRedirectTests(TestCase):
         )
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertIn("Added Absolutely to your collection!", messages)
+
+
+class AlbumDetailAnalyticsTests(TestCase):
+    album_data = {
+        "title": "Absolutely",
+        "artists": [{"name": "Dijon"}],
+        "images": [],
+    }
+
+    @patch("collection.views.render", return_value=HttpResponse("ok"))
+    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_anonymous_album_view_uses_session_distinct_id(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+        mock_render,
+    ):
+        mock_fetch_discogs_master.return_value = self.album_data
+
+        response = self.client.get(reverse("album_detail", args=[123]))
+
+        self.assertEqual(response.status_code, 200)
+        distinct_id = mock_posthog.identify_context.call_args.args[0]
+        self.assertTrue(distinct_id.startswith("anon:"))
+        self.assertNotEqual(distinct_id, "anonymous")
+        self.assertEqual(distinct_id, f"anon:{self.client.session.session_key}")
+        mock_posthog.capture.assert_called_once_with("album_viewed", properties={
+            "discogs_id": 123,
+            "in_collection": False,
+            "in_wishlist": False,
+        })
+
+    @patch("collection.views.render", return_value=HttpResponse("ok"))
+    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_authenticated_album_view_uses_user_distinct_id(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+        mock_render,
+    ):
+        user = get_user_model().objects.create_user(
+            username="collector",
+            email="collector@example.com",
+            password="password123",
+        )
+        self.client.force_login(user)
+        mock_fetch_discogs_master.return_value = self.album_data
+
+        response = self.client.get(reverse("album_detail", args=[123]))
+
+        self.assertEqual(response.status_code, 200)
+        mock_posthog.identify_context.assert_called_once_with(str(user.id))
