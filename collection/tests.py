@@ -61,6 +61,31 @@ class ArtistDetailCleanupTests(TestCase):
         self.assertNotContains(response, "EDEN (86)")
 
 
+class AlbumDetailCleanupTests(TestCase):
+    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_album_detail_cleans_discogs_artist_suffixes(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+    ):
+        mock_fetch_discogs_master.return_value = {
+            "title": "Charm",
+            "year": 2024,
+            "artists": [{"id": "123", "name": "Clairo (2)"}],
+            "images": [],
+        }
+
+        response = self.client.get(reverse("album_detail", args=[456]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Clairo")
+        self.assertNotContains(response, "Clairo (2)")
+        mock_get_spotify_album_id.assert_called_once_with("Charm", "Clairo")
+
+
 class AddRecordRedirectTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(

@@ -192,6 +192,12 @@ def album_detail(request, discogs_id):
         messages.error(request, "Could not retrieve album details from Discogs.")
         return redirect('search')
 
+    album_artists = album_data.get('artists') or []
+    for artist in album_artists:
+        cleaned_name = clean_artist_name(artist.get('name', ''))
+        if cleaned_name:
+            artist['name'] = cleaned_name
+
     # 1. Initialize default state for guest users
     in_collection = False
     in_wishlist = False
