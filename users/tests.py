@@ -214,6 +214,63 @@ class ToggleFollowRedirectTests(TestCase):
         )
 
 
+class UserListFollowerCountTests(TestCase):
+    def setUp(self):
+        self.profile_user = CustomUser.objects.create_user(
+            username="profile",
+            email="profile@example.com",
+            password="password123",
+        )
+        self.alice = CustomUser.objects.create_user(
+            username="alice",
+            email="alice@example.com",
+            password="password123",
+        )
+        self.bob = CustomUser.objects.create_user(
+            username="bob",
+            email="bob@example.com",
+            password="password123",
+        )
+        self.fan_one = CustomUser.objects.create_user(
+            username="fanone",
+            email="fanone@example.com",
+            password="password123",
+        )
+        self.fan_two = CustomUser.objects.create_user(
+            username="fantwo",
+            email="fantwo@example.com",
+            password="password123",
+        )
+        self.fan_three = CustomUser.objects.create_user(
+            username="fanthree",
+            email="fanthree@example.com",
+            password="password123",
+        )
+
+        self.alice.following.add(self.profile_user)
+        self.bob.following.add(self.profile_user)
+        self.profile_user.following.add(self.alice, self.bob)
+        self.fan_one.following.add(self.alice)
+        self.fan_two.following.add(self.alice)
+        self.fan_three.following.add(self.bob)
+
+    def test_followers_list_shows_each_users_actual_follower_count(self):
+        response = self.client.get(reverse("followers_list", args=[self.profile_user.username]))
+
+        self.assertContains(response, "@alice")
+        self.assertContains(response, "3 followers")
+        self.assertContains(response, "@bob")
+        self.assertContains(response, "2 followers")
+
+    def test_following_list_shows_each_users_actual_follower_count(self):
+        response = self.client.get(reverse("following_list", args=[self.profile_user.username]))
+
+        self.assertContains(response, "@alice")
+        self.assertContains(response, "3 followers")
+        self.assertContains(response, "@bob")
+        self.assertContains(response, "2 followers")
+
+
 class LinkEmbedTests(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(

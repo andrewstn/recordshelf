@@ -893,7 +893,7 @@ def user_directory(request):
     
     # Base query: Annotate every user with their follower count
     users = User.objects.annotate(
-        follower_count=Count('followers')
+        follower_count=Count('followers', distinct=True)
     ).select_related('favorite_record', 'favorite_record__artist')
     
     # Exclude the current logged-in user FIRST (before any slicing)
@@ -921,8 +921,10 @@ def followers_list(request, username):
     profile_user = get_object_or_404(User, username=username)
     
     # Grab the followers and annotate them with their own follower counts
-    users = profile_user.followers.annotate(
-        follower_count=Count('followers')
+    users = User.objects.filter(
+        id__in=profile_user.followers.values_list('id', flat=True)
+    ).annotate(
+        follower_count=Count('followers', distinct=True)
     ).select_related('favorite_record', 'favorite_record__artist')
     request_user_following_ids = []
     if request.user.is_authenticated:
@@ -940,8 +942,10 @@ def following_list(request, username):
     profile_user = get_object_or_404(User, username=username)
     
     # Grab the users they are following
-    users = profile_user.following.annotate(
-        follower_count=Count('followers')
+    users = User.objects.filter(
+        id__in=profile_user.following.values_list('id', flat=True)
+    ).annotate(
+        follower_count=Count('followers', distinct=True)
     ).select_related('favorite_record', 'favorite_record__artist')
     request_user_following_ids = []
     if request.user.is_authenticated:
