@@ -91,7 +91,7 @@ class VerifiedLoginView(LoginView):
         if is_first_login and establish_recordshelf_mutual_follow(user):
             messages.info(
                 self.request,
-                "You're now following @recordshelf for featured collections, updates, and community picks.",
+                "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
             )
         return response
 

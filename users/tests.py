@@ -193,7 +193,7 @@ class VerifiedLoginViewTests(TestCase):
         self.assertTrue(self.recordshelf.following.filter(pk=self.user.pk).exists())
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertIn(
-            "You're now following @recordshelf for featured collections, updates, and community picks.",
+            "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
             messages,
         )
 
@@ -211,7 +211,7 @@ class VerifiedLoginViewTests(TestCase):
         self.assertFalse(self.recordshelf.following.filter(pk=self.user.pk).exists())
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertNotIn(
-            "You're now following @recordshelf for featured collections, updates, and community picks.",
+            "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
             messages,
         )
 
