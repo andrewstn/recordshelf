@@ -56,6 +56,11 @@ class CustomUser(AbstractUser):
     email_verified = models.BooleanField(default=True)
     email_verified_at = models.DateTimeField(null=True, blank=True)
 
+    onboarding_started_at = models.DateTimeField(null=True, blank=True)
+    onboarding_viewed_at = models.DateTimeField(null=True, blank=True)
+    onboarding_dismissed_at = models.DateTimeField(null=True, blank=True)
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
+
     # Track when the username was last changed
     last_username_change = models.DateTimeField(null=True, blank=True)
 

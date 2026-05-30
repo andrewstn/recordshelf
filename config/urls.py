@@ -28,7 +28,8 @@ urlpatterns = [
     path('share.png', user_views.site_share_image, name='site_share_image'),
     path('accounts/', include('users.urls')),
     path('collection/', include('collection.urls')),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('getting-started/', user_views.getting_started, name='getting_started'),
+    path('', user_views.home, name='home'),
     path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms'),
     path('support/', user_views.support_contact, name='support'),
 ]

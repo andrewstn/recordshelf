@@ -19,6 +19,7 @@ from django.contrib import messages
 from .forms import ProfileEditForm
 from django.contrib.auth import logout
 from .models import Activity
+from .onboarding import capture_onboarding_event, get_onboarding_checklist, onboarding_step_destination
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
@@ -80,6 +81,12 @@ class VerifiedLoginView(LoginView):
     def form_valid(self, form):
         user = form.get_user()
         is_first_login = user.last_login is None
+        self.redirect_to_getting_started = (
+            is_first_login
+            and user.onboarding_started_at
+            and not user.onboarding_dismissed_at
+            and not user.onboarding_completed_at
+        )
         response = super().form_valid(form)
         if is_first_login and establish_recordshelf_mutual_follow(user):
             messages.info(
@@ -87,6 +94,14 @@ class VerifiedLoginView(LoginView):
                 "You're now following @recordshelf for featured collections, updates, and community picks.",
             )
         return response
+
+    def get_success_url(self):
+        redirect_url = self.get_redirect_url()
+        if redirect_url:
+            return redirect_url
+        if getattr(self, 'redirect_to_getting_started', False):
+            return reverse('getting_started')
+        return super().get_success_url()
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -97,6 +112,7 @@ class SignUpView(CreateView):
         user.is_active = False
         user.email_verified = False
         user.email_verified_at = None
+        user.onboarding_started_at = timezone.now()
         user.save()
         try:
             send_email_verification(self.request, user)
@@ -112,6 +128,10 @@ class SignUpView(CreateView):
         return redirect('email_verification_sent')
 
 User = get_user_model()
+
+
+def home(request):
+    return render(request, 'home.html')
 
 class ResendPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'
@@ -216,6 +236,7 @@ def verify_email(request, uidb64, token):
     elif user and email_verification_token.check_token(user, token):
         user.mark_email_verified()
         messages.success(request, "Email verified. You can log in now.")
+        return redirect(f"{reverse('login')}?next={reverse('getting_started')}")
     else:
         messages.error(request, "That verification link is invalid or expired. Please request a new one.")
     return redirect('login')
@@ -826,6 +847,28 @@ def edit_profile(request):
         'password_form': password_form,
         'delete_account_form': delete_account_form,
     })
+
+
+@login_required
+def getting_started(request):
+    onboarding_checklist = get_onboarding_checklist(request.user)
+    if not onboarding_checklist:
+        return redirect('profile', username=request.user.username)
+    return render(request, 'getting_started.html', {
+        'onboarding_checklist': onboarding_checklist,
+    })
+
+
+@login_required
+@require_GET
+def onboarding_step(request, step_key):
+    destination = onboarding_step_destination(request.user, step_key)
+    if not destination:
+        return redirect('home')
+
+    capture_onboarding_event(request.user, 'onboarding_step_clicked', step=step_key)
+    return redirect(destination)
+
 
 @login_required
 @require_POST

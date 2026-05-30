@@ -28,6 +28,7 @@ urlpatterns = [
     path('delete-account/<uidb64>/<token>/', views.confirm_delete_account, name='confirm_delete_account'),
     
     path('edit/', views.edit_profile, name='edit_profile'),
+    path('onboarding/step/<slug:step_key>/', views.onboarding_step, name='onboarding_step'),
     path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
     path('feed/', views.social_feed, name='feed'),
     path('community/', views.user_directory, name='user_directory'),

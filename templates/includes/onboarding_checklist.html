@@ -1,0 +1,27 @@
+{% if onboarding_checklist %}
+<section class="max-w-5xl mx-auto mb-8 rounded-2xl border border-emerald-500/20 bg-zinc-900/80 p-4 md:p-5 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
+    <div>
+        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">Getting Started</p>
+        <h2 class="mt-1 text-lg font-black text-white">Build your first shelf</h2>
+        <p class="mt-1 text-sm text-zinc-400">{{ onboarding_checklist.completed_count }} of {{ onboarding_checklist.total_count }} steps complete</p>
+    </div>
+
+    <div class="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+        <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: {{ onboarding_checklist.percent_complete }}%"></div>
+    </div>
+
+    <div class="mt-4 grid gap-2 md:grid-cols-2">
+        {% for step in onboarding_checklist.steps %}
+        <a href="{{ step.cta_url }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {% if step.completed %}border-emerald-900/40 bg-emerald-950/20{% else %}border-zinc-800 bg-zinc-950/60 hover:border-emerald-500/30 hover:bg-zinc-950{% endif %}">
+            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-black {% if step.completed %}border-emerald-500/40 bg-emerald-500/15 text-emerald-400{% else %}border-zinc-700 text-zinc-600 group-hover:border-emerald-500/40 group-hover:text-emerald-400{% endif %}">
+                {% if step.completed %}&#10003;{% else %}{{ forloop.counter }}{% endif %}
+            </span>
+            <span class="min-w-0">
+                <span class="block text-xs font-bold {% if step.completed %}text-emerald-300{% else %}text-zinc-200 group-hover:text-white{% endif %}">{{ step.title }}</span>
+                <span class="mt-0.5 block text-[11px] leading-snug text-zinc-500">{{ step.description }}</span>
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

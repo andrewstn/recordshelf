@@ -5,10 +5,13 @@ from django.contrib.messages import get_messages
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from collection.models import Artist, CollectionItem, Record
 from .views import send_support_email_via_resend
 from .models import CustomUser
+from .tokens import email_verification_token
 
 
 class ResendSupportEmailTests(SimpleTestCase):
@@ -171,6 +174,17 @@ class VerifiedLoginViewTests(TestCase):
             messages,
         )
 
+    def test_first_login_with_incomplete_onboarding_redirects_to_getting_started(self):
+        self.user.onboarding_started_at = timezone.now()
+        self.user.save(update_fields=["onboarding_started_at"])
+
+        response = self.client.post(reverse("login"), {
+            "username": "newcollector",
+            "password": "password123",
+        })
+
+        self.assertRedirects(response, reverse("getting_started"), fetch_redirect_response=False)
+
 
 class ToggleFollowRedirectTests(TestCase):
     def setUp(self):
@@ -329,3 +343,132 @@ class LinkEmbedTests(TestCase):
         self.assertEqual(profile_response.status_code, 200)
         self.assertEqual(profile_response["Content-Type"], "image/png")
         self.assertTrue(profile_response.content.startswith(b"\x89PNG"))
+
+
+class OnboardingTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="starter",
+            email="starter@example.com",
+            password="password123",
+            onboarding_started_at=timezone.now(),
+        )
+        self.client.force_login(self.user)
+
+    @patch("users.onboarding.capture_onboarding_event")
+    def test_new_user_sees_live_checklist_on_getting_started_page(self, mock_capture):
+        response = self.client.get(reverse("getting_started"))
+
+        self.assertContains(response, "Build your first shelf")
+        self.assertContains(response, "0 of 6 steps complete")
+        self.assertContains(response, "Upload a profile picture")
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.onboarding_viewed_at)
+        mock_capture.assert_called_once_with(self.user, "getting_started_viewed")
+
+    def test_landing_page_stays_clean_for_authenticated_user(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertNotContains(response, "Build your first shelf")
+        self.assertContains(response, "Getting Started 0/6")
+
+    def test_anonymous_user_does_not_see_checklist_or_nav_link(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("home"))
+
+        self.assertNotContains(response, "Build your first shelf")
+        self.assertNotContains(response, "Getting Started")
+
+    def test_getting_started_requires_login(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("getting_started"))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('getting_started')}",
+            fetch_redirect_response=False,
+        )
+
+    @patch("users.onboarding.capture_onboarding_event")
+    def test_completed_steps_are_computed_from_existing_data(self, mock_capture):
+        self.user.tagline = "Always digging."
+        self.user.save(update_fields=["tagline"])
+
+        response = self.client.get(reverse("getting_started"))
+
+        checklist = response.context["onboarding_checklist"]
+        statuses = {step["key"]: step["completed"] for step in checklist["steps"]}
+        self.assertTrue(statuses["tagline"])
+        self.assertFalse(statuses["collection"])
+        self.assertContains(response, "1 of 6 steps complete")
+
+    @patch("users.onboarding.capture_onboarding_event")
+    def test_all_complete_user_is_marked_complete_and_checklist_hides(self, mock_capture):
+        artist = Artist.objects.create(name="Starter Artist")
+        record = Record.objects.create(title="Starter Record", artist=artist, discogs_id="101")
+        CollectionItem.objects.create(user=self.user, record=record, rating=5)
+        self.user.profile_picture = "profiles/starter.webp"
+        self.user.tagline = "Always digging."
+        self.user.favorite_record = record
+        self.user.save(update_fields=["profile_picture", "tagline", "favorite_record"])
+        self.user.shelf.add(record)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertNotContains(response, "Build your first shelf")
+        self.user.refresh_from_db()
+        self.assertIsNotNone(self.user.onboarding_completed_at)
+        mock_capture.assert_called_once_with(self.user, "onboarding_completed")
+        self.assertNotContains(response, "Getting Started")
+
+    @patch("users.views.capture_onboarding_event")
+    def test_step_click_is_tracked_and_redirects(self, mock_capture):
+        response = self.client.get(reverse("onboarding_step", args=["profile-picture"]))
+
+        self.assertRedirects(response, reverse("edit_profile"), fetch_redirect_response=False)
+        mock_capture.assert_called_once_with(
+            self.user,
+            "onboarding_step_clicked",
+            step="profile-picture",
+        )
+
+
+class SignupOnboardingTests(TestCase):
+    @patch("users.views.posthog")
+    @patch("users.views.send_email_verification")
+    def test_signup_starts_onboarding(self, mock_send_email_verification, mock_posthog):
+        response = self.client.post(reverse("signup"), {
+            "username": "brandnew",
+            "email": "brandnew@example.com",
+            "password1": "valid-password-123",
+            "password2": "valid-password-123",
+        })
+
+        self.assertRedirects(response, reverse("email_verification_sent"))
+        user = CustomUser.objects.get(username="brandnew")
+        self.assertIsNotNone(user.onboarding_started_at)
+
+    def test_successful_verification_sends_user_to_login_then_getting_started(self):
+        user = CustomUser.objects.create_user(
+            username="pending",
+            email="pending@example.com",
+            password="password123",
+            is_active=False,
+            email_verified=False,
+            onboarding_started_at=timezone.now(),
+        )
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = email_verification_token.make_token(user)
+
+        response = self.client.get(reverse("verify_email", args=[uid, token]))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('getting_started')}",
+            fetch_redirect_response=False,
+        )
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.email_verified)
