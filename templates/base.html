@@ -31,21 +31,21 @@
 <body class="bg-zinc-950 text-zinc-50 font-sans min-h-screen flex flex-col">
     
     <nav class="bg-zinc-900 border-b border-zinc-800 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-        <a href="/" class="flex items-center gap-2 text-2xl font-black tracking-tighter text-white hover:text-emerald-400 transition group">
+        <a href="/" {% if active_nav_section == 'home' %}aria-current="page"{% endif %} class="flex items-center gap-2 text-2xl font-black tracking-tighter hover:text-emerald-400 transition group {% if active_nav_section == 'home' %}text-emerald-400{% else %}text-white{% endif %}">
             <svg class="w-6 h-6 text-emerald-500 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
             recordshelf
         </a>
         <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-3 md:gap-y-0 md:gap-x-6 text-sm font-medium">
-            <a href="{% url 'search' %}" class="text-zinc-400 hover:text-white transition-colors">Search</a>
-            <a href="{% url 'user_directory' %}" class="text-zinc-400 hover:text-white transition-colors">Community</a>
-            <a href="{% url 'feed' %}" class="text-zinc-400 hover:text-white transition-colors">Activity Feed</a>
+            <a href="{% url 'search' %}" {% if active_nav_section == 'search' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'search' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Search</a>
+            <a href="{% url 'user_directory' %}" {% if active_nav_section == 'community' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'community' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Community</a>
+            <a href="{% url 'feed' %}" {% if active_nav_section == 'feed' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'feed' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Activity Feed</a>
             
             {% if user.is_authenticated %}
-                <a href="{% url 'profile' user.username %}" class="text-zinc-400 hover:text-white transition-colors">My Profile</a>
+                <a href="{% url 'profile' user.username %}" {% if active_nav_section == 'profile' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'profile' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">My Profile</a>
                 {% if onboarding_nav_progress %}
-                    <a href="{% url 'getting_started' %}" class="text-emerald-400 hover:text-emerald-300 transition-colors">Getting Started {{ onboarding_nav_progress.completed_count }}/{{ onboarding_nav_progress.total_count }}</a>
+                    <a href="{% url 'getting_started' %}" {% if active_nav_section == 'getting_started' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'getting_started' %}border-emerald-400 text-emerald-300{% else %}border-transparent text-emerald-400 hover:text-emerald-300{% endif %}">Getting Started {{ onboarding_nav_progress.completed_count }}/{{ onboarding_nav_progress.total_count }}</a>
                 {% endif %}
                 
                 <form method="post" action="{% url 'logout' %}" class="inline m-0 p-0">
@@ -87,8 +87,8 @@
         <p class="text-sm text-zinc-400">recordshelf is an open source passion project.</p>
         <div class="flex space-x-4 text-sm">
             <a href="https://github.com/andrewstn/recordshelf" class="text-zinc-500 hover:text-white transition-colors">GitHub</a>
-            <a href="{% url 'terms' %}" class="text-zinc-500 hover:text-white transition-colors">Terms</a>
-            <a href="{% url 'support' %}" class="text-zinc-500 hover:text-white transition-colors">Help</a>
+            <a href="{% url 'terms' %}" {% if active_nav_section == 'terms' %}aria-current="page"{% endif %} class="{% if active_nav_section == 'terms' %}text-emerald-400{% else %}text-zinc-500 hover:text-white{% endif %} transition-colors">Terms</a>
+            <a href="{% url 'support' %}" {% if active_nav_section == 'support' %}aria-current="page"{% endif %} class="{% if active_nav_section == 'support' %}text-emerald-400{% else %}text-zinc-500 hover:text-white{% endif %} transition-colors">Help</a>
         </div>
     </footer>
     

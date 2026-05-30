@@ -1,9 +1,10 @@
 from unittest.mock import Mock, patch
 
 from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
-from django.test import SimpleTestCase, TestCase, override_settings
-from django.urls import reverse
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.urls import resolve, reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -12,6 +13,7 @@ from collection.models import Artist, CollectionItem, Record
 from .views import send_support_email_via_resend
 from .models import CustomUser
 from .tokens import email_verification_token
+from .context_processors import onboarding_progress
 
 
 class ResendSupportEmailTests(SimpleTestCase):
@@ -62,6 +64,45 @@ class ResendSupportEmailTests(SimpleTestCase):
                 body="Hello support.",
                 reply_to="sender@example.com",
             )
+
+
+class NavbarActiveStateTests(SimpleTestCase):
+    def active_section_for(self, path):
+        request = RequestFactory().get(path)
+        request.user = AnonymousUser()
+        request.resolver_match = resolve(path)
+        return onboarding_progress(request)["active_nav_section"]
+
+    def test_top_level_routes_map_to_nav_sections(self):
+        self.assertEqual(self.active_section_for("/"), "home")
+        self.assertEqual(self.active_section_for("/collection/search/"), "search")
+        self.assertEqual(self.active_section_for("/accounts/community/"), "community")
+        self.assertEqual(self.active_section_for("/accounts/feed/"), "feed")
+        self.assertEqual(self.active_section_for("/getting-started/"), "getting_started")
+        self.assertEqual(self.active_section_for("/support/"), "support")
+
+    def test_nested_routes_keep_parent_nav_section_active(self):
+        self.assertEqual(self.active_section_for("/collection/album/123/"), "search")
+        self.assertEqual(self.active_section_for("/collection/artist/123/"), "search")
+        self.assertEqual(self.active_section_for("/collection/item/123/edit/"), "profile")
+        self.assertEqual(self.active_section_for("/accounts/edit/"), "profile")
+        self.assertEqual(self.active_section_for("/accounts/collector/"), "profile")
+
+
+class NavbarRenderedStateTests(TestCase):
+    def test_home_logo_is_marked_active_on_landing_page(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, '<a href="/" aria-current="page"')
+
+    def test_search_link_is_marked_active_on_search_page(self):
+        response = self.client.get(reverse("search"))
+
+        self.assertContains(
+            response,
+            f'<a href="{reverse("search")}" aria-current="page"',
+        )
+        self.assertContains(response, "border-emerald-400 text-emerald-400")
 
 
 class ResendEmailBackendTests(SimpleTestCase):
