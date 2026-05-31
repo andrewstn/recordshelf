@@ -122,6 +122,22 @@ class AddRecordRedirectTests(TestCase):
         self.assertIn("Added Absolutely to your collection!", messages)
 
 
+class SearchPageQueryTests(TestCase):
+    def test_popular_records_load_artists_in_the_initial_query(self):
+        for index in range(3):
+            artist = Artist.objects.create(name=f"Artist {index}", discogs_id=str(index))
+            Record.objects.create(
+                title=f"Album {index}",
+                artist=artist,
+                discogs_id=str(index),
+            )
+
+        with self.assertNumQueries(1):
+            response = self.client.get(reverse("search"))
+
+        self.assertEqual(response.status_code, 200)
+
+
 class AlbumDetailAnalyticsTests(TestCase):
     album_data = {
         "title": "Absolutely",

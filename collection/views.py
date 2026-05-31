@@ -137,7 +137,7 @@ def search_page(request):
             })
     else:
         # If no query, grab the top 12 most collected records from our local DB
-        popular_records = Record.objects.annotate(
+        popular_records = Record.objects.select_related('artist').annotate(
             collection_count=Count('collected_by')
         ).order_by('-collection_count')[:12]
         
