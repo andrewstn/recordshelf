@@ -119,7 +119,7 @@ class AddRecordRedirectTests(TestCase):
             fetch_redirect_response=False,
         )
         messages = [str(message) for message in get_messages(response.wsgi_request)]
-        self.assertIn("Added Absolutely to your collection!", messages)
+        self.assertIn("Added Absolutely to your crate!", messages)
 
 
 class SearchPageQueryTests(TestCase):

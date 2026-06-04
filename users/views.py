@@ -91,7 +91,7 @@ class VerifiedLoginView(LoginView):
         if is_first_login and establish_recordshelf_mutual_follow(user):
             messages.info(
                 self.request,
-                "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
+                "You're now following @recordshelf for featured shelves, community picks, and records worth spinning. To begin, check out the 'Getting Started' page.",
             )
         return response
 
@@ -192,7 +192,7 @@ def send_account_deletion_email(request, user):
         "Open the link below, then use the confirmation button to delete your account:",
         deletion_url,
         "",
-        "This will permanently remove your profile, collection, shelf, wishlist, follows, and activity.",
+        "This will permanently remove your profile, crate, shelf, wantlist, follows, and activity.",
         "If you did not request this, you can ignore this email and your account will remain active.",
     ])
     EmailMessage(

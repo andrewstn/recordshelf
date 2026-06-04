@@ -74,11 +74,11 @@ def get_onboarding_checklist(user):
         capture_onboarding_event(user, 'getting_started_viewed')
 
     step_content = [
-        ('profile-picture', 'Upload a profile picture', 'Make your shelf feel like yours.'),
+        ('profile-picture', 'Customize your profile', 'Add a photo so your shelf feels like yours.'),
         ('tagline', 'Add a tagline', 'Share a quick note about your taste.'),
-        ('collection', 'Add your first record', 'Search the catalog and start your collection.'),
-        ('shelf', 'Place a record on your shelf', 'Choose a favorite to display up top.'),
-        ('current-spin', "Set what's currently spinning", 'Let collectors know what is on your turntable.'),
+        ('collection', 'Add your first record', 'Search the catalog and start your crate.'),
+        ('shelf', 'Place a record on your shelf', 'Choose up to six records to feature publicly.'),
+        ('current-spin', "Set what's currently spinning", "Show collectors what's on your turntable right now."),
         ('rating', 'Rate a record', 'Add your first 1-5 star rating.'),
     ]
     steps = [

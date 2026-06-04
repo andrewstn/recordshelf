@@ -193,7 +193,7 @@ class VerifiedLoginViewTests(TestCase):
         self.assertTrue(self.recordshelf.following.filter(pk=self.user.pk).exists())
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertIn(
-            "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
+            "You're now following @recordshelf for featured shelves, community picks, and records worth spinning. To begin, check out the 'Getting Started' page.",
             messages,
         )
 
@@ -211,7 +211,7 @@ class VerifiedLoginViewTests(TestCase):
         self.assertFalse(self.recordshelf.following.filter(pk=self.user.pk).exists())
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertNotIn(
-            "You're now following @recordshelf for featured collections, updates, and community picks. To begin, check out the 'Getting Started' page.",
+            "You're now following @recordshelf for featured shelves, community picks, and records worth spinning. To begin, check out the 'Getting Started' page.",
             messages,
         )
 
@@ -400,9 +400,9 @@ class OnboardingTests(TestCase):
     def test_new_user_sees_live_checklist_on_getting_started_page(self, mock_capture):
         response = self.client.get(reverse("getting_started"))
 
-        self.assertContains(response, "Build your first shelf")
+        self.assertContains(response, "Set up your shelf")
         self.assertContains(response, "0 of 6 steps complete")
-        self.assertContains(response, "Upload a profile picture")
+        self.assertContains(response, "Customize your profile")
         self.user.refresh_from_db()
         self.assertIsNotNone(self.user.onboarding_viewed_at)
         mock_capture.assert_called_once_with(self.user, "getting_started_viewed")
@@ -410,7 +410,7 @@ class OnboardingTests(TestCase):
     def test_landing_page_stays_clean_for_authenticated_user(self):
         response = self.client.get(reverse("home"))
 
-        self.assertNotContains(response, "Build your first shelf")
+        self.assertNotContains(response, "Set up your shelf")
         self.assertContains(response, "Getting Started 0/6")
 
     def test_anonymous_user_does_not_see_checklist_or_nav_link(self):
@@ -418,7 +418,7 @@ class OnboardingTests(TestCase):
 
         response = self.client.get(reverse("home"))
 
-        self.assertNotContains(response, "Build your first shelf")
+        self.assertNotContains(response, "Set up your shelf")
         self.assertNotContains(response, "Getting Started")
 
     def test_getting_started_requires_login(self):
@@ -458,7 +458,7 @@ class OnboardingTests(TestCase):
 
         response = self.client.get(reverse("home"))
 
-        self.assertNotContains(response, "Build your first shelf")
+        self.assertNotContains(response, "Set up your shelf")
         self.user.refresh_from_db()
         self.assertIsNotNone(self.user.onboarding_completed_at)
         mock_capture.assert_called_once_with(self.user, "onboarding_completed")

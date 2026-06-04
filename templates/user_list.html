@@ -63,9 +63,9 @@
             </h1>
             <p class="text-zinc-400 mt-2">
                 {% if list_type == 'Followers' %}
-                    Users who follow <span class="text-white font-bold">@{{ profile_user.username }}</span>.
+                    Collectors who follow <span class="text-white font-bold">@{{ profile_user.username }}</span>.
                 {% else %}
-                    Users that <span class="text-white font-bold">@{{ profile_user.username }}</span> is following.
+                    Collectors <span class="text-white font-bold">@{{ profile_user.username }}</span> is following.
                 {% endif %}
             </p>
         </div>
@@ -151,9 +151,9 @@
         <div class="col-span-full py-16 text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
             <p class="text-zinc-500">
                 {% if list_type == 'Followers' %}
-                    No one is following @{{ profile_user.username }} yet.
+                    No collectors here yet. Follow a few shelves to start discovering records.
                 {% else %}
-                    @{{ profile_user.username }} isn't following anyone yet.
+                    @{{ profile_user.username }} is not following any shelves yet.
                 {% endif %}
             </p>
         </div>
