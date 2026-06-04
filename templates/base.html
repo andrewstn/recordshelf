@@ -23,6 +23,9 @@
         <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}?v=6">
     {% endblock %}
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
@@ -31,7 +34,7 @@
 <body class="bg-zinc-950 text-zinc-50 font-sans min-h-screen flex flex-col">
     
     <nav class="bg-zinc-900 border-b border-zinc-800 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-        <a href="/" {% if active_nav_section == 'home' %}aria-current="page"{% endif %} class="flex items-center gap-2 text-2xl font-black tracking-tighter hover:text-emerald-400 transition group {% if active_nav_section == 'home' %}text-emerald-400{% else %}text-white{% endif %}">
+        <a href="/" {% if active_nav_section == 'home' %}aria-current="page"{% endif %} class="flex items-center gap-2 text-2xl font-display font-black tracking-tighter hover:text-emerald-400 transition group {% if active_nav_section == 'home' %}text-emerald-400{% else %}text-white{% endif %}">
             <svg class="w-6 h-6 text-emerald-500 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
