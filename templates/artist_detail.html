@@ -62,7 +62,7 @@
                                     {% if item.id|stringformat:"s" in user_collection_ids %}
                                         <button disabled class="mt-auto w-full bg-zinc-900/50 text-zinc-500 font-semibold py-2 rounded-md cursor-not-allowed border border-zinc-800 flex items-center justify-center gap-2 text-sm">
                                             <svg class="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            In Collection
+                                            In Crate
                                         </button>
                                     {% else %}
                                         <form method="POST" action="{% url 'add_record' %}" class="mt-auto">
@@ -70,7 +70,7 @@
                                             <input type="hidden" name="discogs_id" value="{{ item.id }}">
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="w-full bg-zinc-800 hover:bg-brand hover:text-zinc-950 text-white font-semibold py-2 rounded-md transition cursor-pointer text-sm">
-                                                + Add to Collection
+                                                + Add to Crate
                                             </button>
                                         </form>
                                     {% endif %}

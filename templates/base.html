@@ -7,11 +7,11 @@
     
     <title>{% block title %}recordshelf{% endblock %}</title>
     {% block meta %}
-        <meta name="description" content="Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.">
+        <meta name="description" content="Build your crate, show off your shelf, and discover what other collectors are spinning.">
         <meta property="og:site_name" content="recordshelf">
         <meta property="og:type" content="website">
         <meta property="og:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">
-        <meta property="og:description" content="Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.">
+        <meta property="og:description" content="Build your crate, show off your shelf, and discover what other collectors are spinning.">
         <meta property="og:url" content="{{ request.build_absolute_uri }}">
         <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}?v=6">
         <meta property="og:image:width" content="1200">
@@ -19,10 +19,13 @@
         <meta property="og:image:alt" content="recordshelf logo">
         <meta name="twitter:card" content="summary">
         <meta name="twitter:title" content="recordshelf | Find records. Share shelves. Spin your favorites.">
-        <meta name="twitter:description" content="Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.">
+        <meta name="twitter:description" content="Build your crate, show off your shelf, and discover what other collectors are spinning.">
         <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% url 'site_share_image' %}?v=6">
     {% endblock %}
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
@@ -31,32 +34,34 @@
 <body class="bg-zinc-950 text-zinc-50 font-sans min-h-screen flex flex-col">
     
     <nav class="bg-zinc-900 border-b border-zinc-800 px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-        <a href="/" {% if active_nav_section == 'home' %}aria-current="page"{% endif %} class="flex items-center gap-2 text-2xl font-black tracking-tighter hover:text-emerald-400 transition group {% if active_nav_section == 'home' %}text-emerald-400{% else %}text-white{% endif %}">
+        <a href="/" {% if active_nav_section == 'home' %}aria-current="page"{% endif %} class="flex items-center gap-2 text-2xl font-display font-black tracking-tighter hover:text-emerald-400 transition group {% if active_nav_section == 'home' %}text-emerald-400{% else %}text-white{% endif %}">
             <svg class="w-6 h-6 text-emerald-500 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
             recordshelf
         </a>
         <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-3 md:gap-y-0 md:gap-x-6 text-sm font-medium">
-            <a href="{% url 'search' %}" {% if active_nav_section == 'search' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'search' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Search</a>
-            <a href="{% url 'user_directory' %}" {% if active_nav_section == 'community' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'community' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Community</a>
-            <a href="{% url 'feed' %}" {% if active_nav_section == 'feed' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'feed' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Activity Feed</a>
+            <a href="{% url 'search' %}" {% if active_nav_section == 'search' %}aria-current="page"{% endif %} class="inline-flex h-10 items-center border-b-2 leading-none transition-colors {% if active_nav_section == 'search' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Search</a>
+            <a href="{% url 'user_directory' %}" {% if active_nav_section == 'community' %}aria-current="page"{% endif %} class="inline-flex h-10 items-center border-b-2 leading-none transition-colors {% if active_nav_section == 'community' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Community</a>
+            <a href="{% url 'feed' %}" {% if active_nav_section == 'feed' %}aria-current="page"{% endif %} class="inline-flex h-10 items-center border-b-2 leading-none transition-colors {% if active_nav_section == 'feed' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">Activity Feed</a>
             
             {% if user.is_authenticated %}
-                <a href="{% url 'profile' user.username %}" {% if active_nav_section == 'profile' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'profile' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">My Profile</a>
+                <a href="{% url 'profile' user.username %}" {% if active_nav_section == 'profile' %}aria-current="page"{% endif %} class="inline-flex h-10 items-center border-b-2 leading-none transition-colors {% if active_nav_section == 'profile' %}border-emerald-400 text-emerald-400{% else %}border-transparent text-zinc-400 hover:text-white{% endif %}">My Profile</a>
                 {% if onboarding_nav_progress %}
-                    <a href="{% url 'getting_started' %}" {% if active_nav_section == 'getting_started' %}aria-current="page"{% endif %} class="pb-1 border-b transition-colors {% if active_nav_section == 'getting_started' %}border-emerald-400 text-emerald-300{% else %}border-transparent text-emerald-400 hover:text-emerald-300{% endif %}">Getting Started {{ onboarding_nav_progress.completed_count }}/{{ onboarding_nav_progress.total_count }}</a>
+                    <a href="{% url 'getting_started' %}" {% if active_nav_section == 'getting_started' %}aria-current="page"{% endif %} class="inline-flex h-10 items-center border-b-2 leading-none transition-colors {% if active_nav_section == 'getting_started' %}border-emerald-400 text-emerald-300{% else %}border-transparent text-emerald-400 hover:text-emerald-300{% endif %}">Getting Started {{ onboarding_nav_progress.completed_count }}/{{ onboarding_nav_progress.total_count }}</a>
                 {% endif %}
                 
                 <form method="post" action="{% url 'logout' %}" class="inline m-0 p-0">
                     {% csrf_token %}
-                    <button type="submit" class="text-zinc-400 hover:text-brand transition-colors cursor-pointer">
+                    <button type="submit" class="inline-flex h-10 items-center leading-none text-zinc-400 hover:text-brand transition-colors cursor-pointer">
                         Log Out
                     </button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}" class="text-zinc-400 hover:text-white transition-colors">Log In</a>
-                <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors">Sign Up</a>
+                <a href="{% url 'login' %}" class="inline-flex h-10 items-center border-b-2 border-transparent leading-none text-zinc-400 hover:text-white transition-colors">Log In</a>
+                <a href="{% url 'signup' %}" class="inline-flex h-10 items-center border-b-2 border-transparent bg-white text-zinc-950 px-4 rounded-lg leading-none hover:bg-zinc-200 transition-colors">
+                    <span class="relative -top-px">Sign Up</span>
+                </a>
             {% endif %}
         </div>
     </nav>

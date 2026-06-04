@@ -57,7 +57,7 @@
         
         {% if not request.user.is_authenticated %}
         <div class="mt-4 p-4 bg-zinc-900/50 border border-brand/30 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <p class="text-sm text-zinc-300">Want to start your own collection and follow friends?</p>
+            <p class="text-sm text-zinc-300">Want to build a shelf and follow other collectors?</p>
             <a href="{% url 'signup' %}" class="bg-brand text-zinc-950 px-5 py-2 rounded-md font-bold hover:bg-white transition text-sm whitespace-nowrap">Join the Club</a>
         </div>
         {% endif %}
@@ -66,7 +66,7 @@
     <!-- Activity Feed Loop -->
     <div class="space-y-6">
         {% for activity in activities %}
-            <div class="bg-zinc-900/50 border {% if activity.activity_type == 'FAVORITE' %}border-yellow-500/30{% else %}border-zinc-800{% endif %} p-5 rounded-xl flex items-start gap-4 transition hover:bg-zinc-800/80">
+            <div class="bg-zinc-900/50 border {% if activity.activity_type == 'FAVORITE' %}border-emerald-500/30{% else %}border-zinc-800{% endif %} p-5 rounded-xl flex items-start gap-4 transition hover:bg-zinc-800/80">
                 
                 <!-- User Avatar -->
                 <a href="{% url 'profile' activity.user.username %}" class="shrink-0">
@@ -87,13 +87,13 @@
                         <!-- Color code the action -->
                         <span class="text-zinc-500">
                             {% if activity.activity_type == 'FAVORITE' %}
-                                <span class="text-yellow-500">set a new Current Spin</span>
+                                <span class="text-emerald-400">set a new Current Spin</span>
                             {% elif activity.activity_type == 'SHELF' %}
                                 <span class="text-brand">shelved a record</span>
                             {% elif activity.activity_type == 'WISHLIST' %}
-                                <span class="text-purple-400">added to their wishlist</span>
+                                <span class="text-purple-400">added to their wantlist</span>
                             {% else %}
-                                added to their collection
+                                added to their crate
                             {% endif %}
                         </span>
                         
@@ -129,7 +129,7 @@
                 <!-- Action Icon -->
                <div class="ml-auto shrink-0 hidden sm:block">
                     {% if activity.activity_type == 'FAVORITE' %}
-                        <svg class="w-7 h-7 text-yellow-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                        <svg class="w-7 h-7 text-emerald-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
                     
                     {% elif activity.activity_type == 'SHELF' %}
                         <svg class="w-7 h-7 text-brand/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
@@ -145,11 +145,11 @@
         {% empty %}
             <!-- Empty State -->
             <div class="text-center bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl p-16">
-                <p class="text-zinc-500 mb-4 text-lg">It's quiet in here...</p>
+                <p class="text-zinc-500 mb-4 text-lg">No spins yet. Follow a few collectors or add records to your crate.</p>
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">Find Records to Add</a>
+                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Find Records</a>
                 {% else %}
-                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
+                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
                 {% endif %}
             </div>
         {% endfor %}

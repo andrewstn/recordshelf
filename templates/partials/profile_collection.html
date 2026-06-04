@@ -24,7 +24,7 @@
                         <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
                         <input type="hidden" name="next" value="{% url 'profile' profile_user.username %}?tab=wishlist">
                         <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-emerald-500 hover:bg-emerald-950/30 hover:text-emerald-400 border border-zinc-900/50 hover:border-emerald-900/50">
-                            Add to Collection
+                            Add to Crate
                         </button>
                     </form>
                     <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0 p-0 col-span-1">
@@ -40,7 +40,7 @@
         </div>
     </div>
     {% empty %}
-    <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">No records found.</p>
+    <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">Nothing on this wantlist yet. Add records you're hunting for.</p>
     {% endfor %}
 {% else %}
     {% for item in full_collection %}
@@ -102,7 +102,7 @@
                         Edit/Rate
                     </a>
                     
-                    <form method="POST" action="{% url 'remove_item' item.id %}" class="m-0 p-0 col-span-1" onsubmit="return confirm('Are you sure you want to remove this copy from your collection?');">
+                    <form method="POST" action="{% url 'remove_item' item.id %}" class="m-0 p-0 col-span-1" onsubmit="return confirm('Are you sure you want to remove this copy from your crate?');">
                         {% csrf_token %}
                         <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
                             Remove
@@ -113,7 +113,7 @@
         </div>
     </div>
     {% empty %}
-    <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">No items found.</p>
+    <p class="text-zinc-600 col-span-full py-16 text-center border border-dashed border-zinc-900 rounded-xl text-sm">Your crate is empty. Search for a record to start building your shelf.</p>
     {% endfor %}
 {% endif %}
 

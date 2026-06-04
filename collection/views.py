@@ -172,9 +172,9 @@ def add_record(request):
                 posthog.capture('record_added_to_collection', properties={
                     'discogs_id': discogs_id,
                 })
-            messages.success(request, f"Added {item.record.title} to your collection!")
+            messages.success(request, f"Added {item.record.title} to your crate!")
         else:
-            messages.info(request, f"{item.record.title} is already in your collection.")
+            messages.info(request, f"{item.record.title} is already in your crate.")
                 
     # Check if a 'next' url was provided
     next_url = request.POST.get('next') or request.GET.get('next')
@@ -297,7 +297,7 @@ def remove_item(request, item_id):
         posthog.capture('record_removed_from_collection', properties={
             'discogs_id': discogs_id,
         })
-    messages.success(request, f"Removed {item.record.title} from your collection.")
+    messages.success(request, f"Removed {item.record.title} from your crate.")
     return redirect('profile', username=request.user.username)
 
 @login_required
@@ -395,13 +395,13 @@ def toggle_wishlist(request):
     record = get_or_create_record(discogs_id)
 
     if not record:
-        messages.error(request, "Could not find this record to add to wishlist.")
+        messages.error(request, "Could not find this record to add to your wantlist.")
         return safe_redirect(request, request.META.get('HTTP_REFERER'), 'search')
 
     # Toggle the relationship
     if request.user.wishlist.filter(pk=record.pk).exists():
         request.user.wishlist.remove(record)
-        messages.success(request, f"Removed {record.title} from your wishlist.")
+        messages.success(request, f"Removed {record.title} from your wantlist.")
     else:
         request.user.wishlist.add(record)
         Activity.objects.create(user=request.user, activity_type='WISHLIST', record=record)
@@ -410,7 +410,7 @@ def toggle_wishlist(request):
             posthog.capture('record_added_to_wishlist', properties={
                 'discogs_id': discogs_id,
             })
-        messages.success(request, f"Added {record.title} to your wishlist!")
+        messages.success(request, f"Added {record.title} to your wantlist!")
             
     # Redirect back to exactly where they came from (the album page)
     return safe_redirect(request, request.META.get('HTTP_REFERER'), 'search')

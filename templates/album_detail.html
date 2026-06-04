@@ -29,7 +29,7 @@
                         {% if in_collection %}
                             <button disabled class="w-full bg-zinc-900/50 text-zinc-500 font-semibold py-3.5 rounded-lg cursor-not-allowed border border-zinc-800/50 flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                In Your Collection
+                                In Your Crate
                             </button>
                         {% else %}
                             <form method="POST" action="{% url 'add_record' %}" class="m-0">
@@ -37,7 +37,7 @@
                                 <input type="hidden" name="discogs_id" value="{{ discogs_id }}">
                                 <button type="submit" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold py-3.5 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                    Add to Collection
+                                    Add to Your Crate
                                 </button>
                             </form>
                         {% endif %}
@@ -56,9 +56,9 @@
                                     ★
                                 </span> 
                                 {% if in_wishlist %}
-                                    In Your Wishlist
+                                    In Your Wantlist
                                 {% else %}
-                                    Add to Wishlist
+                                    Add to Wantlist
                                 {% endif %}
                             </button>
                         </form>

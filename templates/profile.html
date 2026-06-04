@@ -315,7 +315,7 @@
             </div>
             {% else %}
             <div class="py-12 text-center text-zinc-500 font-medium relative z-10 text-sm tracking-wide">
-                No records mounted on the shelf.
+                Your shelf is waiting for its first spin. Add records from your crate to feature them here.
             </div>
             {% endif %}
         </div>
@@ -343,17 +343,17 @@
             <div class="flex gap-8">
                 <a href="?tab=collection" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-0.5
                     {% if current_tab != 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
-                    Entire Collection
+                    Your Crate
                 </a>
                 <a href="?tab=wishlist" class="text-sm font-bold uppercase tracking-wider transition-colors border-b-2 pb-3 relative top-0.5
                     {% if current_tab == 'wishlist' %}text-white border-emerald-500{% else %}text-zinc-600 border-transparent hover:text-zinc-400{% endif %}">
-                    Wishlist Space
+                    Wantlist
                 </a>
             </div>
             
             <div class="flex items-center gap-4 mb-2">
                 <div class="relative">
-                    <input type="text" id="collection-search" placeholder="Search albums or artists..." value="{{ search_query }}" class="bg-zinc-950 border border-zinc-900 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full px-3 py-1.5 placeholder-zinc-600 transition-colors">
+                    <input type="text" id="collection-search" placeholder="Search your crate..." value="{{ search_query }}" class="bg-zinc-950 border border-zinc-900 text-zinc-300 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full px-3 py-1.5 placeholder-zinc-600 transition-colors">
                 </div>
                 <div class="flex bg-zinc-950 rounded-lg p-1 border border-zinc-900">
                     <button onclick="setGrid()" id="btn-grid" class="px-3 py-1 rounded-md bg-zinc-900 text-white text-xs font-bold transition cursor-pointer">Grid</button>
@@ -456,7 +456,7 @@
                         </div>
                         {% else %}
                         <div class="rounded-2xl border border-zinc-800 bg-zinc-900/70 py-20 text-center text-sm font-bold text-zinc-500">
-                            No records mounted on the shelf.
+                            Shelf waiting for its first spin.
                         </div>
                         {% endif %}
                     </div>
@@ -1366,10 +1366,10 @@
 
             if (inWishlist) {
                 wishlistBtn.classList.replace('text-zinc-500', 'text-emerald-500');
-                wishlistBtn.innerHTML = '★ In Wishlist';
+                wishlistBtn.innerHTML = '★ In Wantlist';
             } else {
                 wishlistBtn.classList.replace('text-emerald-500', 'text-zinc-500');
-                wishlistBtn.innerHTML = '★ Wishlist';
+                wishlistBtn.innerHTML = '★ Wantlist';
             }
         }
 
@@ -1431,24 +1431,24 @@
                         Remove from Shelf
                     </button>
                 </form>
-                <form id="modal-remove-collection-form" method="POST" action="" class="m-0" onsubmit="return confirm('Are you sure you want to remove this from your entire collection?');">
+                <form id="modal-remove-collection-form" method="POST" action="" class="m-0" onsubmit="return confirm('Are you sure you want to remove this from your crate?');">
                     {% csrf_token %}
                     <button type="submit" class="w-full bg-zinc-950 border border-zinc-900/50 hover:bg-red-950/30 text-red-500 hover:border-red-900/50 text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
-                        Remove from Collection
+                        Remove from Crate
                     </button>
                 </form>
             </div>
 
             <div id="modal-visitor-actions" class="hidden grid-cols-2 gap-2">
                 <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 items-center justify-center text-xs font-bold py-3 rounded-lg">
-                    ✓ In Collection
+                    ✓ In Crate
                 </div>
                 <form id="modal-visitor-add-form" method="POST" action="{% url 'add_record' %}" class="m-0">
                     {% csrf_token %}
                     <input type="hidden" id="modal-visitor-discogs-id" name="discogs_id" value="">
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
-                        + Collection
+                        + Crate
                     </button>
                 </form>
                 <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0">
@@ -1456,7 +1456,7 @@
                     <input type="hidden" id="modal-visitor-wishlist-id" name="discogs_id" value="">
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button id="modal-visitor-wishlist-btn" type="submit" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
-                        ★ Wishlist
+                        ★ Wantlist
                     </button>
                 </form>
             </div>

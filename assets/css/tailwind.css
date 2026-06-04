@@ -5,5 +5,23 @@
 @source "../../users";
 
 @theme {
+    --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: "Space Grotesk", "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Space Grotesk", "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-weight-black: 700;
+    --tracking-tight: 0;
+    --tracking-tighter: 0;
     --color-brand: #10B981;
+}
+
+@layer base {
+    html,
+    body {
+        font-family: var(--font-sans);
+    }
+
+    :where(h1, h2, h3, h4, h5, h6) {
+        font-family: var(--font-heading);
+    }
 }
