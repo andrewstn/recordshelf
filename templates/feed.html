@@ -57,7 +57,7 @@
         
         {% if not request.user.is_authenticated %}
         <div class="mt-4 p-4 bg-zinc-900/50 border border-brand/30 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <p class="text-sm text-zinc-300">Want to build a crate and follow other collectors?</p>
+            <p class="text-sm text-zinc-300">Want to build a shelf and follow other collectors?</p>
             <a href="{% url 'signup' %}" class="bg-brand text-zinc-950 px-5 py-2 rounded-md font-bold hover:bg-white transition text-sm whitespace-nowrap">Join the Club</a>
         </div>
         {% endif %}
@@ -147,9 +147,9 @@
             <div class="text-center bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl p-16">
                 <p class="text-zinc-500 mb-4 text-lg">No spins yet. Follow a few collectors or add records to your crate.</p>
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">Find Records</a>
+                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Find Records</a>
                 {% else %}
-                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
+                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
                 {% endif %}
             </div>
         {% endfor %}
