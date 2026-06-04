@@ -356,12 +356,12 @@ class LinkEmbedTests(TestCase):
         )
         self.assertContains(
             response,
-            "Showcase your vinyl collection. A digital archive for vinyl record enthusiasts. Display your favorite records, discover new pressings, and connect with fellow collectors.",
+            "Build your crate, show off your shelf, and discover what other collectors are spinning.",
         )
         self.assertContains(response, '<meta property="og:image:height" content="1200">')
         self.assertContains(response, reverse("site_share_image"))
-        self.assertContains(response, '<meta name="twitter:card" content="summary">')
-
+        self.assertContains(response, '<meta name="twitter:card" content="summary">'
+)
     def test_profile_embed_meta_tags(self):
         response = self.client.get(reverse("profile", args=[self.user.username]))
 
