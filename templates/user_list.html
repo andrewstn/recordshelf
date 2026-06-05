@@ -130,11 +130,11 @@
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
                         {% if u.id in request_user_following_ids %}
-                            <button type="submit" class="w-full bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 py-2 rounded-lg font-bold transition text-sm cursor-pointer">
+                            <button type="submit" class="w-full bg-zinc-800 text-white hover:bg-red-900/50 hover:text-red-200 border border-zinc-700 hover:border-red-800 py-2 rounded-md font-bold transition text-sm cursor-pointer">
                                 Unfollow
                             </button>
                         {% else %}
-                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-2 rounded-lg font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm cursor-pointer">
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black py-2 rounded-md font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm cursor-pointer">
                                 Follow
                             </button>
                         {% endif %}

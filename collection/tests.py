@@ -91,7 +91,7 @@ class AlbumDetailCleanupTests(TestCase):
     @patch("collection.views.get_spotify_album_id")
     @patch("collection.views.fetch_discogs_master")
     @patch("collection.views.posthog")
-    def test_album_detail_can_use_manual_spotify_album_id(
+    def test_album_detail_can_use_known_spotify_album_override(
         self,
         mock_posthog,
         mock_fetch_discogs_master,
@@ -104,13 +104,35 @@ class AlbumDetailCleanupTests(TestCase):
             "images": [],
         }
 
-        response = self.client.get(
-            reverse("album_detail", args=[1046042]),
-            {"spotify_album_id": "3mH6qwIy9crq0I9YQbOuDf"},
-        )
+        response = self.client.get(reverse("album_detail", args=[1046042]))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "open.spotify.com/embed/album/3mH6qwIy9crq0I9YQbOuDf")
+        mock_get_spotify_album_id.assert_not_called()
+
+    @patch("collection.views.get_spotify_album_id")
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_album_detail_can_use_manual_spotify_album_id(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+    ):
+        mock_fetch_discogs_master.return_value = {
+            "title": "Charm",
+            "year": 2024,
+            "artists": [{"id": "123", "name": "Clairo"}],
+            "images": [],
+        }
+
+        response = self.client.get(
+            reverse("album_detail", args=[456]),
+            {"spotify_id": "1KNUCVXgIxKUGiuEB8eG0i"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "open.spotify.com/embed/album/1KNUCVXgIxKUGiuEB8eG0i")
         mock_get_spotify_album_id.assert_not_called()
 
 

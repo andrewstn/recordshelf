@@ -18,7 +18,7 @@ PROFILE_PICTURE_SIZE = (512, 512)
 PROFILE_PICTURE_QUALITY = 80
 USERNAME_MAX_LENGTH = 20
 PROFILE_PICTURE_WIDGET_ATTRS = {
-    'class': 'w-full text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition cursor-pointer',
+    'class': 'w-full text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 transition cursor-pointer',
 }
 
 def validate_username_length(username):

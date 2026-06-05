@@ -202,7 +202,7 @@
         <div class="relative group w-full md:w-auto">
             {% if request.user == profile_user %}
             <div class="flex justify-start md:justify-end mb-4">
-                <a href="{% url 'edit_profile' %}" class="inline-flex items-center gap-2 bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500/30 px-3 py-2 rounded-lg text-xs font-bold transition shadow-sm group/settings">
+                <a href="{% url 'edit_profile' %}" class="inline-flex items-center gap-2 bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500/30 px-3 py-2 rounded-md text-xs font-bold transition shadow-sm group/settings">
                     <svg class="w-4 h-4 text-zinc-500 group-hover/settings:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     Edit Profile
                 </a>
@@ -258,9 +258,9 @@
                     <form method="POST" action="{% url 'toggle_follow' profile_user.username %}" class="m-0">
                         {% csrf_token %}
                         {% if is_following_profile %}
-                            <button type="submit" class="bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer">Unfollow</button>
+                            <button type="submit" class="bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 px-3 py-1 rounded-sm text-xs font-bold transition cursor-pointer">Unfollow</button>
                         {% else %}
-                            <button type="submit" class="bg-zinc-900 text-zinc-300 hover:bg-emerald-500 hover:text-black border border-zinc-800 hover:border-emerald-500 px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer">Follow User</button>
+                            <button type="submit" class="bg-zinc-900 text-zinc-300 hover:bg-emerald-500 hover:text-black border border-zinc-800 hover:border-emerald-500 px-3 py-1 rounded-sm text-xs font-bold transition cursor-pointer">Follow User</button>
                         {% endif %}
                     </form>
                 {% endif %}
@@ -327,7 +327,7 @@
         </div>
 
         <div class="mt-5 flex justify-center md:justify-end px-4 md:px-8">
-            <button type="button" id="share-shelf-toggle" class="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500/30 px-4 py-2.5 rounded-lg text-xs font-bold transition shadow-sm group/share-toggle cursor-pointer">
+            <button type="button" id="share-shelf-toggle" class="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-emerald-500/30 px-4 py-2.5 rounded-md text-xs font-bold transition shadow-sm group/share-toggle cursor-pointer">
                 <svg class="w-3.5 h-3.5 text-zinc-500 group-hover/share-toggle:text-emerald-400 transition" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 8a3 3 0 100-6 3 3 0 000 6zM17 14a3 3 0 100-6 3 3 0 000 6zM7 22a3 3 0 100-6 3 3 0 000 6zM9.6 7.1l4.8 2.8M14.4 14.1l-4.8 2.8" />
                 </svg>
@@ -372,10 +372,10 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_48%,rgba(0,0,0,0.58))] pointer-events-none"></div>
 
         <div id="share-shelf-toolbar" class="fixed top-4 right-4 z-50 flex flex-wrap justify-end gap-2 max-w-[calc(100vw-2rem)]">
-            <button type="button" id="share-copy-link" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">Copy Link</button>
-            <button type="button" id="share-export-png" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">Export PNG</button>
-            <button type="button" id="share-native" class="bg-emerald-500 text-black hover:bg-emerald-400 border border-emerald-400 px-3 py-2 rounded-lg text-xs font-black transition cursor-pointer">Share</button>
-            <button type="button" id="share-exit" class="bg-black/40 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer">Exit</button>
+            <button type="button" id="share-copy-link" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-md text-xs font-bold transition cursor-pointer">Copy Link</button>
+            <button type="button" id="share-export-png" class="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-200 hover:text-white hover:border-emerald-500/40 px-3 py-2 rounded-md text-xs font-bold transition cursor-pointer">Export PNG</button>
+            <button type="button" id="share-native" class="bg-emerald-500 text-black hover:bg-emerald-400 border border-emerald-400 px-3 py-2 rounded-md text-xs font-black transition cursor-pointer">Share</button>
+            <button type="button" id="share-exit" class="bg-black/40 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white px-3 py-2 rounded-md text-xs font-bold transition cursor-pointer">Exit</button>
         </div>
 
         <p id="share-status" class="fixed left-1/2 bottom-4 z-50 hidden -translate-x-1/2 rounded-full border border-zinc-800 bg-zinc-950/90 px-4 py-2 text-xs font-bold text-zinc-200 shadow-2xl backdrop-blur-md"></p>
@@ -1427,27 +1427,27 @@
             <div id="modal-owner-actions" class="hidden flex-col gap-2">
                 <form id="modal-remove-shelf-form" method="POST" action="" class="m-0">
                     {% csrf_token %}
-                    <button type="submit" class="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
+                    <button type="submit" class="w-full bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-sm font-bold py-3 rounded-md transition-colors cursor-pointer">
                         Remove from Shelf
                     </button>
                 </form>
                 <form id="modal-remove-collection-form" method="POST" action="" class="m-0" onsubmit="return confirm('Are you sure you want to remove this from your crate?');">
                     {% csrf_token %}
-                    <button type="submit" class="w-full bg-zinc-950 border border-zinc-900/50 hover:bg-red-950/30 text-red-500 hover:border-red-900/50 text-sm font-bold py-3 rounded-lg transition-colors cursor-pointer">
+                    <button type="submit" class="w-full bg-zinc-950 border border-zinc-900/50 hover:bg-red-950/30 text-red-500 hover:border-red-900/50 text-sm font-bold py-3 rounded-md transition-colors cursor-pointer">
                         Remove from Crate
                     </button>
                 </form>
             </div>
 
             <div id="modal-visitor-actions" class="hidden grid-cols-2 gap-2">
-                <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 items-center justify-center text-xs font-bold py-3 rounded-lg">
+                <div id="modal-visitor-in-collection" class="hidden w-full bg-emerald-950/40 border border-emerald-900/40 text-emerald-500 items-center justify-center text-xs font-bold py-3 rounded-md">
                     ✓ In Crate
                 </div>
                 <form id="modal-visitor-add-form" method="POST" action="{% url 'add_record' %}" class="m-0">
                     {% csrf_token %}
                     <input type="hidden" id="modal-visitor-discogs-id" name="discogs_id" value="">
                     <input type="hidden" name="next" value="{{ request.path }}">
-                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold py-3 rounded-md transition-colors cursor-pointer h-full">
                         + Crate
                     </button>
                 </form>
@@ -1455,7 +1455,7 @@
                     {% csrf_token %}
                     <input type="hidden" id="modal-visitor-wishlist-id" name="discogs_id" value="">
                     <input type="hidden" name="next" value="{{ request.path }}">
-                    <button id="modal-visitor-wishlist-btn" type="submit" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer h-full">
+                    <button id="modal-visitor-wishlist-btn" type="submit" class="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold py-3 rounded-md transition-colors cursor-pointer h-full">
                         ★ Wantlist
                     </button>
                 </form>

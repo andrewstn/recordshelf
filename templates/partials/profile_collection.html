@@ -23,7 +23,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
                         <input type="hidden" name="next" value="{% url 'profile' profile_user.username %}?tab=wishlist">
-                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-emerald-500 hover:bg-emerald-950/30 hover:text-emerald-400 border border-zinc-900/50 hover:border-emerald-900/50">
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-sm transition cursor-pointer font-bold bg-zinc-950 text-emerald-500 hover:bg-emerald-950/30 hover:text-emerald-400 border border-zinc-900/50 hover:border-emerald-900/50">
                             Add to Crate
                         </button>
                     </form>
@@ -31,7 +31,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="discogs_id" value="{{ record.discogs_id }}">
                         <input type="hidden" name="next" value="{% url 'profile' profile_user.username %}?tab=wishlist">
-                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-sm transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
                             Remove
                         </button>
                     </form>
@@ -76,7 +76,7 @@
                 <div class="mt-3 pt-3 border-t border-zinc-900/60 grid grid-cols-2 gap-1.5">
                     <form method="POST" action="{% url 'toggle_shelf' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-sm transition cursor-pointer font-bold
                             {% if item.record.id in owner_shelf_record_ids %}
                                 bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 hover:bg-zinc-900
                             {% else %}
@@ -88,7 +88,7 @@
 
                     <form method="POST" action="{% url 'toggle_favorite' item.id %}" class="m-0 p-0 col-span-1">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold border
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-sm transition cursor-pointer font-bold border
                             {% if favorite_record_id == item.record.id %}
                                 bg-emerald-500 text-black border-transparent hover:bg-emerald-400
                             {% else %}
@@ -98,13 +98,13 @@
                         </button>
                     </form>
 
-                    <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-500 hover:text-white bg-zinc-950 py-1.5 rounded-md transition text-[10px] font-bold border border-zinc-900 col-span-1">
+                    <a href="{% url 'edit_item' item.id %}" class="w-full text-center text-zinc-500 hover:text-white bg-zinc-950 py-1.5 rounded-sm transition text-[10px] font-bold border border-zinc-900 col-span-1">
                         Edit/Rate
                     </a>
                     
                     <form method="POST" action="{% url 'remove_item' item.id %}" class="m-0 p-0 col-span-1" onsubmit="return confirm('Are you sure you want to remove this copy from your crate?');">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-md transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
+                        <button type="submit" class="w-full text-center text-[10px] py-1.5 rounded-sm transition cursor-pointer font-bold bg-zinc-950 text-red-500 hover:bg-red-950/30 hover:text-red-400 border border-zinc-900/50 hover:border-red-900/50">
                             Remove
                         </button>
                     </form>
@@ -121,7 +121,7 @@
 <div class="col-span-full mt-6 mb-2 flex justify-center">
     <div class="flex gap-2">
         {% if page_obj.has_previous %}
-            <button onclick="loadPage({{ page_obj.previous_page_number }})" class="px-3 py-1 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md text-xs font-bold transition cursor-pointer">Previous</button>
+            <button onclick="loadPage({{ page_obj.previous_page_number }})" class="px-3 py-1 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-sm text-xs font-bold transition cursor-pointer">Previous</button>
         {% endif %}
         
         <span class="px-3 py-1 bg-zinc-950 text-zinc-500 border border-zinc-900 rounded-md text-xs font-bold">
@@ -129,7 +129,7 @@
         </span>
         
         {% if page_obj.has_next %}
-            <button onclick="loadPage({{ page_obj.next_page_number }})" class="px-3 py-1 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md text-xs font-bold transition cursor-pointer">Next</button>
+            <button onclick="loadPage({{ page_obj.next_page_number }})" class="px-3 py-1 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-sm text-xs font-bold transition cursor-pointer">Next</button>
         {% endif %}
     </div>
 </div>

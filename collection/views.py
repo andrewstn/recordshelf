@@ -18,6 +18,10 @@ from django.db.models import Count, Avg
 from .utils import clean_artist_name
 
 SPOTIFY_ALBUM_ID_RE = re.compile(r'^[A-Za-z0-9]{22}$')
+SPOTIFY_ALBUM_OVERRIDES = {
+    # Used when Spotify search is rate-limited; this is the album showcased on the home page.
+    1046042: '3mH6qwIy9crq0I9YQbOuDf',  # Frank Ocean - Blonde
+}
 
 def safe_redirect(request, target_url, fallback):
     if target_url and url_has_allowed_host_and_scheme(
@@ -224,7 +228,12 @@ def album_detail(request, discogs_id):
     if album_data.get('artists'):
         artist_name = clean_artist_name(album_data['artists'][0].get('name', ''))
         
-    spotify_override = request.GET.get('spotify_album_id', '').strip()
+    spotify_override = (
+        request.GET.get('spotify_album_id')
+        or request.GET.get('spotify_id')
+        or SPOTIFY_ALBUM_OVERRIDES.get(discogs_id)
+        or ''
+    ).strip()
     if SPOTIFY_ALBUM_ID_RE.match(spotify_override):
         spotify_id = spotify_override
         spotify_status = 'manual'

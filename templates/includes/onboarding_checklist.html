@@ -12,7 +12,7 @@
 
     <div class="mt-4 grid gap-2 md:grid-cols-2">
         {% for step in onboarding_checklist.steps %}
-        <a href="{{ step.cta_url }}" class="group flex items-center gap-3 rounded-xl border px-3 py-2.5 transition {% if step.completed %}border-emerald-900/40 bg-emerald-950/20{% else %}border-zinc-800 bg-zinc-950/60 hover:border-emerald-500/30 hover:bg-zinc-950{% endif %}">
+        <a href="{{ step.cta_url }}" class="group flex items-center gap-3 rounded-md border px-3 py-2.5 transition {% if step.completed %}border-emerald-900/40 bg-emerald-950/20{% else %}border-zinc-800 bg-zinc-950/60 hover:border-emerald-500/30 hover:bg-zinc-950{% endif %}">
             <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-black {% if step.completed %}border-emerald-500/40 bg-emerald-500/15 text-emerald-400{% else %}border-zinc-700 text-zinc-600 group-hover:border-emerald-500/40 group-hover:text-emerald-400{% endif %}">
                 {% if step.completed %}&#10003;{% else %}{{ forloop.counter }}{% endif %}
             </span>

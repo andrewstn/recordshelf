@@ -147,9 +147,9 @@
             <div class="text-center bg-zinc-900/30 border border-zinc-800 border-dashed rounded-2xl p-16">
                 <p class="text-zinc-500 mb-4 text-lg">No spins yet. Follow a few collectors or add records to your crate.</p>
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Find Records</a>
+                    <a href="{% url 'search' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-md font-bold hover:bg-zinc-200 transition text-sm">Find Records</a>
                 {% else %}
-                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-lg font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
+                    <a href="{% url 'signup' %}" class="bg-white text-zinc-950 px-6 py-2 rounded-md font-bold hover:bg-zinc-200 transition text-sm">Join the Club</a>
                 {% endif %}
             </div>
         {% endfor %}

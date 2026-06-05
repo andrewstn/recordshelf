@@ -84,7 +84,7 @@
                     {% if pagination.pages > 1 %}
                         <div class="mt-12 flex justify-center items-center gap-4">
                             {% if pagination.page > 1 %}
-                                <a href="?page={{ pagination.page|add:'-1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-zinc-800 transition font-medium">
+                                <a href="?page={{ pagination.page|add:'-1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-md text-white hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-zinc-800 transition font-medium">
                                     &larr; Previous
                                 </a>
                             {% endif %}
@@ -92,7 +92,7 @@
                             <span class="text-zinc-500 font-medium">Page {{ pagination.page }} of {{ pagination.pages }}</span>
 
                             {% if pagination.page < pagination.pages %}
-                                <a href="?page={{ pagination.page|add:'1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-zinc-800 transition font-medium">
+                                <a href="?page={{ pagination.page|add:'1' }}" class="px-6 py-2 bg-zinc-900 border border-zinc-700 rounded-md text-white hover:border-emerald-500/40 hover:text-emerald-300 hover:bg-zinc-800 transition font-medium">
                                     Next &rarr;
                                 </a>
                             {% endif %}

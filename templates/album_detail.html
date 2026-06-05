@@ -27,7 +27,7 @@
                     {% if user.is_authenticated %}
                         
                         {% if in_collection %}
-                            <button disabled class="w-full bg-zinc-900/50 text-zinc-500 font-semibold py-3.5 rounded-lg cursor-not-allowed border border-zinc-800/50 flex items-center justify-center gap-2">
+                            <button disabled class="w-full bg-zinc-900/50 text-zinc-500 font-semibold py-3.5 rounded-md cursor-not-allowed border border-zinc-800/50 flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 In Your Crate
                             </button>
@@ -35,7 +35,7 @@
                             <form method="POST" action="{% url 'add_record' %}" class="m-0">
                                 {% csrf_token %}
                                 <input type="hidden" name="discogs_id" value="{{ discogs_id }}">
-                                <button type="submit" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold py-3.5 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                                <button type="submit" class="w-full bg-white text-zinc-950 hover:bg-zinc-200 font-bold py-3.5 rounded-md transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                     Add to Your Crate
                                 </button>
@@ -45,7 +45,7 @@
                         <form method="POST" action="{% url 'toggle_wishlist' %}" class="m-0">
                             {% csrf_token %}
                             <input type="hidden" name="discogs_id" value="{{ discogs_id }}">
-                            <button type="submit" class="w-full font-medium py-3.5 rounded-lg transition-colors border flex items-center justify-center gap-2 group cursor-pointer
+                            <button type="submit" class="w-full font-medium py-3.5 rounded-md transition-colors border flex items-center justify-center gap-2 group cursor-pointer
                                 {% if in_wishlist %}
                                     bg-zinc-800 text-emerald-500 border-zinc-700 hover:bg-zinc-700
                                 {% else %}
@@ -64,7 +64,7 @@
                         </form>
 
                     {% else %}
-                        <a href="{% url 'login' %}" class="flex items-center justify-center w-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium py-3.5 rounded-lg transition-colors border border-zinc-800">
+                        <a href="{% url 'login' %}" class="flex items-center justify-center w-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium py-3.5 rounded-md transition-colors border border-zinc-800">
                             Log in to Add Record
                         </a>
                     {% endif %}
