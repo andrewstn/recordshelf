@@ -114,6 +114,16 @@
                                 class="w-full block">
                         </iframe>
                     </div>
+                {% elif spotify_status == 'rate_limited' %}
+                    <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
+                        <div>
+                            <h3 class="text-white font-bold mb-1">Spotify Temporarily Limited</h3>
+                            <p class="text-sm text-zinc-500">Spotify is throttling album lookups right now. Streams should return after the cooldown window.</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center text-zinc-600 opacity-50 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 1 0 9 9"/></svg>
+                        </div>
+                    </div>
                 {% else %}
                     <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
                         <div>

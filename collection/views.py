@@ -10,11 +10,14 @@ from .services import add_record_to_collection, get_or_create_record
 from .models import Artist, CollectionItem, Record
 from .forms import CollectionItemForm
 import json
+import re
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from users.models import Activity
 from django.db.models import Count, Avg
 from .utils import clean_artist_name
+
+SPOTIFY_ALBUM_ID_RE = re.compile(r'^[A-Za-z0-9]{22}$')
 
 def safe_redirect(request, target_url, fallback):
     if target_url and url_has_allowed_host_and_scheme(
@@ -221,7 +224,12 @@ def album_detail(request, discogs_id):
     if album_data.get('artists'):
         artist_name = clean_artist_name(album_data['artists'][0].get('name', ''))
         
-    spotify_id = get_spotify_album_id(title, artist_name)
+    spotify_override = request.GET.get('spotify_album_id', '').strip()
+    if SPOTIFY_ALBUM_ID_RE.match(spotify_override):
+        spotify_id = spotify_override
+        spotify_status = 'manual'
+    else:
+        spotify_id, spotify_status = get_spotify_album_id(title, artist_name, include_status=True)
     
     # Calculate average rating
     average_rating = None
@@ -247,6 +255,7 @@ def album_detail(request, discogs_id):
         'in_wishlist': in_wishlist,
         'discogs_id': discogs_id,
         'spotify_id': spotify_id,
+        'spotify_status': spotify_status,
         'average_rating': average_rating,
         'rating_count': rating_count,
     }

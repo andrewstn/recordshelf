@@ -3,10 +3,13 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.http import HttpResponse
+from django.core.cache import cache
 from django.test import SimpleTestCase
 from django.test import TestCase
+from django.test import override_settings
 from django.urls import reverse
 
+from .spotify import get_spotify_album_id
 from .models import Artist, CollectionItem, Record
 from .services import get_or_create_record
 from .utils import clean_artist_name
@@ -62,7 +65,7 @@ class ArtistDetailCleanupTests(TestCase):
 
 
 class AlbumDetailCleanupTests(TestCase):
-    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.get_spotify_album_id", return_value=(None, "not_found"))
     @patch("collection.views.fetch_discogs_master")
     @patch("collection.views.posthog")
     def test_album_detail_cleans_discogs_artist_suffixes(
@@ -83,7 +86,101 @@ class AlbumDetailCleanupTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Clairo")
         self.assertNotContains(response, "Clairo (2)")
-        mock_get_spotify_album_id.assert_called_once_with("Charm", "Clairo")
+        mock_get_spotify_album_id.assert_called_once_with("Charm", "Clairo", include_status=True)
+
+    @patch("collection.views.get_spotify_album_id")
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_album_detail_can_use_manual_spotify_album_id(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+    ):
+        mock_fetch_discogs_master.return_value = {
+            "title": "Blonde",
+            "year": 2016,
+            "artists": [{"id": "123", "name": "Frank Ocean"}],
+            "images": [],
+        }
+
+        response = self.client.get(
+            reverse("album_detail", args=[1046042]),
+            {"spotify_album_id": "3mH6qwIy9crq0I9YQbOuDf"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "open.spotify.com/embed/album/3mH6qwIy9crq0I9YQbOuDf")
+        mock_get_spotify_album_id.assert_not_called()
+
+
+class SpotifyAlbumLookupTests(TestCase):
+    class Response:
+        def __init__(self, status_code, payload=None):
+            self.status_code = status_code
+            self.payload = payload or {}
+
+        def json(self):
+            return self.payload
+
+    def setUp(self):
+        cache.clear()
+
+    @override_settings(SPOTIFY_CLIENT_ID="client", SPOTIFY_CLIENT_SECRET="secret")
+    @patch("collection.spotify.requests.get")
+    @patch("collection.spotify.requests.post")
+    def test_refreshes_cached_token_after_unauthorized_search(self, mock_post, mock_get):
+        cache.set("spotify:client_credentials_token", "stale-token")
+        mock_post.return_value = self.Response(200, {
+            "access_token": "fresh-token",
+            "expires_in": 3600,
+        })
+        mock_get.side_effect = [
+            self.Response(401),
+            self.Response(200, {"albums": {"items": [{"id": "spotify-album-id"}]}}),
+        ]
+
+        album_id = get_spotify_album_id("Charm", "Clairo")
+
+        self.assertEqual(album_id, "spotify-album-id")
+        self.assertEqual(mock_post.call_count, 1)
+        self.assertEqual(mock_get.call_count, 2)
+        self.assertEqual(mock_get.call_args.kwargs["headers"]["Authorization"], "Bearer fresh-token")
+
+    @override_settings(SPOTIFY_CLIENT_ID="client", SPOTIFY_CLIENT_SECRET="secret")
+    @patch("collection.spotify.requests.get")
+    @patch("collection.spotify.requests.post")
+    def test_search_api_errors_are_not_cached_as_missing_albums(self, mock_post, mock_get):
+        mock_post.return_value = self.Response(200, {
+            "access_token": "token",
+            "expires_in": 3600,
+        })
+        mock_get.side_effect = [
+            self.Response(500),
+            self.Response(500),
+        ]
+
+        self.assertIsNone(get_spotify_album_id("Charm", "Clairo"))
+        self.assertIsNone(get_spotify_album_id("Charm", "Clairo"))
+
+        self.assertEqual(mock_get.call_count, 2)
+
+    @override_settings(SPOTIFY_CLIENT_ID="client", SPOTIFY_CLIENT_SECRET="secret")
+    @patch("collection.spotify.requests.get")
+    @patch("collection.spotify.requests.post")
+    def test_rate_limit_status_is_cached_from_retry_after(self, mock_post, mock_get):
+        mock_post.return_value = self.Response(200, {
+            "access_token": "token",
+            "expires_in": 3600,
+        })
+        response = self.Response(429)
+        response.headers = {"Retry-After": "3600"}
+        mock_get.return_value = response
+
+        self.assertEqual(get_spotify_album_id("Charm", "Clairo", include_status=True), (None, "rate_limited"))
+        self.assertEqual(get_spotify_album_id("Blonde", "Frank Ocean", include_status=True), (None, "rate_limited"))
+
+        self.assertEqual(mock_get.call_count, 1)
 
 
 class AddRecordRedirectTests(TestCase):
@@ -146,7 +243,7 @@ class AlbumDetailAnalyticsTests(TestCase):
     }
 
     @patch("collection.views.render", return_value=HttpResponse("ok"))
-    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.get_spotify_album_id", return_value=(None, "not_found"))
     @patch("collection.views.fetch_discogs_master")
     @patch("collection.views.posthog")
     def test_anonymous_album_view_uses_session_distinct_id(
@@ -172,7 +269,7 @@ class AlbumDetailAnalyticsTests(TestCase):
         })
 
     @patch("collection.views.render", return_value=HttpResponse("ok"))
-    @patch("collection.views.get_spotify_album_id", return_value=None)
+    @patch("collection.views.get_spotify_album_id", return_value=(None, "not_found"))
     @patch("collection.views.fetch_discogs_master")
     @patch("collection.views.posthog")
     def test_authenticated_album_view_uses_user_distinct_id(
