@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Slow Down - recordshelf{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-20 px-6 text-center">
+    <p class="text-xs font-black uppercase tracking-[0.24em] text-emerald-400 mb-3">Easy does it</p>
+    <h1 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">You’re browsing a little fast.</h1>
+    <p class="text-lg text-zinc-400 mb-10 max-w-xl mx-auto">
+        Please wait a moment and try again.
+    </p>
+    <a href="javascript:history.back()" class="inline-flex w-full sm:w-auto items-center justify-center bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 font-bold py-3 px-6 rounded-md transition-colors border border-zinc-800">
+        Go Back
+    </a>
+</div>
+{% endblock %}

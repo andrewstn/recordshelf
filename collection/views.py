@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.http import url_has_allowed_host_and_scheme
 from collection.spotify import get_spotify_album_id
-from .discogs import search_discogs, fetch_discogs_master, fetch_discogs_artist, fetch_discogs_artist_releases
+from .discogs import search_discogs, fetch_discogs_master, fetch_discogs_artist, fetch_discogs_artist_releases, search_discogs_artist
+from .ratelimit import is_rate_limited, rate_limited_response
 from .services import add_record_to_collection, get_or_create_record
 from .models import Artist, CollectionItem, Record
 from .forms import CollectionItemForm
@@ -125,6 +126,14 @@ def search_page(request):
     query = request.GET.get('q', '')
     page = request.GET.get('page', 1)
     sort_by = request.GET.get('sort', 'relevance')
+
+    if query and is_rate_limited(
+        request,
+        "collection-search",
+        anonymous_rate="20/m",
+        authenticated_rate="60/m",
+    ):
+        return rate_limited_response(request)
     
     results = []
     pagination = {}
@@ -165,6 +174,14 @@ def search_page(request):
 @require_POST
 def add_record(request):
     """Processes the button click to save an API result to the database."""
+    if is_rate_limited(
+        request,
+        "collection-add-record",
+        anonymous_rate="20/m",
+        authenticated_rate="30/m",
+    ):
+        return rate_limited_response(request)
+
     discogs_id = request.POST.get('discogs_id')
 
     if discogs_id:
@@ -193,6 +210,14 @@ def add_record(request):
 
 def album_detail(request, discogs_id):
     """Fetches and displays canonical master release details from Discogs."""
+    if is_rate_limited(
+        request,
+        "collection-album-detail",
+        anonymous_rate="30/m",
+        authenticated_rate="60/m",
+    ):
+        return rate_limited_response(request)
+
     album_data = fetch_discogs_master(discogs_id)
     
     if not album_data:
@@ -407,6 +432,14 @@ def update_shelf_order(request):
 @login_required
 @require_POST
 def toggle_wishlist(request):
+    if is_rate_limited(
+        request,
+        "collection-toggle-wishlist",
+        anonymous_rate="20/m",
+        authenticated_rate="30/m",
+    ):
+        return rate_limited_response(request)
+
     discogs_id = request.POST.get('discogs_id')
 
     # Ensures the record has a title and cover art
@@ -434,6 +467,14 @@ def toggle_wishlist(request):
     return safe_redirect(request, request.META.get('HTTP_REFERER'), 'search')
 
 def artist_detail(request, artist_id):
+    if is_rate_limited(
+        request,
+        "collection-artist-detail",
+        anonymous_rate="30/m",
+        authenticated_rate="60/m",
+    ):
+        return rate_limited_response(request)
+
     # Get local artist if exists
     artist = Artist.objects.filter(discogs_id=artist_id).first()
     
@@ -506,30 +547,24 @@ def artist_detail(request, artist_id):
 
 @login_required
 def sync_artist(request, local_artist_id):
-    from django.conf import settings
-    import requests
-    
+    if is_rate_limited(
+        request,
+        "collection-sync-artist",
+        anonymous_rate="10/m",
+        authenticated_rate="20/m",
+    ):
+        return rate_limited_response(request)
+
     artist = get_object_or_404(Artist, id=local_artist_id)
     if artist.discogs_id:
         return redirect('artist_detail', artist_id=artist.discogs_id)
-        
-    url = "https://api.discogs.com/database/search"
-    headers = {
-        'User-Agent': 'recordshelf/1.0 +http://127.0.0.1:8000',
-        'Authorization': f'Discogs token={settings.DISCOGS_API_TOKEN}'
-    }
-    
-    params = {'q': f'"{artist.name}"', 'type': 'artist', 'per_page': 1}
-    response = requests.get(url, headers=headers, params=params, timeout=8)
-    
-    if response.status_code == 200:
-        data = response.json()
-        results = data.get('results', [])
-        if results:
-            discogs_id = results[0].get('id')
-            artist.discogs_id = str(discogs_id)
-            artist.save()
-            return redirect('artist_detail', artist_id=discogs_id)
+
+    results = search_discogs_artist(artist.name)
+    if results:
+        discogs_id = results[0].get('id')
+        artist.discogs_id = str(discogs_id)
+        artist.save()
+        return redirect('artist_detail', artist_id=discogs_id)
             
     messages.error(request, f"Could not map {artist.name} to a valid Discogs artist.")
     return safe_redirect(request, request.META.get('HTTP_REFERER'), 'home')

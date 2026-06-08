@@ -20,9 +20,11 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from users import views as user_views
+from .views import robots_txt
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('robots.txt', robots_txt, name='robots_txt'),
     path('v/<uidb64>/<token>/', user_views.verify_email, name='verify_email_short'),
     path('d/<uidb64>/<token>/', user_views.confirm_delete_account, name='confirm_delete_account_short'),
     path('share.png', user_views.site_share_image, name='site_share_image'),

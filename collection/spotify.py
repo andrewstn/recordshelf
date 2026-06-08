@@ -1,18 +1,21 @@
-import requests
 import base64
 import hashlib
+import logging
 import re
+
+import requests
 from django.conf import settings
 from django.core.cache import cache
 
 REQUEST_TIMEOUT = 8
 TOKEN_CACHE_TIMEOUT = 60 * 50
-ALBUM_CACHE_TIMEOUT = 60 * 60 * 24
+ALBUM_CACHE_TIMEOUT = 60 * 60 * 24 * 7
 NO_MATCH_CACHE_TIMEOUT = 60 * 60
 NO_SPOTIFY_MATCH = "__no_spotify_match__"
 TOKEN_CACHE_KEY = "spotify:client_credentials_token"
 RATE_LIMIT_CACHE_KEY = "spotify:search_rate_limited"
 MAX_RATE_LIMIT_CACHE_TIMEOUT = 60 * 60 * 12
+logger = logging.getLogger(__name__)
 
 
 def _result(album_id=None, status="unavailable", include_status=False):
@@ -31,6 +34,7 @@ def _get_access_token():
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
 
     token_url = "https://accounts.spotify.com/api/token"
+    logger.info("Spotify token cache miss")
     headers = {
         "Authorization": f"Basic {auth_base64}",
         "Content-Type": "application/x-www-form-urlencoded"
@@ -115,6 +119,7 @@ def get_spotify_album_id(album_title, artist_name, include_status=False):
 
     # Search Spotify for the Album
     search_url = "https://api.spotify.com/v1/search"
+    logger.info("Spotify album lookup cache miss", extra={"album_title": clean_title, "artist_name": clean_artist})
     queries = (
         f'album:"{clean_title}" artist:"{clean_artist}"',
         f"{clean_title} {clean_artist}",

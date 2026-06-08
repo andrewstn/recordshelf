@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from .discogs import fetch_discogs_master, search_discogs
 from .spotify import get_spotify_album_id
 from .models import Artist, CollectionItem, Record
 from .services import get_or_create_record
@@ -203,6 +204,115 @@ class SpotifyAlbumLookupTests(TestCase):
         self.assertEqual(get_spotify_album_id("Blonde", "Frank Ocean", include_status=True), (None, "rate_limited"))
 
         self.assertEqual(mock_get.call_count, 1)
+
+
+class DiscogsCachingTests(TestCase):
+    class Response:
+        status_code = 200
+
+        def __init__(self, payload):
+            self.payload = payload
+
+        def json(self):
+            return self.payload
+
+    def setUp(self):
+        cache.clear()
+
+    @patch("collection.discogs.requests.get")
+    def test_search_discogs_caches_normalized_query_page_and_sort(self, mock_get):
+        mock_get.return_value = self.Response({
+            "results": [{"id": 123, "title": "Frank Ocean - Blonde"}],
+            "pagination": {"page": 1, "pages": 1},
+        })
+
+        first_results, first_pagination = search_discogs("  Blonde  ", page=1, sort_by="relevance")
+        second_results, second_pagination = search_discogs("blonde", page=1, sort_by="relevance")
+
+        self.assertEqual(first_results, second_results)
+        self.assertEqual(first_pagination, second_pagination)
+        self.assertEqual(mock_get.call_count, 1)
+
+    @patch("collection.discogs.requests.get")
+    def test_fetch_discogs_master_caches_release_details(self, mock_get):
+        mock_get.return_value = self.Response({
+            "id": 1046042,
+            "title": "Blonde",
+            "artists": [{"name": "Frank Ocean"}],
+        })
+
+        self.assertEqual(fetch_discogs_master(1046042)["title"], "Blonde")
+        self.assertEqual(fetch_discogs_master(1046042)["title"], "Blonde")
+
+        self.assertEqual(mock_get.call_count, 1)
+
+
+class ApiRateLimitTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    @patch("collection.views.posthog")
+    @patch("collection.views.prepare_discogs_search_results", return_value=[])
+    @patch("collection.views.search_discogs", return_value=([], {}))
+    def test_anonymous_search_is_rate_limited(self, mock_search, mock_prepare, mock_posthog):
+        for _ in range(20):
+            response = self.client.get(reverse("search"), {"q": "blonde"})
+            self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("search"), {"q": "blonde"})
+
+        self.assertEqual(response.status_code, 429)
+        self.assertContains(response, "You’re browsing a little fast.", status_code=429)
+
+    @patch("collection.views.get_spotify_album_id", return_value=(None, "not_found"))
+    @patch("collection.views.fetch_discogs_master")
+    @patch("collection.views.posthog")
+    def test_anonymous_album_detail_is_rate_limited(
+        self,
+        mock_posthog,
+        mock_fetch_discogs_master,
+        mock_get_spotify_album_id,
+    ):
+        mock_fetch_discogs_master.return_value = {
+            "title": "Charm",
+            "artists": [{"id": "123", "name": "Clairo"}],
+            "images": [],
+        }
+
+        for _ in range(30):
+            response = self.client.get(reverse("album_detail", args=[456]))
+            self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("album_detail", args=[456]))
+
+        self.assertEqual(response.status_code, 429)
+        self.assertContains(response, "Please wait a moment and try again.", status_code=429)
+
+    @patch("collection.views.posthog")
+    @patch("collection.views.prepare_discogs_search_results", return_value=[])
+    @patch("collection.views.search_discogs", return_value=([], {}))
+    def test_authenticated_search_gets_higher_rate_limit(self, mock_search, mock_prepare, mock_posthog):
+        user = get_user_model().objects.create_user(
+            username="collector",
+            email="collector@example.com",
+            password="password123",
+        )
+        self.client.force_login(user)
+
+        for _ in range(20):
+            response = self.client.get(reverse("search"), {"q": "blonde"})
+            self.assertEqual(response.status_code, 200)
+
+
+class RobotsTxtTests(TestCase):
+    def test_robots_txt_discourages_expensive_routes(self):
+        response = self.client.get(reverse("robots_txt"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        self.assertContains(response, "Disallow: /collection/search/")
+        self.assertContains(response, "Disallow: /collection/album/")
+        self.assertContains(response, "Disallow: /admin/")
 
 
 class AddRecordRedirectTests(TestCase):
