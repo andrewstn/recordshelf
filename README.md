@@ -117,7 +117,7 @@ Required GitHub Actions secrets for deployment:
 ### 1. Clone and enter the project
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/andrewstn/recordshelf
 cd record-store
 ```
 
